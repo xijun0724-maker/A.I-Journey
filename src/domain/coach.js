@@ -10,7 +10,9 @@ import { DAY, addDays, dateOnly, fromIso, startOfDay } from "../utils/date.js";
 
 export const Coach = {};
 
-Coach.logActivity = function (minutes, completed) {
+/* The activity row for today, created on first use. Kept private so every
+   writer (minutes, completed, recall verdicts) lands in the same row. */
+function activityRow() {
   const key = dateOnly(new Date());
   let row = Store.db.activity.filter(function (a) {
     return a.date === key;
@@ -19,9 +21,55 @@ Coach.logActivity = function (minutes, completed) {
     row = { date: key, minutes: 0, completed: 0 };
     Store.db.activity.push(row);
   }
+  return row;
+}
+
+Coach.logActivity = function (minutes, completed) {
+  const row = activityRow();
   row.minutes += minutes || 0;
   row.completed += completed || 0;
   Store.saveNow();
+};
+
+/**
+ * Record one retrieval-practice attempt, hit or miss.
+ *
+ * The drill already knows the verdict — this is the wiring that used to stop
+ * at the toast. Hits and misses are what let the guidance level fade
+ * (`Coach.recallStats`), so a miss is data, not a dead end.
+ *
+ * @param {boolean} hit - true when the learner produced the answer
+ */
+Coach.logRecall = function (hit) {
+  const row = activityRow();
+  if (!row.recall) row.recall = { hits: 0, misses: 0 };
+  if (hit) row.recall.hits += 1;
+  else row.recall.misses += 1;
+  Store.saveNow();
+};
+
+/**
+ * Cumulative retrieval-practice performance across the term.
+ *
+ * @returns {{attempts: number, hits: number, misses: number, rate: number}}
+ *   `rate` is 0 when nothing has been attempted — no evidence, no fading.
+ */
+Coach.recallStats = function () {
+  let hits = 0;
+  let misses = 0;
+  (Store.db.activity || []).forEach(function (row) {
+    const r = row.recall;
+    if (!r) return;
+    hits += r.hits || 0;
+    misses += r.misses || 0;
+  });
+  const attempts = hits + misses;
+  return {
+    attempts: attempts,
+    hits: hits,
+    misses: misses,
+    rate: attempts ? hits / attempts : 0,
+  };
 };
 
 Coach.currentWeek = function () {

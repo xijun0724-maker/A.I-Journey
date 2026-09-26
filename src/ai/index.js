@@ -165,12 +165,44 @@ function withProvenance(result) {
   return result;
 }
 
+/**
+ * Choose the guidance level for one answer.
+ *
+ * A scaffold should fade as competence grows; a crutch should not. The
+ * verdicts the recall drill already records decide the level when the learner
+ * has left the choice open ("Automatic" in Settings), and an explicit choice —
+ * by the caller or in Settings — is never overridden.
+ *
+ * Ladder, one step at a time:
+ *   - fewer than 8 attempts, or under 40% recall: full answers — the safe
+ *     default, and where a learner who is still struggling should stay
+ *   - 8+ attempts at 40% or better: guiding questions (Socratic) — they can
+ *     produce something, so stop handing over the answer
+ *   - 20+ attempts at 60% or better: a single nudge (Hint) — most struggle
+ *   - between those bands: Socratic, until the evidence clears the next bar
+ *
+ * @param {object} opts - `answer()` options; `guidanceLevel` wins outright
+ * @returns {"explain"|"socratic"|"hint"}
+ */
+export function resolveGuidanceLevel(opts) {
+  opts = opts || {};
+  if (opts.guidanceLevel) return opts.guidanceLevel;
+  const mode = Store.db.settings.tutorMode || "auto";
+  if (mode !== "auto") return mode;
+  const r = Coach.recallStats();
+  /* Struggling learners keep full answers at every sample size — fading is a
+     reward for production, not a penalty for needing the answer. */
+  if (r.rate < 0.4) return "explain";
+  if (r.attempts >= 20) return r.rate >= 0.6 ? "hint" : "socratic";
+  if (r.attempts >= 8) return "socratic";
+  return "explain";
+}
+
 export function answer(question, opts = {}) {
   opts = opts || {};
   const k = opts.k || 5;
   const chatHistory = opts.chatHistory || [];
-  const guidanceLevel =
-    opts.guidanceLevel || Store.db.settings.tutorMode || "explain";
+  const guidanceLevel = resolveGuidanceLevel(opts);
 
   let ragQuery = question;
   if (question.split(/\s+/).length <= 6 && chatHistory.length > 0) {

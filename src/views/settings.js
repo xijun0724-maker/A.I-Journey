@@ -109,11 +109,14 @@ export function settings() {
     '<p class="hint">The key is kept in this browser session and sent directly from your browser to the provider. It never passes through any server of ours.</p>';
 
   /* Tutor mode */
-  const tutorMode = s.tutorMode || "explain";
+  const tutorMode = s.tutorMode || "auto";
   h +=
     '<div class="card"><div class="card-head"><h2>Tutor mode</h2></div>' +
-    '<div class="notice info mb"><div>Choose how the AI tutor responds: <strong>Explain</strong> gives full step-by-step answers. <strong>Socratic</strong> asks guiding questions so you discover the answer. <strong>Hint</strong> gives a single keyword or nudge.</div></div>' +
+    '<div class="notice info mb"><div>Choose how the AI tutor responds: <strong>Explain</strong> gives full step-by-step answers. <strong>Socratic</strong> asks guiding questions so you discover the answer. <strong>Hint</strong> gives a single keyword or nudge. <strong>Automatic</strong> starts with full answers and fades toward questions, then nudges, as your recall practice improves &mdash; you can pin any level at any time.</div></div>' +
     '<label class="fld"><span>Guidance level</span><select id="setTutorMode">' +
+    '<option value="auto"' +
+    (tutorMode === "auto" ? " selected" : "") +
+    ">Automatic (fades as I improve)</option>" +
     '<option value="explain"' +
     (tutorMode === "explain" ? " selected" : "") +
     ">Explain (full answers)</option>" +

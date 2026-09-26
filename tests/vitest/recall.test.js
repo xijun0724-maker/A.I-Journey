@@ -227,6 +227,8 @@ describe("recall self-mark", () => {
     const today = Store.db.activity[Store.db.activity.length - 1];
     expect(today.completed).toBe(1);
     expect(today.minutes).toBe(0);
+    /* The verdict is the signal the guidance level fades on. */
+    expect(today.recall).toEqual({ hits: 1, misses: 0 });
     expect(
       document
         .querySelector('[data-recall-card="recall-0"]')
@@ -234,12 +236,16 @@ describe("recall self-mark", () => {
     ).toBe(true);
   });
 
-  it("does not log a miss, but tells the student what to do next", () => {
+  it("logs a miss as an attempt, but still invents no minutes", () => {
     markRecallResult("recall-0", "miss");
 
     const card = document.querySelector('[data-recall-card="recall-0"]');
     expect(card.classList.contains("missed")).toBe(true);
-    expect(Store.db.activity).toHaveLength(0);
+    const today = Store.db.activity[Store.db.activity.length - 1];
+    expect(today.minutes).toBe(0);
+    expect(today.completed).toBe(0);
+    expect(today.recall).toEqual({ hits: 0, misses: 1 });
+    expect(Coach.recallStats()).toMatchObject({ attempts: 1, misses: 1 });
     expect(document.getElementById("toasts").textContent).toMatch(
       /from memory/i,
     );

@@ -199,6 +199,9 @@ function renderRecallQuestions(questions) {
  * Honest about what it does: a "got it" counts as one completed practice item
  * in today's activity log, and the card marks itself so the widget reflects the
  * action. It does not invent study minutes for a question that took seconds.
+ * Both verdicts are recorded (`Coach.logRecall`) — a miss is the signal the
+ * guidance level fades on, so dropping it would keep every learner on
+ * full-answer mode forever.
  *
  * @param {string} id - Recall question id ("recall-0")
  * @param {string} verdict - "got" | "miss"
@@ -209,6 +212,7 @@ export function markRecallResult(id, verdict) {
   const card = q('[data-recall-card="' + safe + '"]');
   if (verdict === "got") {
     Coach.logActivity(0, 1);
+    Coach.logRecall(true);
     if (card) {
       card.classList.add("recalled");
       const mark = card.querySelector(".recall-mark");
@@ -221,6 +225,7 @@ export function markRecallResult(id, verdict) {
     );
     return true;
   }
+  Coach.logRecall(false);
   if (card) card.classList.add("missed");
   toast("Reread the passage, close it, then answer again from memory.", "info");
   return true;
