@@ -284,6 +284,14 @@ const CONTEXT_HANDLERS = Object.freeze({
     markRecallResult(id, arg);
   },
   "plan-toggle": (el, arg, id) => () => togglePlanItem(id),
+  "practise-doc": (el, arg, id) => async () => {
+    const { practiseDocument } = await import("../../views/assistant.js");
+    practiseDocument(id);
+  },
+  "practise-course": (el, arg, id) => async () => {
+    const { practiseCourse } = await import("../../views/assistant.js");
+    practiseCourse(id);
+  },
   "plan-proposal-exclude": (el, arg, id) => () =>
     toggleProposalExclusion(id),
   "sub-toggle": (el, arg, id) => () => toggleSubtask(id, arg),

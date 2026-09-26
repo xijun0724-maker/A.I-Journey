@@ -90,6 +90,18 @@ function msgHtml(m) {
       "</div></div></div>"
     );
   }
+  /* A drill opened from the Library or a review block: the questions are the
+     message, so it re-renders after navigation instead of evaporating. */
+  if (m.kind === "recall") {
+    return (
+      '<div class="msg ai"><div class="msg-ai-body">' +
+      (m.title
+        ? '<div class="tiny muted mb-sm">' + esc(m.title) + "</div>"
+        : "") +
+      renderRecallQuestions(m.questions) +
+      "</div></div>"
+    );
+  }
   return (
     '<div class="msg ai">' +
     '<div class="msg-ai-body">' +
@@ -229,6 +241,100 @@ export function markRecallResult(id, verdict) {
   if (card) card.classList.add("missed");
   toast("Reread the passage, close it, then answer again from memory.", "info");
   return true;
+}
+
+/* ── Retrieval practice without a chat question ────────────────────────
+ *
+ * The drill used to be reachable only after asking the tutor a question, so
+ * the learner who never asks — the confident, self-directed one — never
+ * practised. A document in the Library (or a review block in the Planner)
+ * can now open the same drill directly: no question, no model call.
+ */
+
+/** Indexed chunks for one document, in index order. */
+function docChunks(docId) {
+  const idx = RAG.index();
+  return Object.keys(idx.byId)
+    .map((cid) => idx.byId[cid])
+    .filter((c) => c.docId === docId && c.text);
+}
+
+/**
+ * Questions for one document, or null when the library cannot support a
+ * drill (nothing indexed, or nothing survived generation).
+ *
+ * Ids are namespaced by document so two drills can sit in the same chat
+ * without fighting over `recall-0`.
+ */
+function drillFor(doc) {
+  if (!doc) return null;
+  const chunks = docChunks(doc.id);
+  if (!chunks.length) return null;
+  const ctx = RAG.context(doc.name, { chunks: chunks });
+  const questions = generateRecallQuestions(ctx, 3);
+  if (!questions.length) return null;
+  const prefix =
+    "recall-" + String(doc.id).replace(/[^a-z0-9-]/gi, "-").toLowerCase();
+  questions.forEach(function (item, i) {
+    item.id = prefix + "-" + i;
+  });
+  return questions;
+}
+
+/** Persist the drill as a chat message and open it in the assistant. */
+function startDrill(title, questions) {
+  const msg = {
+    id: uid("msg"),
+    role: "assistant",
+    kind: "recall",
+    content: "",
+    title: title,
+    questions: questions,
+    ts: Date.now(),
+    mode: "drill",
+  };
+  Store.db.chat.push(msg);
+  if (Store.db.chat.length > CFG.maxChatMessages) {
+    Store.db.chat = Store.db.chat.slice(-CFG.maxChatMessages);
+  }
+  Store.saveNow();
+  Router.navigate("assistant");
+  return true;
+}
+
+/** Open the recall drill for a specific Library document. */
+export function practiseDocument(docId) {
+  const doc = Store.documents.get(docId);
+  if (!doc) {
+    toast("That document is no longer in your library.", "bad");
+    return false;
+  }
+  const questions = drillFor(doc);
+  if (!questions) {
+    toast(
+      '"' + doc.name + '" has no indexed passages to drill on yet.',
+      "info",
+    );
+    return false;
+  }
+  return startDrill("Practice: " + doc.name, questions);
+}
+
+/**
+ * Open the drill on the first document of a course that can support one —
+ * what a "Review:" block in the Planner points at, since the block names a
+ * course rather than a file.
+ */
+export function practiseCourse(courseId) {
+  const docs = (Store.db.documents || []).filter(function (d) {
+    return !courseId || d.courseId === courseId;
+  });
+  for (let i = 0; i < docs.length; i++) {
+    const questions = drillFor(docs[i]);
+    if (questions) return startDrill("Practice: " + docs[i].name, questions);
+  }
+  toast("No document in this course has indexed passages to drill on yet.", "info");
+  return false;
 }
 
 /* ── Model selector ────────────────────────────────────────────────── */

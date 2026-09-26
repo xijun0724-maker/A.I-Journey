@@ -141,6 +141,7 @@ export function library() {
 
       h += '<div class="doc-actions">';
       h += '<button type="button" class="btn xs" data-act="view-doc" data-id="' + esc(d.id) + '" title="Open document viewer">Open</button>';
+      h += '<button type="button" class="btn xs ghost" data-act="practise-doc" data-id="' + esc(d.id) + '" title="Test yourself on this document from memory">Practise</button>';
       h += '<button type="button" class="btn xs ghost" data-act="doc-reanalyse" data-id="' + esc(d.id) + '" title="Re-run syllabus and deadline analysis">Re-analyse</button>';
       h += '<button type="button" class="btn xs danger" data-act="del-doc" data-id="' + esc(d.id) + '" title="Remove document from library">Remove</button>';
       h += '</div>';

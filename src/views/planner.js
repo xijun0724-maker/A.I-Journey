@@ -608,6 +608,14 @@ export function planner() {
         (p.due
           ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
           : "") +
+        /* A review block schedules retrieval of *material*, not of a
+           deadline — so it offers the drill, which needs no chat question. */
+        (isReview && (Store.db.documents || []).length
+          ? ' <span class="msep">·</span> ' +
+            '<button type="button" class="btn xs ghost" data-act="practise-course" data-id="' +
+            esc(p.courseId || "") +
+            '" title="Open the recall drill on this course&rsquo;s documents">Practise</button>'
+          : "") +
         "</div>" +
         "</div>" +
         "</div>"; // .sched-block
@@ -766,6 +774,14 @@ function renderPlannerPreview(preview) {
           : "") +
         (p.due
           ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
+          : "") +
+        /* A review block schedules retrieval of *material*, not of a
+           deadline — so it offers the drill, which needs no chat question. */
+        (isReview && (Store.db.documents || []).length
+          ? ' <span class="msep">·</span> ' +
+            '<button type="button" class="btn xs ghost" data-act="practise-course" data-id="' +
+            esc(p.courseId || "") +
+            '" title="Open the recall drill on this course&rsquo;s documents">Practise</button>'
           : "") +
         "</div>" +
         "</div>" +

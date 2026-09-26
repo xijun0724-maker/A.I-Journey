@@ -153,10 +153,12 @@ Test coverage spans:
 | Courses view               | 14    |
 | Dashboard                  | 21    |
 | Date utilities             | 40    |
+| Document removal           | 3     |
 | DOM utilities              | 15    |
 | Event modal                | 5     |
 | Feedback                   | 21    |
 | Formatting                 | 25    |
+| Guidance fading            | 12    |
 | Helper utilities           | 34    |
 | SPA shell                  | 6     |
 | IndexedDB mirror           | 5     |
@@ -168,6 +170,7 @@ Test coverage spans:
 | NLP / text extraction      | 33    |
 | Planner view               | 13    |
 | Planner scheduling         | 21    |
+| Practice drills            | 8     |
 | RAG retrieval              | 43    |
 | Hybrid RAG embeddings      | 15    |
 | Retrieval practice         | 12    |
@@ -189,7 +192,7 @@ Test coverage spans:
 | UI namespace               | 8     |
 | XSS id-sink scan           | 2     |
 | Removed workload views     | 3     |
-| **Total**                  | **834** |
+| **Total**                  | **857** |
 
 Suite names map one-to-one to files in `tests/vitest/` — "Planner scheduling" is
 `tests/vitest/planner.test.js`, and so on. The counts are a snapshot, not a gate: the

@@ -54,8 +54,8 @@ index.html (SPA shell, CSP meta, inline load-failure fallback)
 
 | Gate | Result |
 | --- | --- |
-| `npm run test` | **834 passed** (50 files) |
-| `npm run build` | OK — `index.html` 11.73 kB (gzip 3.31), CSS 130.80 kB (gzip 22.74), JS code-split into **two** chunks: 337.50 kB entry + 13.56 kB lazy chunk (gzip 108.79 + 4.40); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
+| `npm run test` | **857 passed** (53 files) |
+| `npm run build` | OK — `index.html` 11.73 kB (gzip 3.31), CSS 130.80 kB (gzip 22.74), JS code-split into **two** chunks: 340.95 kB entry + 13.56 kB lazy chunk (gzip 110.14 + 4.40); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
 | `npm run lint` | **Passes clean** — 0 errors, 0 warnings |
 | `npm run format:check` | Not enforced in CI; run `npm run format` before committing |
 | Coverage thresholds | statements 60 / branches 50 / functions 60 / lines 60 (`vite.config.js`) |
