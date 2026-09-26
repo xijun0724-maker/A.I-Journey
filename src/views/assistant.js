@@ -251,6 +251,8 @@ function renderRecallQuestions(questions) {
     h +=
       '<details class="recall-card" data-recall-card="' +
       esc(item.id) +
+      '"' +
+      (item.docId ? ' data-doc="' + esc(item.docId) + '"' : "") +
       '"><summary><span class="recall-q">' +
       esc(item.question) +
       '</span></summary><div class="recall-a">' +
@@ -287,9 +289,13 @@ export function markRecallResult(id, verdict) {
   const safe = String(id || "").replace(/[^a-z0-9-]/gi, "");
   if (!safe) return false;
   const card = q('[data-recall-card="' + safe + '"]');
+  /* Filed against the document when the card can name one; a chat-turn
+     widget has no document behind it, so those verdicts stay in the
+     totals only. */
+  const docId = card ? card.getAttribute("data-doc") || null : null;
   if (verdict === "got") {
     Coach.logActivity(0, 1);
-    Coach.logRecall(true);
+    Coach.logRecall(true, docId || undefined);
     if (card) {
       card.classList.add("recalled");
       const mark = card.querySelector(".recall-mark");
@@ -302,7 +308,7 @@ export function markRecallResult(id, verdict) {
     );
     return true;
   }
-  Coach.logRecall(false);
+  Coach.logRecall(false, docId || undefined);
   if (card) card.classList.add("missed");
   toast("Reread the passage, close it, then answer again from memory.", "info");
   return true;
@@ -342,6 +348,10 @@ function drillFor(doc) {
     "recall-" + String(doc.id).replace(/[^a-z0-9-]/gi, "-").toLowerCase();
   questions.forEach(function (item, i) {
     item.id = prefix + "-" + i;
+    /* Carried through to the card so the verdict can be filed against this
+       document — that per-document miss rate is what the Planner orders
+       review blocks by. */
+    item.docId = doc.id;
   });
   return questions;
 }

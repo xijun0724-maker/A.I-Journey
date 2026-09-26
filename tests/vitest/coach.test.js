@@ -80,6 +80,54 @@ describe('Coach.logActivity', () => {
   });
 });
 
+describe('Coach per-document recall', () => {
+  it('files attributed verdicts against the document as well as the day', () => {
+    Coach.logRecall(true, 'doc-a');
+    Coach.logRecall(false, 'doc-a');
+    Coach.logRecall(true); // a chat-turn verdict: no single document behind it
+
+    const today = dateOnly(new Date());
+    const row = Store.db.activity.find(a => a.date === today);
+    expect(row.recall).toEqual({
+      hits: 2,
+      misses: 1,
+      byDoc: { 'doc-a': { hits: 1, misses: 1 } },
+    });
+  });
+
+  it('breaks stats down per document, and only for the one asked about', () => {
+    Coach.logRecall(false, 'doc-a');
+    Coach.logRecall(false, 'doc-a');
+    Coach.logRecall(true, 'doc-b');
+
+    expect(Coach.recallStats('doc-a')).toEqual({
+      attempts: 2, hits: 0, misses: 2, rate: 0,
+    });
+    expect(Coach.recallStats('doc-b')).toEqual({
+      attempts: 1, hits: 1, misses: 0, rate: 1,
+    });
+    /* Nothing drilled yet is evidence of nothing, not a perfect record. */
+    expect(Coach.recallStats('doc-c')).toEqual({
+      attempts: 0, hits: 0, misses: 0, rate: 0,
+    });
+    /* The breakdown is a view of the totals, never an addition to them. */
+    expect(Coach.recallStats()).toEqual({
+      attempts: 3, hits: 1, misses: 2, rate: 1 / 3,
+    });
+  });
+
+  it('leaves unattributed verdicts in the totals alone', () => {
+    Coach.logRecall(true);
+    Coach.logRecall(false);
+
+    const row = Store.db.activity[0];
+    expect(row.recall).toEqual({ hits: 1, misses: 1 });
+    expect(Coach.recallStats('doc-a')).toEqual({
+      attempts: 0, hits: 0, misses: 0, rate: 0,
+    });
+  });
+});
+
 describe('Coach.recommendations', () => {
   it('returns an array', () => {
     const recs = Coach.recommendations();

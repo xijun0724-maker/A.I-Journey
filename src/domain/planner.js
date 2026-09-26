@@ -19,6 +19,39 @@ import {
 export const Planner = {};
 
 /**
+ * The document a `"Review:"` block re-tests.
+ *
+ * The block is named after the assessment ("Review: Essay draft"), but the
+ * drill needs material. The link is the one the Library already uses: the
+ * document the event was imported with, else the document attached to the
+ * reading the event covers.
+ *
+ * Null when the event carries no material. Such a block still schedules —
+ * it just cannot be drilled from the Planner or ranked against the others
+ * on how badly it is being missed.
+ *
+ * @param {object} e - An event
+ * @returns {string|null}
+ */
+function docIdFor(e) {
+  if (!e) return null;
+  const has = function (id) {
+    return !!id && !!Store.doc(id);
+  };
+  if (has(e.sourceDocId)) return e.sourceDocId;
+  const readings = Store.db.readings || [];
+  const links = e.readingIds || [];
+  for (let i = 0; i < links.length; i++) {
+    const r = readings.find(function (x) {
+      return x.id === links[i];
+    });
+    if (r && has(r.docId)) return r.docId;
+  }
+  return null;
+}
+Planner.docIdFor = docIdFor;
+
+/**
  * Work units to schedule, highest priority first.
  *
  * @param {string} [courseId] - Course filter; "all" (or empty) for every course
@@ -66,6 +99,8 @@ Planner.units = function (courseId, exclude) {
         30,
         Math.max(15, Math.round(Tasks.remainingMinutes(e) / 4 / 5) * 5),
       );
+      const docId = docIdFor(e);
+      const stats = docId ? Coach.recallStats(docId) : null;
       pushUnit({
         eventId: e.id,
         subtaskId: null,
@@ -74,6 +109,13 @@ Planner.units = function (courseId, exclude) {
         courseId: e.courseId,
         due: e.due,
         score: p.score + 20,
+        /* A review exists to re-test material, so how much of it is being
+           missed is what orders review blocks among themselves — see the
+           sort at the end of this function. No verdicts yet reads as 0,
+           which leaves the block exactly where it was before. */
+        review: true,
+        docId: docId,
+        missRate: stats && stats.attempts ? stats.misses / stats.attempts : 0,
       });
     }
     const subs = (e.subtasks || []).filter(function (s) {
@@ -179,9 +221,34 @@ Planner.units = function (courseId, exclude) {
     });
   });
 
-  return sortBy(out, function (u) {
+  const ordered = sortBy(out, function (u) {
     return -u.score;
   });
+
+  /* Review blocks keep the slots their score earned them, exactly as
+     before, but among themselves they are ordered by how much of their
+     material is being missed — due-date proximity (what `score` carries)
+     is only the tiebreak. That is the whole point of a review block: it
+     schedules retrieval of the ideas being forgotten, not of the paperwork
+     that happens to come due first, and the misses already exist in the
+     activity log the drill writes to. */
+  const slots = [];
+  ordered.forEach(function (u, i) {
+    if (u.review) slots.push(i);
+  });
+  if (slots.length > 1) {
+    const reviews = slots.map(function (i) {
+      return ordered[i];
+    });
+    reviews.sort(function (a, b) {
+      if (b.missRate !== a.missRate) return b.missRate - a.missRate;
+      return b.score - a.score;
+    });
+    slots.forEach(function (slot, i) {
+      ordered[slot] = reviews[i];
+    });
+  }
+  return ordered;
 };
 
 /**
@@ -259,6 +326,9 @@ function schedule(opts) {
         courseId: u.courseId,
         due: u.due,
         score: Math.round(u.score),
+        /* The material this block re-tests, so the Planner can offer the
+           drill on the document rather than on the course. */
+        docId: u.docId || null,
         done: false,
       });
       target.used += take;

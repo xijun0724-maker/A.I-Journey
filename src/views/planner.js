@@ -31,6 +31,41 @@ function provenanceLine(meta) {
 }
 
 /**
+ * The **Practise** affordance on a scheduled review block.
+ *
+ * A review block schedules retrieval of *material*, not of a deadline, so
+ * it offers the same drill the Library does — no chat question, no model
+ * call. It opens on the document the block covers when one can be named
+ * (the link comes from `Planner.docIdFor`) and falls back to the course's
+ * documents when the block points at nothing more specific.
+ *
+ * @param {object} p - A plan item
+ * @param {boolean} isReview - Whether the item is a `Review:` block
+ * @returns {string} Markup, or "" when there is nothing to practise
+ */
+function practiseBtn(p, isReview) {
+  if (!isReview) return "";
+  const doc = p.docId ? Store.doc(p.docId) : null;
+  if (doc) {
+    return (
+      ' <span class="msep">·</span> ' +
+      '<button type="button" class="btn xs ghost" data-act="practise-doc" data-id="' +
+      esc(doc.id) +
+      '" title="Open the recall drill on ' +
+      esc(doc.name) +
+      '">Practise</button>'
+    );
+  }
+  if (!(Store.db.documents || []).length) return "";
+  return (
+    ' <span class="msep">·</span> ' +
+    '<button type="button" class="btn xs ghost" data-act="practise-course" data-id="' +
+    esc(p.courseId || "") +
+    '" title="Open the recall drill on this course&rsquo;s documents">Practise</button>'
+  );
+}
+
+/**
  * Render the Top Study Schedule & Settings Bar with integrated Average Pace & Capacity
  * Allows adjusting weekday study hours, weekend hours, and horizon directly.
  */
@@ -608,14 +643,7 @@ export function planner() {
         (p.due
           ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
           : "") +
-        /* A review block schedules retrieval of *material*, not of a
-           deadline — so it offers the drill, which needs no chat question. */
-        (isReview && (Store.db.documents || []).length
-          ? ' <span class="msep">·</span> ' +
-            '<button type="button" class="btn xs ghost" data-act="practise-course" data-id="' +
-            esc(p.courseId || "") +
-            '" title="Open the recall drill on this course&rsquo;s documents">Practise</button>'
-          : "") +
+        practiseBtn(p, isReview) +
         "</div>" +
         "</div>" +
         "</div>"; // .sched-block
@@ -775,14 +803,7 @@ function renderPlannerPreview(preview) {
         (p.due
           ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
           : "") +
-        /* A review block schedules retrieval of *material*, not of a
-           deadline — so it offers the drill, which needs no chat question. */
-        (isReview && (Store.db.documents || []).length
-          ? ' <span class="msep">·</span> ' +
-            '<button type="button" class="btn xs ghost" data-act="practise-course" data-id="' +
-            esc(p.courseId || "") +
-            '" title="Open the recall drill on this course&rsquo;s documents">Practise</button>'
-          : "") +
+        practiseBtn(p, isReview) +
         "</div>" +
         "</div>" +
         "</div>";

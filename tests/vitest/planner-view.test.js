@@ -184,6 +184,42 @@ describe("Study Planner View — Hierarchy, Top Time Settings, and Removal of Ca
     expect(html).not.toContain("All study blocks for this day completed!");
   });
 
+  it("drills the document a review block covers, and falls back to the course", () => {
+    UIState.showCompletedPlan = false;
+    Store.db.documents = [{ id: "d1", courseId: "c1", name: "Thermo notes" }];
+    Store.db.plan = [
+      {
+        id: "p1",
+        eventId: "ev1",
+        date: "2026-09-25",
+        label: "Review: Essay draft",
+        minutes: 30,
+        courseId: "c1",
+        done: false,
+        due: "2026-09-30T23:59:00Z",
+        docId: "d1",
+      },
+      {
+        id: "p2",
+        eventId: "ev1",
+        date: "2026-09-26",
+        label: "Review: Lab report",
+        minutes: 30,
+        courseId: "c1",
+        done: false,
+        due: "2026-09-30T23:59:00Z",
+      },
+    ];
+
+    const html = planner();
+
+    /* The block that can name its material drills that material. */
+    expect(html).toContain('data-act="practise-doc" data-id="d1"');
+    expect(html).toContain("Open the recall drill on Thermo notes");
+    /* The one that cannot still has a way in. */
+    expect(html).toContain('data-act="practise-course" data-id="c1"');
+  });
+
   it("makes the Completed KPI card clickable with toggle action and accessibility attributes", () => {
     UIState.showCompletedPlan = false;
     const html = planner();

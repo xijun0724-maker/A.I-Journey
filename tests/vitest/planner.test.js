@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { Store } from "../../src/core/store.js";
 import { CFG } from "../../src/config/constants.js";
 import { Planner } from "../../src/domain/planner.js";
+import { Coach } from "../../src/domain/coach.js";
 
 beforeEach(() => {
   Store.resetAll();
@@ -110,6 +111,91 @@ describe("Planner.generate", () => {
     expect(
       Store.db.plan.some((block) => block.label.startsWith("Review:")),
     ).toBe(true);
+  });
+});
+
+/**
+ * Step 8 of docs/audit-2026-09-25.md: a "Review:" block names an
+ * assessment, but what it re-tests is material — so it carries the document
+ * it covers and is ordered, among the review blocks, by how much of that
+ * material is being missed. Due-date proximity is only the tiebreak, which
+ * is the ordering a planner for retrieval needs: forget what you cannot
+ * yet produce, not what merely comes due first.
+ */
+describe("review blocks are ordered by what is being missed", () => {
+  const inDays = (n) => new Date(Date.now() + n * 86400000).toISOString();
+
+  const reviewOrder = () =>
+    Planner.units("all", [])
+      .filter((u) => u.review)
+      .map((u) => u.eventId);
+
+  beforeEach(() => {
+    Store.db.settings.studyWeekday = 3;
+    Store.db.settings.studyWeekend = 3;
+    Store.db.documents = [
+      { id: "doc-missed", courseId: "c1", name: "Missed notes", text: "x" },
+      { id: "doc-solid", courseId: "c2", name: "Solid notes", text: "x" },
+    ];
+    Store.db.events = [
+      {
+        id: "e-missed",
+        title: "Essay draft",
+        type: "assignment",
+        status: "todo",
+        courseId: "c1",
+        due: inDays(2),
+        sourceDocId: "doc-missed",
+        subtasks: [{ id: "s1", title: "Draft", minutes: 120, done: false }],
+      },
+      {
+        id: "e-solid",
+        title: "Lab report",
+        type: "assignment",
+        status: "todo",
+        courseId: "c2",
+        due: inDays(1),
+        sourceDocId: "doc-solid",
+        subtasks: [{ id: "s2", title: "Write", minutes: 120, done: false }],
+      },
+    ];
+  });
+
+  it("keys the block to the document the event covers", () => {
+    const missed = Planner.units("all", []).find(
+      (u) => u.review && u.eventId === "e-missed",
+    );
+
+    expect(missed).toBeTruthy();
+    expect(missed.docId).toBe("doc-missed");
+    expect(Planner.docIdFor({ sourceDocId: "doc-solid" })).toBe("doc-solid");
+    expect(Planner.docIdFor({ sourceDocId: "gone" })).toBeNull();
+    expect(Planner.docIdFor(null)).toBeNull();
+  });
+
+  it("puts the review of missed material first, ahead of the sooner deadline", () => {
+    /* The lab report is due a day sooner, so it wins on due-date
+       proximity alone; the essay's material is what is being forgotten. */
+    Coach.logRecall(false, "doc-missed");
+    Coach.logRecall(false, "doc-missed");
+
+    expect(reviewOrder()).toEqual(["e-missed", "e-solid"]);
+  });
+
+  it("falls back to due-date proximity when nothing has been drilled", () => {
+    expect(reviewOrder()).toEqual(["e-solid", "e-missed"]);
+  });
+
+  it("carries the document onto the block the scheduler actually stores", () => {
+    const preview = Planner.generateInteractive({ weeks: 2 });
+    const reviews = preview.planItems.filter((b) =>
+      String(b.label).startsWith("Review:"),
+    );
+
+    expect(reviews.map((b) => b.docId).sort()).toEqual([
+      "doc-missed",
+      "doc-solid",
+    ]);
   });
 });
 

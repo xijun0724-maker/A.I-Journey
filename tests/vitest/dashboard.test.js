@@ -235,3 +235,46 @@ describe('Dashboard - Synchronized "To do:" card', () => {
   });
 });
 
+describe('Practise from the timeline', () => {
+  const soon = () => new Date(Date.now() + 2 * 86400000).toISOString();
+
+  beforeEach(() => {
+    Store.db.courses = [
+      { id: 'c1', title: 'Thermal Physics', code: 'PHYS201', color: '#3b82f6' },
+    ];
+    Store.db.documents = [{ id: 'd1', courseId: 'c1', name: 'Thermo notes' }];
+    Store.db.events = [
+      {
+        id: 'e1',
+        title: 'Essay draft',
+        status: 'todo',
+        type: 'assignment',
+        courseId: 'c1',
+        due: soon(),
+        sourceDocId: 'd1',
+        subtasks: [],
+      },
+    ];
+  });
+
+  it('drills the reading the deadline covers, with no chat question', () => {
+    const html = dashboardView.fn();
+
+    expect(html).toContain('data-act="practise-doc" data-id="d1"');
+    expect(html).toContain('Open the recall drill on the reading this covers');
+  });
+
+  it('says nothing when the deadline carries no material', () => {
+    delete Store.db.events[0].sourceDocId;
+
+    expect(dashboardView.fn()).not.toContain('practise-doc');
+  });
+
+  it('drops the affordance once the deadline is done', () => {
+    Store.db.events[0].status = 'done';
+
+    /* Completed work is not what a review block re-tests. */
+    expect(dashboardView.fn()).not.toContain('practise-doc');
+  });
+});
+

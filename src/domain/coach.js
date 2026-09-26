@@ -38,28 +38,53 @@ Coach.logActivity = function (minutes, completed) {
  * at the toast. Hits and misses are what let the guidance level fade
  * (`Coach.recallStats`), so a miss is data, not a dead end.
  *
+ * A verdict can also be attributed to the document it came from, which is
+ * what lets the Planner order review blocks by the material being missed
+ * rather than by the date it happens to be due. Chat-turn questions span
+ * passages from several documents at once, so they are attributed to
+ * nothing and appear in the totals alone.
+ *
  * @param {boolean} hit - true when the learner produced the answer
+ * @param {string} [docId] - The document the drill was opened on
  */
-Coach.logRecall = function (hit) {
+Coach.logRecall = function (hit, docId) {
   const row = activityRow();
   if (!row.recall) row.recall = { hits: 0, misses: 0 };
   if (hit) row.recall.hits += 1;
   else row.recall.misses += 1;
+  if (docId) {
+    /* A breakdown of the same verdicts, never an addition to them: the day
+       total above already counts this one. */
+    if (!row.recall.byDoc) row.recall.byDoc = {};
+    const d =
+      row.recall.byDoc[docId] ||
+      (row.recall.byDoc[docId] = { hits: 0, misses: 0 });
+    if (hit) d.hits += 1;
+    else d.misses += 1;
+  }
   Store.saveNow();
 };
 
 /**
  * Cumulative retrieval-practice performance across the term.
  *
+ * @param {string} [docId] - Restrict to one document's attributed verdicts
  * @returns {{attempts: number, hits: number, misses: number, rate: number}}
  *   `rate` is 0 when nothing has been attempted — no evidence, no fading.
  */
-Coach.recallStats = function () {
+Coach.recallStats = function (docId) {
   let hits = 0;
   let misses = 0;
   (Store.db.activity || []).forEach(function (row) {
     const r = row.recall;
     if (!r) return;
+    if (docId) {
+      const d = (r.byDoc || {})[docId];
+      if (!d) return;
+      hits += d.hits || 0;
+      misses += d.misses || 0;
+      return;
+    }
     hits += r.hits || 0;
     misses += r.misses || 0;
   });

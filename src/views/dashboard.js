@@ -11,6 +11,7 @@ import { Store } from "../core/store.js";
 import { UI, UIState } from "../core/state.js";
 import { Dashboard } from "../domain/dashboard.js";
 import { Tasks } from "../domain/tasks.js";
+import { Planner } from "../domain/planner.js";
 import { Router } from "../core/router.js";
 import { esc, sortBy, safeColor } from "../utils/helpers.js";
 import {
@@ -113,6 +114,12 @@ function renderTimelineItem(e) {
   h += `<div  class="timeline-action-col u-row-6">`;
   h += `<button type="button" class="btn-moodle-action" data-act="event-edit" data-id="${esc(e.id)}">${isDone ? "View submission" : "Add submission"}</button>`;
   h += `<button type="button" class="btn xs ghost" data-act="ask" data-arg="${esc(e.title)}" title="Ask tutor for help">Ask</button>`;
+  /* The deadline's own material, when the event carries any: the same
+     recall drill the Library and the Planner open, with no chat question. */
+  const material = isDone ? null : Planner.docIdFor(e);
+  if (material) {
+    h += `<button type="button" class="btn xs ghost" data-act="practise-doc" data-id="${esc(material)}" title="Open the recall drill on the reading this covers">Practise</button>`;
+  }
   h += `</div>`;
 
   h += `</div>`;

@@ -84,6 +84,22 @@ describe("practiseDocument", () => {
     expect(Coach.recallStats()).toMatchObject({ attempts: 1, hits: 1 });
   });
 
+  it("files the verdict against the document, so the Planner can rank by it", () => {
+    practiseDocument("doc1");
+    document.body.innerHTML = '<div id="toasts"></div>' + assistant();
+
+    /* The card carries the material, not just the id: that link is what
+       lets a "Review:" block be ordered by what is being missed. */
+    const card = document.querySelector('[data-recall-card="recall-doc1-0"]');
+    expect(card.getAttribute("data-doc")).toBe("doc1");
+
+    markRecallResult("recall-doc1-0", "miss");
+    expect(Coach.recallStats("doc1")).toMatchObject({ attempts: 1, misses: 1 });
+    /* And still into the totals the guidance level fades on. */
+    expect(Coach.recallStats()).toMatchObject({ attempts: 1, misses: 1 });
+    expect(Coach.recallStats("doc2")).toMatchObject({ attempts: 0 });
+  });
+
   it("refuses a document that is no longer in the library", () => {
     expect(practiseDocument("missing")).toBe(false);
     expect(Store.db.chat).toHaveLength(0);
