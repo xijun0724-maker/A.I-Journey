@@ -142,19 +142,18 @@ describe("KNOWN_ACTIONS", () => {
 
   it("contains chat actions", () => {
     expect(KNOWN_ACTIONS.has("chat-send")).toBe(true);
-    expect(KNOWN_ACTIONS.has("chat-clear")).toBe(true);
-    expect(KNOWN_ACTIONS.has("chat-plan")).toBe(true);
+    expect(KNOWN_ACTIONS.has("chat-stop")).toBe(true);
+    /* chat-clear / chat-plan / chat-source were handlers nothing emitted:
+       they are gone rather than registered (2026-09-25 audit, P1-7). */
+    expect(KNOWN_ACTIONS.has("chat-clear")).toBe(false);
+    expect(KNOWN_ACTIONS.has("chat-plan")).toBe(false);
+    expect(KNOWN_ACTIONS.has("chat-source")).toBe(false);
   });
 });
 
 /* Actions that have a handler but that no markup emits. Kept explicit so a
    NEW orphan is caught, while cleaning these up can only shrink the list. */
 const REGISTERED_WITHOUT_MARKUP = [
-  "chat-clear",
-  "chat-plan",
-  "chat-source",
-  "chat-sources-clear",
-  "chat-sources-toggle",
   "export-roadmap",
   "load-moodle-sample",
   "scope-course",

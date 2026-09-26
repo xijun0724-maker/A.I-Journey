@@ -15,17 +15,6 @@ describe('Coach.currentWeek', () => {
   });
 });
 
-describe('Coach.weekOf', () => {
-  it('returns null for null input', () => {
-    expect(Coach.weekOf(null)).toBeNull();
-  });
-
-  it('returns a positive number for a valid date', () => {
-    const result = Coach.weekOf(new Date().toISOString());
-    expect(result).toBeGreaterThanOrEqual(1);
-  });
-});
-
 describe('Coach.weekStartDate', () => {
   it('returns a date for week 1', () => {
     const d = Coach.weekStartDate(1);

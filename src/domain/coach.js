@@ -33,15 +33,6 @@ Coach.currentWeek = function () {
   );
 };
 
-Coach.weekOf = function (iso) {
-  const t = fromIso(Store.db.settings.termStart);
-  if (!t || !iso) return null;
-  return Math.max(
-    1,
-    Math.ceil((startOfDay(fromIso(iso)) - startOfDay(t)) / (7 * DAY)),
-  );
-};
-
 Coach.weekStartDate = function (week) {
   const t = fromIso(Store.db.settings.termStart);
   if (!t) return null;

@@ -22,7 +22,6 @@ import {
   toggleLesson,
   toggleStarCourse,
   toggleRemoveFromView,
-  clearChat,
   loadMoodleSample,
 } from "./courses.js";
 import { toggleTask, toggleSubtask, toggleReading, deleteTask } from "./tasks.js";
@@ -100,22 +99,9 @@ const STATIC_HANDLERS = Object.freeze({
     const { sendChat } = await import("../../views/assistant.js");
     sendChat();
   },
-  "chat-plan": async () => {
-    const { requestStudyPlan } = await import("../../views/assistant.js");
-    requestStudyPlan();
-  },
   "chat-stop": async () => {
     const { abortPending } = await import("../../views/assistant.js");
     if (!abortPending()) toast("Nothing is running.", "info");
-  },
-  "chat-clear": clearChat,
-  "chat-sources-clear": () => {
-    UIState.set("chatSources", []);
-    Router.scheduleRender();
-  },
-  "chat-sources-toggle": () => {
-    UIState.set("chatSourcesOpen", !UIState.chatSourcesOpen);
-    Router.scheduleRender();
   },
   "chat-new": () => {
     Router.navigate("assistant");
@@ -296,18 +282,6 @@ const CONTEXT_HANDLERS = Object.freeze({
   "recall-mark": (el, arg, id) => async () => {
     const { markRecallResult } = await import("../../views/assistant.js");
     markRecallResult(id, arg);
-  },
-  "chat-source": (el, arg, id) => () => {
-    const sourceId = id;
-    if (!sourceId) return;
-    const selected = UIState.chatSources || [];
-    UIState.set(
-      "chatSources",
-      selected.indexOf(sourceId) === -1
-        ? selected.concat(sourceId)
-        : selected.filter((value) => value !== sourceId),
-    );
-    Router.scheduleRender();
   },
   "plan-toggle": (el, arg, id) => () => togglePlanItem(id),
   "plan-proposal-exclude": (el, arg, id) => () =>

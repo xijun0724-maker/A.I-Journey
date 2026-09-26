@@ -71,18 +71,6 @@ export function toggleRemoveFromView(id) {
   );
 }
 
-export function clearChat() {
-  confirm("Clear all chat messages? This cannot be undone.", {
-    title: "Clear chat",
-    ok: "Clear",
-    danger: true,
-  }).then((yes) => {
-    if (!yes) return;
-    Store.chat.clear();
-    toast("Chat cleared.", "ok");
-  });
-}
-
 export function loadMoodleSample() {
   const sampleCourses = [
     {
