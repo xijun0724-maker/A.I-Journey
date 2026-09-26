@@ -62,7 +62,7 @@ export function library() {
   // Card Header with Dynamic Live Filter Status (No duplicate counts or storage stats)
   h += '<div class="card-head">';
   h += '<div>';
-  h += '<h2 style="margin:0;">Course Documents</h2>';
+  h += '<h2 class="u-m-0">Course Documents</h2>';
   h += '<span class="tiny muted" id="libFilterCount">All documents shown</span>';
   h += '</div>';
   h += '</div>';
@@ -131,7 +131,7 @@ export function library() {
       if (d.courseId) {
         h += '<span class="doc-badge course">' + courseChip(d.courseId) + '</span>';
       }
-      h += '<span class="doc-meta-stat passages"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-right:2px;" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>' + esc(passageLabel) + '</span>';
+      h += '<span class="doc-meta-stat passages"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="u-icon-xs" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>' + esc(passageLabel) + '</span>';
       h += '<span class="doc-meta-divider">&middot;</span>';
       h += '<span class="doc-meta-stat">' + charCount + ' chars</span>';
       h += '<span class="doc-meta-divider">&middot;</span>';
@@ -151,7 +151,7 @@ export function library() {
     h += '</div>'; // .doc-list
 
     // Empty filter feedback if search yields 0 items
-    h += '<div id="libEmptyFilter" class="library-empty-filter" style="display:none;">';
+    h += '<div id="libEmptyFilter"  class="library-empty-filter u-hidden">';
     h += '<p class="small muted">No documents match the active search or course filter.</p>';
     h += '</div>';
 
@@ -181,12 +181,12 @@ export function library() {
   // 1. AI Knowledge Base Card (Engine Configuration, No Duplicate Counts)
   h += '<div class="card library-ai-card">';
   h += '<div class="card-head">';
-  h += '<div style="display:flex;align-items:center;gap:8px;">';
-  h += '<h3 style="margin:0;font-size:15px;">AI Knowledge Base</h3>';
-  h += '<span class="badge ok xs" style="font-weight:600;">Active</span>';
+  h += '<div class="u-row-8">';
+  h += '<h3 class="u-copy-15">AI Knowledge Base</h3>';
+  h += '<span  class="badge ok xs u-fwt-600">Active</span>';
   h += '</div>';
   h += '</div>';
-  h += '<p class="small muted" style="margin-top:0;line-height:1.45;">Uploaded materials are parsed on-device and sliced into semantic passages. When querying the AI Assistant, relevant excerpts are retrieved and cited verbatim.</p>';
+  h += '<p  class="small muted u-lh-145">Uploaded materials are parsed on-device and sliced into semantic passages. When querying the AI Assistant, relevant excerpts are retrieved and cited verbatim.</p>';
 
   h += '<div class="library-kv-box">';
   h += '<div class="kv"><span class="k">Retrieval Engine</span><span class="v badge info xs">BM25 Ready</span></div>';
@@ -200,15 +200,15 @@ export function library() {
   // 2. Storage & Privacy Card (Distinct Architectural Focus, No Duplicate Metrics)
   h += '<div class="card library-storage-card">';
   h += '<div class="card-head">';
-  h += '<h3 style="margin:0;font-size:15px;">Storage &amp; Privacy</h3>';
+  h += '<h3 class="u-copy-15">Storage &amp; Privacy</h3>';
   h += '</div>';
   h += '<div class="library-privacy-content">';
   h += '<div class="library-privacy-callout">';
   h += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lib-privacy-shield" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
   h += '<strong>Local On-Device Sandbox</strong>';
   h += '</div>';
-  h += '<p class="small muted" style="margin:4px 0 10px;line-height:1.45;">All course documents, raw text, and retrieval indices live strictly on your local device. Nothing leaves your browser without your explicit AI provider key.</p>';
-  h += '<div class="library-kv-box" style="margin:0;">';
+  h += '<p  class="small muted u-my-4-lh-145">All course documents, raw text, and retrieval indices live strictly on your local device. Nothing leaves your browser without your explicit AI provider key.</p>';
+  h += '<div  class="library-kv-box u-m-0">';
   h += '<div class="kv"><span class="k">Data Residency</span><strong class="v">Browser IndexedDB</strong></div>';
   h += '<div class="kv"><span class="k">External Transmission</span><span class="v badge ok xs">Citations Only</span></div>';
   h += '<div class="kv"><span class="k">Size Guideline</span><strong class="v">&le; 2 MB per textbook</strong></div>';

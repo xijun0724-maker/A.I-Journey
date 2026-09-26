@@ -26,6 +26,42 @@ export function qa(sel, root) {
 }
 
 /**
+ * Apply `data-style` declarations through the CSSOM.
+ *
+ * CSP `style-src` carries no 'unsafe-inline', so a rendered element may not
+ * have a `style` attribute — an injected `<div style="…">` is refused, which
+ * is the point. A handful of values cannot be a class (a course's chosen
+ * colour, a computed bar width, a banner URL), and those travel as
+ * `data-style="prop: value; …"` instead: `element.style.setProperty` is a
+ * CSSOM write, which CSP does not govern, so the value is applied here once
+ * the markup is in the document.
+ *
+ * The attribute is consumed as it is applied, so nothing is parsed twice and
+ * an un-applied leftover is visible rather than silently inert.
+ *
+ * @param {Element|Document} [scope] - Root to scan (default: document)
+ * @returns {number} How many elements were styled
+ */
+export function applyDataStyles(scope) {
+  const root =
+    scope || (typeof document !== "undefined" ? document : null);
+  if (!root || !root.querySelectorAll) return 0;
+  let n = 0;
+  Array.prototype.forEach.call(root.querySelectorAll("[data-style]"), (el) => {
+    const raw = el.getAttribute("data-style");
+    el.removeAttribute("data-style");
+    if (!raw) return;
+    raw.split(";").forEach((decl) => {
+      const i = decl.indexOf(":");
+      if (i < 1) return;
+      el.style.setProperty(decl.slice(0, i).trim(), decl.slice(i + 1).trim());
+    });
+    n++;
+  });
+  return n;
+}
+
+/**
  * Read file as text
  * @param {File} file - File to read
  * @returns {Promise<string>} File content

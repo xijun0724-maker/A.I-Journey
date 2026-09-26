@@ -5,7 +5,7 @@
 
 import { Store } from "./store.js";
 import { UI, Views, UIState } from "./state.js";
-import { q } from "../utils/dom.js";
+import { q, applyDataStyles } from "../utils/dom.js";
 import { esc } from "../utils/helpers.js";
 import { renderRecents } from "../utils/format.js";
 
@@ -174,7 +174,7 @@ function renderRecentChats() {
  */
 function notFoundView() {
   return (
-    '<div class="empty" style="margin-top:80px">' +
+    '<div  class="empty u-mt-80">' +
     '<div class="big">404</div>' +
     "<h3>Page not found</h3>" +
     "<p>The page you are looking for does not exist or has been moved.</p>" +
@@ -247,6 +247,9 @@ function render() {
   } else {
     root.innerHTML = html;
   }
+  /* Dynamic declarations (a colour, a computed width) ride as data-style
+     and land here — CSSOM writes, which CSP style-src does not block. */
+  applyDataStyles(root);
   document.title = "Journey A.I - " + def.title;
 
   // Focus management: move focus to new content for keyboard/SR users

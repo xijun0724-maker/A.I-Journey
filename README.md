@@ -151,6 +151,7 @@ Test coverage spans:
 | Calendar config            | 10    |
 | Coach                      | 13    |
 | Courses view               | 14    |
+| CSP policy & style attrs   | 7     |
 | Dashboard                  | 21    |
 | Date utilities             | 40    |
 | Document removal           | 3     |
@@ -192,7 +193,7 @@ Test coverage spans:
 | UI namespace               | 8     |
 | XSS id-sink scan           | 2     |
 | Removed workload views     | 3     |
-| **Total**                  | **859** |
+| **Total**                  | **866** |
 
 Suite names map one-to-one to files in `tests/vitest/` — "Planner scheduling" is
 `tests/vitest/planner.test.js`, and so on. The counts are a snapshot, not a gate: the

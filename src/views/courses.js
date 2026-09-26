@@ -170,7 +170,7 @@ export function courses() {
       '<span id="coursesFilterBtnLabel">' + esc(curFilterLabel) + '</span>' +
       '<span class="moodle-chevron">▾</span>' +
       '</button>' +
-      '<div id="coursesFilterDropdown" class="moodle-dropdown-menu" style="display: none;" role="menu">';
+      '<div id="coursesFilterDropdown"  class="moodle-dropdown-menu u-hidden" role="menu">';
 
     FILTER_OPTIONS.forEach((item) => {
       if (item.divider) {
@@ -257,7 +257,7 @@ export function courses() {
       out +=
         '<div class="lms-course-card" data-course-id="' + esc(c.id) + '" data-completed="' + (isCompleted ? "true" : "false") + '" data-starred="' + (isStarred ? "true" : "false") + '" data-removed="' + (isRemoved ? "true" : "false") + '" data-pct="' + r.pct + '" data-year="' + esc(yearLevel.toLowerCase()) + '" data-name="' + esc(titleText.toLowerCase()) + '" data-code="' + esc((c.code || "").toLowerCase()) + '">' +
         // Cover banner with Image 1 typography overlay and hover customizer
-        '<div class="lms-cover-container" style="background-image: url(\'' + bannerUrl + '\');" data-act="course-open-roadmap" data-id="' + esc(c.id) + '">' +
+        '<div class="lms-cover-container" data-style="background-image: url(\'' + bannerUrl + '\');" data-act="course-open-roadmap" data-id="' + esc(c.id) + '">' +
         '<div class="lms-cover-overlay">' +
         (c.code ? '<span class="lms-cover-code-badge">' + esc(c.code) + '</span>' : "") +
         '<div class="lms-cover-title-overlay">' + esc(c.title || c.code || "Course") + "</div>" +
@@ -281,7 +281,7 @@ export function courses() {
         "</div>" + // closes .lms-card-info-col
         // Sleek 5px Moodle Progress Bar
         '<div class="lms-card-progress-bar">' +
-        '<div class="lms-card-progress-fill" style="width: ' + Math.min(100, Math.max(0, r.pct)) + '%;"></div>' +
+        '<div class="lms-card-progress-fill" data-style="width: ' + Math.min(100, Math.max(0, r.pct)) + '%;"></div>' +
         "</div>" +
         // Footer: % complete + View Roadmap CTA + unboxed 3-dots kebab menu
         '<div class="lms-card-footer">' +
@@ -292,7 +292,7 @@ export function courses() {
         "</button>" +
         '<div class="lms-kebab-wrap">' +
         '<button type="button" class="lms-kebab-btn" data-kebab-id="' + esc(c.id) + '" aria-label="Course options">⋮</button>' +
-        '<div class="lms-kebab-popover" id="courseMenu-' + esc(c.id) + '" style="display: none;">' +
+        '<div  class="lms-kebab-popover u-hidden" id="courseMenu-' + esc(c.id) + '">' +
         '<button type="button" class="lms-menu-item" data-act="course-open-roadmap" data-id="' + esc(c.id) + '">' +
         "View Roadmap" +
         "</button>" +
@@ -314,7 +314,7 @@ export function courses() {
 
     // Search no results state
     out +=
-      '<div id="coursesNoResults" style="display: none; padding: 40px 20px; text-align: center;">' +
+      '<div id="coursesNoResults" class="u-empty-hidden">' +
       '<p class="muted">No courses match your filter criteria.</p>' +
       '<button type="button" class="btn sm" id="btnResetFilter">Reset filters</button>' +
       "</div>";
@@ -379,6 +379,15 @@ export function bindCoursesView(root) {
   const grid = q("#lmsCoursesGrid", root);
   const noResults = q("#coursesNoResults", root);
   const btnReset = q("#btnResetFilter", root);
+
+  /* The markup closes these two with a class — the only kind of initial
+     state CSP lets it carry — but the toggles below read and write the
+     inline display they own. Take ownership at bind time so "is it open?"
+     has exactly one answer from the first click onward. */
+  if (filterDropdown) filterDropdown.style.display = "none";
+  qa(".lms-kebab-popover", root).forEach((el) => {
+    el.style.display = "none";
+  });
 
   function applyFilter() {
     if (!grid) return;

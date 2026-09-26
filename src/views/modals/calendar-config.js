@@ -70,7 +70,7 @@ export function calendarConfigModal() {
   // Assignments & Projects
   body += '<label class="cal-toggle-row" for="calShowAssignments">';
   body += '<input type="checkbox" id="calShowAssignments" class="cal-checkbox"' + (cfg.showAssignments ? ' checked' : '') + '>';
-  body += '<span class="cal-event-bullet" style="border-color:#ea580c;width:9px;height:9px;" aria-hidden="true"></span>';
+  body += '<span  class="cal-event-bullet u-dot-orange" aria-hidden="true"></span>';
   body += '<div class="cal-toggle-label">';
   body += '<span class="cal-toggle-title">Course Assignments & Projects</span>';
   body += '<span class="cal-toggle-desc">Homework submissions, lab projects, and paper deliverables</span>';
@@ -80,7 +80,7 @@ export function calendarConfigModal() {
   // Exams & Quizzes
   body += '<label class="cal-toggle-row" for="calShowExams">';
   body += '<input type="checkbox" id="calShowExams" class="cal-checkbox"' + (cfg.showExams ? ' checked' : '') + '>';
-  body += '<span class="cal-event-bullet" style="border-color:#7c3aed;width:9px;height:9px;" aria-hidden="true"></span>';
+  body += '<span  class="cal-event-bullet u-dot-violet" aria-hidden="true"></span>';
   body += '<div class="cal-toggle-label">';
   body += '<span class="cal-toggle-title">Exams & Quizzes</span>';
   body += '<span class="cal-toggle-desc">Midterm exams, final exams, periodical tests, and online quizzes</span>';
@@ -90,7 +90,7 @@ export function calendarConfigModal() {
   // Academic Milestones
   body += '<label class="cal-toggle-row" for="calShowMilestones">';
   body += '<input type="checkbox" id="calShowMilestones" class="cal-checkbox"' + (cfg.showMilestones ? ' checked' : '') + '>';
-  body += '<span class="cal-event-bullet" style="border-color:#0f6cbf;width:9px;height:9px;" aria-hidden="true"></span>';
+  body += '<span  class="cal-event-bullet u-dot-blue" aria-hidden="true"></span>';
   body += '<div class="cal-toggle-label">';
   body += '<span class="cal-toggle-title">Academic Term Milestones</span>';
   body += '<span class="cal-toggle-desc">Classes begin, examination periods, and term conclusion dates</span>';
@@ -100,7 +100,7 @@ export function calendarConfigModal() {
   // General & Other
   body += '<label class="cal-toggle-row" for="calShowOther">';
   body += '<input type="checkbox" id="calShowOther" class="cal-checkbox"' + (cfg.showOther ? ' checked' : '') + '>';
-  body += '<span class="cal-event-bullet" style="border-color:#64748b;width:9px;height:9px;" aria-hidden="true"></span>';
+  body += '<span  class="cal-event-bullet u-dot-slate" aria-hidden="true"></span>';
   body += '<div class="cal-toggle-label">';
   body += '<span class="cal-toggle-title">General, Attendance & Other</span>';
   body += '<span class="cal-toggle-desc">Course attendance records, personal study reminders, and consultations</span>';
@@ -125,9 +125,9 @@ export function calendarConfigModal() {
   body += '</div>'; // .cal-config-modal-content
 
   const footer =
-    '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">' +
+    '<div class="u-bar-wrap">' +
     '<button type="button" class="btn ghost sm" id="btnCalResetDefaults">Reset to defaults</button>' +
-    '<div style="display:flex;align-items:center;gap:8px;">' +
+    '<div class="u-row-8">' +
     '<button type="button" class="btn" data-close="1">Cancel</button>' +
     '<button type="button" class="btn primary" id="btnSaveCalConfig">Save preferences</button>' +
     '</div></div>';

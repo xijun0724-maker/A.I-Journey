@@ -237,12 +237,12 @@ export function renderCalendarCard(opts = {}) {
   h += '</div>';
 
   h += '<button type="button" class="btn btn-sm btn-cal-academic" data-act="academic-calendar-modal" id="btnAcademicCal" title="Set term start and end dates" aria-label="Add academic calendar">';
-  h += '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px;vertical-align:-1px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+  h += '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="u-icon-sm"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
   h += '<span>Add academic calendar</span>';
   h += '</button>';
 
   h += '<button type="button" class="btn btn-moodle-primary btn-new-event" data-act="event-new" id="btnCalNewEvent" title="Create a new event">';
-  h += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+  h += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="u-mr-4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
   h += '<span>New event</span>';
   h += '</button>';
 
@@ -315,7 +315,7 @@ export function renderCalendarCard(opts = {}) {
 
           const shortTitle = truncate(ev.title || "Untitled", 20);
           h += `<div class="cal-event-row">`;
-          h += `<span class="cal-event-bullet" style="border-color: ${bulletColor};" aria-hidden="true"></span>`;
+          h += `<span class="cal-event-bullet" data-style="border-color: ${bulletColor};" aria-hidden="true"></span>`;
           h += `<a href="#" class="cal-event-link" data-act="event-edit" data-id="${esc(ev.id)}" title="${esc(ev.title)}">${esc(shortTitle)}</a>`;
           h += `</div>`;
         });
@@ -370,16 +370,16 @@ export function showDayEventsModal(dateStr) {
   if (!events.length) {
     body += '<div class="empty-compact"><p class="small muted">No events scheduled on this day.</p></div>';
   } else {
-    body += '<div class="day-modal-events-list" style="display:flex;flex-direction:column;gap:10px;">';
+    body += '<div  class="day-modal-events-list u-col-10">';
     events.forEach((e) => {
       const course = Store.course(e.courseId);
       const courseName = course ? (course.code || course.title) : "General";
       const timePart = formatEventTime(e.due, cfg.timeFormat);
       body += `
-        <div class="card" style="padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-          <div style="min-width:0;">
-            <div style="font-weight:600; color:var(--ink);">${esc(e.title)}</div>
-            <div class="tiny muted" style="margin-top:2px;">
+        <div  class="card u-row-between-12">
+          <div class="u-minw-0">
+            <div class="u-strong-ink">${esc(e.title)}</div>
+            <div  class="tiny muted u-mt-2">
               <span>${esc(courseName)}</span> · <span>${esc(timePart)}</span>
               ${e.weight != null ? ` · <span>worth ${e.weight}%</span>` : ""}
             </div>

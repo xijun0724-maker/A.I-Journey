@@ -25,26 +25,26 @@ function showDiagnostic(message, errors) {
   const errHtml = errList
     .map(
       (e) =>
-        `<div style="margin:8px 0;padding:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-family:monospace;font-size:12px;word-break:break-all;">
+        `<div class="u-err-key">
       ${String((e && e.message) || e).replace(/[<>&"']/g, "")}
     </div>`,
     )
     .join("");
 
   root.innerHTML = `
-    <div style="max-width:560px;margin:40px auto;">
-      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:20px;">
-        <h2 style="margin:0 0 12px;font-size:16px;color:#18181b;">\u26a0 Application Error</h2>
-        <p style="margin:0 0 16px;color:#52525b;font-size:14px;">${String(message).replace(/[<>&"']/g, "")}</p>
-        <div style="margin-bottom:16px;">
-          <strong style="font-size:12px;text-transform:uppercase;color:#52525b;">Error details:</strong>
+    <div class="u-panel-560">
+      <div class="u-err-card">
+        <h2 class="u-err-title">\u26a0 Application Error</h2>
+        <p class="u-err-lead">${String(message).replace(/[<>&"']/g, "")}</p>
+        <div class="u-mb-16">
+          <strong class="u-eyebrow">Error details:</strong>
           ${errHtml}
         </div>
-        <div style="background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:16px;">
-          <p style="margin:0 0 8px;font-size:12px;color:#52525b;">
+        <div class="u-err-box">
+          <p class="u-err-label">
             <strong>Troubleshooting steps:</strong>
           </p>
-          <ol style="margin:0;padding-left:20px;font-size:13px;color:#52525b;line-height:1.6;">
+          <ol class="u-err-list">
             <li>Open browser Developer Tools (F12) and check the <strong>Console</strong> tab</li>
             <li>Check the <strong>Network</strong> tab for failed resource loads</li>
             <li>Try disabling browser extensions temporarily</li>
@@ -52,7 +52,7 @@ function showDiagnostic(message, errors) {
             <li>Clear browser cache and service workers</li>
           </ol>
         </div>
-        <div style="display:flex;gap:8px;">
+        <div class="u-flex-8">
           <button class="btn primary" id="diagReloadBtn">Reload page</button>
           <button class="btn" id="diagClearBtn">
             Clear all data &amp; reload

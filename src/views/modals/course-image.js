@@ -37,7 +37,7 @@ export function courseImageModal(courseId) {
       <div class="cover-live-preview-box mb">
         <div class="live-preview-label">Live Preview on Course Card</div>
         <div class="preview-lms-card">
-          <div id="previewCoverImg" class="preview-cover-surface" style="background-image: url('${currentBanner}'); background-size: cover; background-position: center;"></div>
+          <div id="previewCoverImg" class="preview-cover-surface" data-style="background-image: url('${currentBanner}'); background-size: cover; background-position: center;"></div>
           <div class="preview-card-details">
             <div class="preview-card-title">${esc(c.code ? c.code + " — " + c.title : c.title)}</div>
             <div class="preview-card-term">${esc(c.yearLevel || "First Year")}${c.instructor ? " · " + esc(c.instructor) : ""}</div>
@@ -96,9 +96,9 @@ export function courseImageModal(courseId) {
       </div>
 
       <!-- Section 2: Custom Upload & URL -->
-      <div id="paneCustom" class="cover-pane" style="display: none;">
+      <div id="paneCustom"  class="cover-pane u-hidden">
         <div class="upload-dropzone mb" id="uploadDropzone">
-          <input type="file" id="coverFileInput" accept="image/*" style="display: none;" />
+          <input type="file" id="coverFileInput" accept="image/*" class="u-hidden" />
           <div class="dropzone-icon">📷</div>
           <div class="dropzone-text"><strong>Click to upload an image</strong> or drag and drop</div>
           <div class="tiny muted">PNG, JPG, WEBP, or SVG (recommended aspect ratio: ~2.5:1)</div>
@@ -107,8 +107,8 @@ export function courseImageModal(courseId) {
 
         <div class="fld">
           <span>Or paste an image web URL</span>
-          <div class="row" style="gap: 8px;">
-            <input type="url" id="coverUrlInput" placeholder="https://example.com/banner.jpg" value="${c.image && c.image.startsWith("http") ? esc(c.image) : ""}" style="flex: 1;" />
+          <div  class="row u-gap-8">
+            <input type="url" id="coverUrlInput" placeholder="https://example.com/banner.jpg" value="${c.image && c.image.startsWith("http") ? esc(c.image) : ""}" class="u-flex-1" />
             <button type="button" class="btn sm" id="btnApplyUrl">Preview URL</button>
           </div>
         </div>

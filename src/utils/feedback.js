@@ -3,7 +3,7 @@
  * Handles modal creation, confirmation dialogs, and focus management.
  */
 
-import { q, qa } from "./dom.js";
+import { q, qa, applyDataStyles } from "./dom.js";
 import { esc } from "./helpers.js";
 
 /**
@@ -31,7 +31,7 @@ export function modal(opts) {
     '" tabindex="-1">' +
     '<div class="m-head"><h2 id="' +
     titleId +
-    '" style="margin:0">' +
+    '" class="u-m-0">' +
     esc(opts.title || "") +
     '</h2><span class="spacer"></span>' +
     '<button class="x" data-close="1" aria-label="Close">×</button></div>' +
@@ -46,6 +46,8 @@ export function modal(opts) {
     "</div>";
 
   root.classList.add("open");
+  /* Modal bodies carry data-style too (course banners, bullet colours). */
+  applyDataStyles(root);
   const modalEl = q(".modal", root);
   if (modalEl) modalEl.focus();
 

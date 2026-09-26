@@ -56,26 +56,26 @@
       mainScript && mainScript.error ? " (Script failed to load)" : "";
 
     loader.innerHTML =
-      '<div style="text-align:center;padding:20px;max-width:400px;margin:0 auto;">' +
-      '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" style="margin:0 auto 12px;">' +
+      '<div class="u-panel-400">' +
+      '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" class="u-mx-auto-mb-12">' +
       '<circle cx="12" cy="12" r="10"/>' +
       '<line x1="12" y1="8" x2="12" y2="12"/>' +
       '<line x1="12" y1="16" x2="12.01" y2="16"/>' +
       "</svg>" +
-      '<p style="color:#f87171;font-size:15px;font-family:system-ui,sans-serif;font-weight:500;">' +
+      '<p class="u-fb-error">' +
       "App failed to load" +
       errorMsg +
       "</p>" +
-      '<p style="color:#9ca3af;font-size:13px;margin-top:8px;font-family:system-ui,sans-serif;">' +
+      '<p class="u-fb-hint">' +
       "Try these steps in order:" +
       "</p>" +
-      '<div style="text-align:left;margin:12px 0 16px 20px;font-size:13px;color:#9ca3af;font-family:system-ui,sans-serif;">' +
-      '<p style="margin:4px 0;">1. Open Developer Tools (F12) → Console tab → copy any errors</p>' +
-      '<p style="margin:4px 0;">2. Try an <strong>incognito/private window</strong> to rule out extension interference</p>' +
-      '<p style="margin:4px 0;">3. Disable ad blockers or script-blocking extensions</p>' +
-      '<p style="margin:4px 0;">4. Clear site data: Settings → Privacy → Clear browsing data → Cookies & cached images</p>' +
+      '<div class="u-fb-list">' +
+      '<p class="u-my-4">1. Open Developer Tools (F12) → Console tab → copy any errors</p>' +
+      '<p class="u-my-4">2. Try an <strong>incognito/private window</strong> to rule out extension interference</p>' +
+      '<p class="u-my-4">3. Disable ad blockers or script-blocking extensions</p>' +
+      '<p class="u-my-4">4. Clear site data: Settings → Privacy → Clear browsing data → Cookies & cached images</p>' +
       "</div>" +
-      '<button class="btn primary" style="margin-top:8px;" id="bootRetryBtn">Retry loading</button>' +
+      '<button  class="btn primary u-mt-8" id="bootRetryBtn">Retry loading</button>' +
       "</div>";
 
     const retry = document.getElementById("bootRetryBtn");

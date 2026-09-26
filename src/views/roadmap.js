@@ -83,7 +83,7 @@ function renderDeadlines(events) {
               ? e.points + " pts"
               : '<span class="tiny muted">\u2014</span>') +
           "</td>" +
-          '<td style="min-width:110px">' +
+          '<td class="u-minw-110">' +
           bar(eventProgress(e)) +
           '<div class="tiny muted">' +
           eventProgress(e) +

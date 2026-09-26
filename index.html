@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com https://openrouter.ai https://cdn.jsdelivr.net; worker-src 'self' https://cdnjs.cloudflare.com;"
+      content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com https://openrouter.ai https://cdn.jsdelivr.net; worker-src 'self' https://cdnjs.cloudflare.com;"
     />
     <title>Journey A.I - AI Academic &amp; Task Agent</title>
     <meta
@@ -131,19 +131,19 @@
       <main class="main">
         <div id="viewRoot" tabindex="-1">
           <noscript>
-            <div style="padding:40px;text-align:center;color:#52525b;font-family:system-ui,sans-serif;">
+            <div class="u-ns-panel">
               <p><strong>Journey A.I</strong> requires JavaScript to run.</p>
-              <p style="margin-top:8px;font-size:14px;">Please enable JavaScript in your browser settings.</p>
+              <p class="u-ns-p">Please enable JavaScript in your browser settings.</p>
             </div>
           </noscript>
-          <div id="app-loader" style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b0f1a;color:#e4e7ef;">
-            <div style="text-align:center;">
-              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" style="margin:0 auto 12px;opacity:0.6;">
+          <div id="app-loader" class="u-app-loader">
+            <div class="u-ta-center">
+              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" class="u-loader-logo">
                 <path d="M4 30 Q10 26 16 30 Q22 34 28 30 Q34 26 38 30" stroke="#1d2733" stroke-width="1.6" fill="none" stroke-linecap="round"/>
                 <path d="M12 28 L14 22 L28 22 L30 28 Z" fill="#1d2733" opacity="0.9"/>
                 <line x1="20" y1="22" x2="20" y2="8" stroke="#1d2733" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
-              <p style="color:#52525b;font-size:14px;font-family:system-ui,sans-serif;">Loading Journey A.I...</p>
+              <p class="u-ns-note">Loading Journey A.I...</p>
             </div>
           </div>
         </div>

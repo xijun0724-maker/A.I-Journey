@@ -110,7 +110,7 @@ function renderTimelineItem(e) {
   h += `</div>`;
 
   // 4. Action Button Column
-  h += `<div class="timeline-action-col" style="display:flex;gap:6px;align-items:center;">`;
+  h += `<div  class="timeline-action-col u-row-6">`;
   h += `<button type="button" class="btn-moodle-action" data-act="event-edit" data-id="${esc(e.id)}">${isDone ? "View submission" : "Add submission"}</button>`;
   h += `<button type="button" class="btn xs ghost" data-act="ask" data-arg="${esc(e.title)}" title="Ask tutor for help">Ask</button>`;
   h += `</div>`;
@@ -202,14 +202,14 @@ function renderTimeline() {
 
   // Grouped Timeline Content
   if (!filtered.length) {
-    h += '<div class="empty-compact timeline-empty-state" style="padding: 24px 16px; text-align: center;">';
+    h += '<div  class="empty-compact timeline-empty-state u-empty-24">';
     if (filter === "overdue" && allEvents.length > 0) {
-      h += '<div style="font-size: 22px; color: var(--ok); line-height: 1; margin-bottom: 8px;">&check;</div>';
-      h += '<div class="t strong" style="font-size: 14px; color: var(--ink); margin-bottom: 4px;">No overdue activities</div>';
-      h += '<p class="small muted" style="margin-bottom: 12px;">You are all caught up on current deadlines.</p>';
+      h += '<div class="u-stat-num">&check;</div>';
+      h += '<div  class="t strong u-ink-14-mb-4">No overdue activities</div>';
+      h += '<p  class="small muted u-mb-12">You are all caught up on current deadlines.</p>';
       h += '<button type="button" class="btn sm" id="timelineFilterNextBtn">View upcoming activities</button>';
     } else {
-      h += '<p class="small muted" style="margin-bottom: 12px;">No activities found for this filter.</p>';
+      h += '<p  class="small muted u-mb-12">No activities found for this filter.</p>';
       if (!allEvents.length) {
         h += '<button type="button" class="btn primary sm" data-act="go-import">Import syllabus</button>';
       } else {
@@ -464,38 +464,38 @@ function renderCourseProgress() {
     );
   } else {
     h +=
-      '<div class="tbl-wrap" style="overflow-x: auto;"><table class="tbl" aria-label="Course progress" style="width: 100%; border-collapse: collapse;">' +
-      '<thead><tr style="border-bottom: 1px solid var(--rule-2); text-align: left; font-size: 11px; text-transform: uppercase; color: var(--ink-3);">' +
-      '<th style="padding: 8px 10px;">COURSE</th><th style="min-width:130px; padding: 8px 10px;">TASKS</th><th style="padding: 8px 10px;">TOPICS</th><th style="padding: 8px 10px;">GRADE</th>' +
+      '<div  class="tbl-wrap u-ovx-auto"><table  class="tbl u-table-full" aria-label="Course progress">' +
+      '<thead><tr class="u-th">' +
+      '<th class="u-cell-8x10">COURSE</th><th class="u-th-min">TASKS</th><th class="u-cell-8x10">TOPICS</th><th class="u-cell-8x10">GRADE</th>' +
       '</tr></thead><tbody>';
     rows.forEach(function (r) {
       h +=
-        '<tr style="border-bottom: 1px solid var(--rule-2);"><td style="padding: 10px;">' +
-        '<div style="display: flex; align-items: center; gap: 6px;"><span class="dot" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background:' +
+        '<tr class="u-bb-rule"><td class="u-cell">' +
+        '<div class="u-row-6"><span class="dot u-dot-8" data-style="background:' +
         (safeColor(r.course.color) || "var(--primary)") +
-        '"></span> <strong style="color: var(--ink); font-size: 13px;">' +
+        '"></span> <strong class="u-ink-13">' +
         esc(r.course.code || r.course.title) +
         "</strong></div>" +
-        '<div class="tiny muted" style="margin-top: 2px; padding-left: 14px;">' +
+        '<div  class="tiny muted u-indent-14">' +
         esc(r.course.title || "") +
         "</div></td>" +
-        '<td style="padding: 10px;">' +
+        '<td class="u-cell">' +
         bar(r.pct) +
-        '<div class="tiny muted" style="margin-top: 4px; font-family: var(--mono);">' +
+        '<div  class="tiny muted u-mono-mt-4">' +
         r.done +
         "/" +
         r.tasks +
         ' &nbsp;&middot;&nbsp; ' +
         r.pct +
         "%</div></td>" +
-        '<td class="tiny" style="padding: 10px; font-family: var(--mono);">' +
+        '<td  class="tiny u-cell-mono">' +
         r.lessonsDone +
         "/" +
         r.lessons +
         "</td>" +
-        '<td style="padding: 10px;">' +
+        '<td class="u-cell">' +
         (r.grade.grade != null
-          ? '<strong style="color: var(--ink); font-size: 12.5px;">' +
+          ? '<strong class="u-ink-125">' +
             r.grade.grade.toFixed(1) +
             '%</strong> <span class="tiny muted">' +
             Dashboard.letter(r.grade.grade) +
@@ -533,12 +533,12 @@ export function dashboard() {
     return (
       '<div class="view-padded">' +
       emptyHead +
-      '<div class="card" style="padding: 48px 24px; text-align: center; margin-top: 16px;">' +
+      '<div  class="card u-empty-48">' +
       empty(
         "",
         "Your academic dashboard is blank",
         "No courses or tasks have been loaded yet. Import a course syllabus or add a course manually to start tracking your deadlines, schedule, and academic progress.",
-        '<div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">' +
+        '<div class="u-actions-center">' +
           '<button type="button" class="btn primary" data-act="go-import">Import syllabus</button>' +
           '<button type="button" class="btn" data-act="new-course">Add course</button>' +
         '</div>',

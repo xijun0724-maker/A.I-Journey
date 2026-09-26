@@ -27,7 +27,7 @@ export function docModal(docId) {
     ' passages</span><i class="msep"></i><span>added ' +
     fmtDate(d.importedAt) +
     "</span></div>" +
-    '<div class="row mb"><input id="docFind" placeholder="Find in document…" style="max-width:240px">' +
+    '<div class="row mb"><input id="docFind" placeholder="Find in document…" class="u-maxw-240">' +
     '<button class="btn sm" data-act="doc-reanalyse" data-id="' +
     esc(d.id) +
     '">Re-analyse as course material</button>' +

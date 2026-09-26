@@ -65,14 +65,14 @@ async function boot() {
           "",
         ) || "Unknown error";
       root.innerHTML = `
-        <div class="card" style="max-width:480px;margin:40px auto;text-align:center;">
+        <div  class="card u-panel-480">
           <h2>Something went wrong</h2>
-          <p class="small mono" style="margin:12px 0;">${errText}</p>
-          <p class="small muted" style="margin-bottom:16px;">
+          <p  class="small mono u-my-12">${errText}</p>
+          <p  class="small muted u-mb-16">
             The app could not start. Try reloading the page.
           </p>
           <button class="btn primary" id="bootReloadBtn">Reload page</button>
-          <button class="btn" id="bootResetBtn" style="margin-left:8px;">
+          <button  class="btn u-ml-8" id="bootResetBtn">
             Reset data and reload
           </button>
         </div>

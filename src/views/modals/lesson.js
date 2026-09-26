@@ -36,7 +36,7 @@ export function lessonModal(lessonId) {
     '<label class="fld"><span>Notes / learning outcomes</span><textarea id="lsNotes">' +
     esc(l ? l.notes || "" : "") +
     "</textarea></label>" +
-    '<label class="row small" style="gap:8px"><input type="checkbox" id="lsDone"' +
+    '<label  class="row small u-gap-8"><input type="checkbox" id="lsDone"' +
     (l && l.done ? " checked" : "") +
     "> Covered in class</label>";
   modal({

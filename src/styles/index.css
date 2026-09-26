@@ -38,3 +38,5 @@
 @import "./views/library.css";
 @import "./views/calendar.css";
 @import "./views/settings.css";
+/* Inline-style replacements (CSP style-src has no unsafe-inline) */
+@import "./utilities.css";

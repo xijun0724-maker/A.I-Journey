@@ -26,7 +26,7 @@ export function courseModal(courseId) {
           col +
           '"' +
           (c && c.color === col ? " selected" : "") +
-          ' style="color:' +
+          ' data-style="color:' +
           col +
           '">' +
           col +
@@ -79,9 +79,9 @@ export function courseModal(courseId) {
     body: body,
     footer:
       (c
-        ? '<button type="button" class="btn danger" id="cmDelete" data-act="del-course" data-id="' +
+        ? '<button type="button"  class="btn danger u-mr-auto" id="cmDelete" data-act="del-course" data-id="' +
           esc(c.id) +
-          '" data-close="1" style="margin-right:auto;">Delete course</button>'
+          '" data-close="1">Delete course</button>'
         : "") +
       '<button class="btn" data-close="1">Cancel</button><button class="btn primary" id="cmSave">' +
       (c ? "Save changes" : "Create course") +

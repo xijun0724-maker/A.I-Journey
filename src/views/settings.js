@@ -98,7 +98,7 @@ export function settings() {
     h +=
       '<button class="btn sm ghost mb" data-act="ai-key-clear">Clear the stored key</button>';
   h +=
-    '<label class="row small" style="gap:8px"><input type="checkbox" id="setAiEnabled"' +
+    '<label  class="row small u-gap-8"><input type="checkbox" id="setAiEnabled"' +
     (s.aiEnabled ? " checked" : "") +
     "> Use the AI provider when a key is present</label>";
   h +=
@@ -186,7 +186,7 @@ export function settings() {
     '"></label>' +
     "</div>" +
     '<p class="hint">Term dates anchor week numbers, calculate academic progress, and resolve syllabus dates.</p>' +
-    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;" class="mt">' +
+    '<div  class="mt u-row-wrap-8">' +
     '<button class="btn primary" data-act="settings-save">Save preferences</button>' +
     '<button type="button" class="btn" data-act="academic-calendar-modal">Configure Academic Calendar</button>' +
     '</div></div>';
@@ -241,7 +241,7 @@ export function settings() {
       ? '<span class="badge ok">on</span>'
       : '<span class="badge mute">off (BM25)</span>') +
     "</span></div>" +
-    '<label class="row small" style="gap:8px;margin-top:6px"><input type="checkbox" id="setHybridRAG"' +
+    '<label  class="row small u-gap-8-mt-6"><input type="checkbox" id="setHybridRAG"' +
     (s.hybridRAG ? " checked" : "") +
     "> Enable hybrid retrieval (BM25 + embeddings)</label>" +
     '<p class="hint">Off by default. When on, loads a small ONNX embedding model from a CDN on first use and blends it with BM25. Falls back to pure BM25 if the model is unavailable.</p>' +

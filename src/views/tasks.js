@@ -278,7 +278,7 @@ export function tasks() {
 
   h += '<div class="card todo-priorities-card">';
   h += '<div class="card-head">';
-  h += '<h3 style="margin:0;font-size:15px;">Priorities at a Glance</h3>';
+  h += '<h3 class="u-copy-15">Priorities at a Glance</h3>';
   h += "</div>";
   h += '<div class="priority-breakdown-list">';
   h += '<div class="priority-stat-row"><span class="badge crit">Critical</span><strong class="v">' + critTasks + "</strong></div>";
@@ -291,9 +291,9 @@ export function tasks() {
   // 3. Productivity Actions Card
   h += '<div class="card todo-tools-card">';
   h += '<div class="card-head">';
-  h += '<h3 style="margin:0;font-size:15px;">Study Plan Tools</h3>';
+  h += '<h3 class="u-copy-15">Study Plan Tools</h3>';
   h += "</div>";
-  h += '<p class="tiny muted" style="margin:0 0 12px;line-height:1.4;">Generate AI study blocks around your deadlines or extract assignments from course syllabi.</p>';
+  h += '<p  class="tiny muted u-mb-12-lh-14">Generate AI study blocks around your deadlines or extract assignments from course syllabi.</p>';
   h += '<button type="button" class="btn sm block" data-act="plan-generate">Auto-schedule study plan</button>';
   h += '<button type="button" class="btn sm ghost block mt-s" data-act="go-import">Import from syllabus</button>';
   h += "</div>"; // .card.todo-tools-card

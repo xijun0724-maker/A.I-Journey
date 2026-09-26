@@ -40,7 +40,7 @@ export function importPick() {
     '<div class="row mt"><span class="tiny muted">Selected:</span><span class="tiny" id="pickedFiles">nothing yet</span></div>' +
     '<details class="acc mt"><summary>Or paste text instead (works offline, always available)</summary>' +
     '<label class="fld mt"><span>Name this text</span><input id="pasteName" placeholder="CS 301 syllabus"></label>' +
-    '<textarea id="pasteText" style="min-height:180px" placeholder="Paste the syllabus, assignment brief or lecture notes here…"></textarea>' +
+    '<textarea id="pasteText" class="u-minh-180" placeholder="Paste the syllabus, assignment brief or lecture notes here…"></textarea>' +
     '<button class="btn sm mt" id="usePasted">Analyse pasted text</button>' +
     "</details>" +
     "</div>" +

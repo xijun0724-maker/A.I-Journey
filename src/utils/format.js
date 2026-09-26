@@ -24,7 +24,7 @@ export function bar(pct, cls) {
     v +
     '" aria-valuemin="0" aria-valuemax="100" aria-label="' +
     v +
-    '% complete"><i style="--progress:' +
+    '% complete"><i data-style="--progress:' +
     v / 100 +
     '"></i></div>'
   );
@@ -38,7 +38,7 @@ export function bar(pct, cls) {
 export function ring(pct) {
   pct = Math.round(pct);
   return (
-    '<div class="ring" style="--p:' +
+    '<div class="ring" data-style="--p:' +
     pct +
     '" role="progressbar" aria-valuenow="' +
     pct +
@@ -150,7 +150,7 @@ export function courseChip(courseId) {
   const c = Store.course(courseId);
   if (!c) return "";
   return (
-    '<span class="tag"><span class="dot" style="background:' +
+    '<span class="tag"><span class="dot" data-style="background:' +
     (safeColor(c.color) || "var(--primary)") +
     '"></span> ' +
     esc(c.code || c.title) +
@@ -222,18 +222,14 @@ export function planProvenance(prov) {
 }
 
 export function statBox(value, label, detail, tone) {
-  const tones = {
-    bad: "var(--error)",
-    ok: "var(--ok)",
-    info: "var(--info)",
-    warn: "var(--warn)",
-  };
-  const color = tones[tone];
-  const vStyle = color ? ' style="color:' + color + '"' : "";
+  /* The tone palette is fixed, so the colour is a class — no dynamic value,
+     no data-style. Unknown tones render unstyled rather than guessed. */
+  const tones = new Set(["bad", "ok", "info", "warn"]);
+  const vClass = tones.has(tone) ? " u-tone-" + tone : "";
   return (
-    '<div class="card pad-sm"><div class="kpi"><div class="v"' +
-    vStyle +
-    ">" +
+    '<div class="card pad-sm"><div class="kpi"><div class="v' +
+    vClass +
+    '">' +
     value +
     '</div><div class="k">' +
     esc(label) +

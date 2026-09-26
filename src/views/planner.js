@@ -240,7 +240,7 @@ export function planner() {
     return (
       '<div class="view-padded">' +
       h +
-      '<div class="card todo-empty-ruled" style="padding: 32px 20px; text-align: center;">' +
+      '<div  class="card todo-empty-ruled u-empty-32">' +
       empty(
         "",
         "No study plan yet",
@@ -272,7 +272,7 @@ export function planner() {
     (isFiltered
       ? "Click to switch to active study schedule"
       : "Viewing active study schedule") +
-    '"><div class="kpi"><div class="v" style="color:var(--info)">' +
+    '"><div class="kpi"><div  class="v u-color-info">' +
     minutesToHM(total) +
     '</div><div class="k">Planned Study Time' +
     (!isFiltered
@@ -295,7 +295,7 @@ export function planner() {
     reviewBlocks +
     ". " +
     (isShowingReviews ? "Click to hide" : "Click to view review sessions") +
-    '"><div class="kpi"><div class="v" style="color:var(--warn)">' +
+    '"><div class="kpi"><div  class="v u-color-warn">' +
     reviewBlocks +
     '</div><div class="k">Review Sessions' +
     (isShowingReviews
@@ -321,7 +321,7 @@ export function planner() {
     minutesToHM(doneMin) +
     ". " +
     (isShowingCompleted ? "Click to hide completed" : "Click to view completed") +
-    '"><div class="kpi"><div class="v" style="color:var(--ok)">' +
+    '"><div class="kpi"><div  class="v u-color-ok">' +
     minutesToHM(doneMin) +
     '</div><div class="k">Completed' +
     (isShowingCompleted
@@ -394,7 +394,7 @@ export function planner() {
 
   if (isShowingCompleted && doneCount === 0) {
     h +=
-      '<div class="card todo-empty-ruled mb" style="padding: 32px 20px; text-align: center;">' +
+      '<div  class="card todo-empty-ruled mb u-empty-32">' +
       empty(
         "",
         "No completed study blocks yet",
@@ -407,7 +407,7 @@ export function planner() {
 
   if (isShowingReviews && reviewBlocks === 0) {
     h +=
-      '<div class="card todo-empty-ruled mb" style="padding: 32px 20px; text-align: center;">' +
+      '<div  class="card todo-empty-ruled mb u-empty-32">' +
       empty(
         "",
         "No review sessions scheduled",
@@ -440,7 +440,7 @@ export function planner() {
   // When active schedule has completed every single study block
   if (!isFiltered && !datesToRender.length && plan.length > 0) {
     h +=
-      '<div class="card todo-empty-ruled mb" style="padding: 40px 20px; text-align: center;">' +
+      '<div  class="card todo-empty-ruled mb u-empty-40">' +
       empty(
         "",
         "All planned study blocks completed! 🎉",

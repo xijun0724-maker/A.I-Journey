@@ -104,7 +104,7 @@ export function eventModal(eventId, preset) {
   const body =
     '<div class="event-modal-content">' +
     '<label class="fld" for="evTitle">' +
-    '<span>To-do title <strong style="color:var(--crit,#ef4444);font-weight:normal;">*</strong></span>' +
+    '<span>To-do title <strong class="u-crit">*</strong></span>' +
     '<input id="evTitle" type="text" placeholder="e.g. Problem Set 2 or Chapter 4 Summary" value="' +
     esc(e ? e.title : preset.title || "") +
     '" autocomplete="off" autofocus>' +
@@ -156,7 +156,7 @@ export function eventModal(eventId, preset) {
     "</textarea>" +
     "</label>" +
     (e && (e.sourceDocId || e.source === "import")
-      ? '<div class="row tiny muted" style="margin-top:2px;"><span>Source: ' +
+      ? '<div  class="row tiny muted u-mt-2"><span>Source: ' +
         (e.sourceDocId
           ? esc((Store.doc(e.sourceDocId) || {}).name || "document")
           : "syllabus import") +

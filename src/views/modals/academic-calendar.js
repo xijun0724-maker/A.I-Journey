@@ -5,7 +5,7 @@
 
 import { Router } from "../../core/router.js";
 import { esc } from "../../utils/helpers.js";
-import { q, toast } from "../../utils/dom.js";
+import { q, toast, applyDataStyles } from "../../utils/dom.js";
 import { modal } from "../../utils/feedback.js";
 import {
   getActiveAcademicCalendar,
@@ -94,7 +94,7 @@ function renderMilestonesPreviewHtml(startIso, endIso, termName) {
     h += `
       <div class="ac-milestone-preview-row">
         <span class="ac-milestone-preview-title">
-          <span class="cal-event-bullet" style="border-color:${bulletColor};" aria-hidden="true"></span>
+          <span class="cal-event-bullet" data-style="border-color:${bulletColor};" aria-hidden="true"></span>
           <span>${esc(m.title)}</span>
         </span>
         <span class="ac-milestone-preview-date">${esc(dateFormatted)}</span>
@@ -134,13 +134,13 @@ export function academicCalendarModal(calendarId) {
 
   body += '<div class="grid g2 ac-dates-grid">';
   body += '<label class="fld" for="acStart">';
-  body += '<span>Term start date <strong style="color:#0f6cbf;">*</strong></span>';
+  body += '<span>Term start date <strong class="u-accent">*</strong></span>';
   body += '<input id="acStart" type="date" value="' + esc(initialStart) + '" aria-required="true">';
   body += '<span class="hint">First day of classes</span>';
   body += '</label>';
 
   body += '<label class="fld" for="acEnd">';
-  body += '<span>Term end date <strong style="color:#0f6cbf;">*</strong></span>';
+  body += '<span>Term end date <strong class="u-accent">*</strong></span>';
   body += '<input id="acEnd" type="date" value="' + esc(initialEnd) + '" aria-required="true">';
   body += '<span class="hint">Final day / conclusion</span>';
   body += '</label>';
@@ -187,7 +187,7 @@ export function academicCalendarModal(calendarId) {
 
   body += '<div class="ac-milestones-box">';
   body += '<label class="ac-milestone-checkbox-label" for="acMilestones">';
-  body += '<input id="acMilestones" type="checkbox" checked style="cursor:pointer;margin-top:2px;">';
+  body += '<input id="acMilestones" type="checkbox" checked class="u-pointer-mt-2">';
   body += '<div>';
   body += '<strong>Auto-generate key milestones from term dates</strong>';
   body += '<span>Automatically calculates calendar markers for Classes Begin, Midterms, Finals, and Term End.</span>';
@@ -202,9 +202,9 @@ export function academicCalendarModal(calendarId) {
 
   // ── HIERARCHY LEVEL 4: SAVED TERMS REGISTRY ─────────────────────────────
   if (savedList.length > 0) {
-    body += '<section class="ac-modal-section" style="border-top:1px solid var(--rule-2);padding-top:12px;">';
-    body += '<span style="display:block;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted,#6b7280);margin-bottom:6px;font-weight:600;">Saved Academic Terms</span>';
-    body += '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+    body += '<section  class="ac-modal-section u-section-head">';
+    body += '<span class="u-kicker">Saved Academic Terms</span>';
+    body += '<div class="u-chips-6">';
     savedList.forEach((c) => {
       const isAct = c.isActive || (c.academicYear === current.academicYear && c.termName === current.termName);
       body += '<button type="button" class="btn xs ' + (isAct ? 'primary' : 'ghost') + '" data-switch-cal="' + esc(c.id) + '">';
@@ -249,6 +249,9 @@ export function academicCalendarModal(calendarId) {
         if (milestonesPreview && milestonesCheckbox) {
           if (milestonesCheckbox.checked && stats && stats.valid) {
             milestonesPreview.innerHTML = renderMilestonesPreviewHtml(sVal, eVal, tVal);
+            /* Re-rendered after mount, so Router/modal's one-time pass has
+               already run — apply this batch's data-style ourselves. */
+            applyDataStyles(milestonesPreview);
             milestonesPreview.style.display = "flex";
           } else {
             milestonesPreview.innerHTML = "";
