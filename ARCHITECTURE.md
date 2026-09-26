@@ -50,12 +50,12 @@ index.html (SPA shell, CSP meta, inline load-failure fallback)
 4. **Action dispatch** — UI events use `data-act` attributes routed through `src/core/actions/` and `src/app/actions-delegation.js`.
 5. **Sync load, async mirror** — `Store.load()` stays synchronous (localStorage); boot then `await Store.hydrateFromIDB()` so a newer IndexedDB snapshot wins before any view reads. When `indexedDB` is missing (tests / happy-dom) the app is localStorage-only.
 
-## Baseline (re-verified 2026-09-25)
+## Baseline (re-verified 2026-09-27)
 
 | Gate | Result |
 | --- | --- |
-| `npm run test` | **786 passed** (47 files) |
-| `npm run build` | OK — `index.html` 11.73 kB (gzip 3.31), CSS 123.37 kB (gzip 21.55), JS code-split into **two** chunks: 307.41 kB entry + 13.56 kB lazy chunk (gzip 99.05 + 4.40); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
+| `npm run test` | **834 passed** (50 files) |
+| `npm run build` | OK — `index.html` 11.73 kB (gzip 3.31), CSS 130.80 kB (gzip 22.74), JS code-split into **two** chunks: 337.50 kB entry + 13.56 kB lazy chunk (gzip 108.79 + 4.40); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
 | `npm run lint` | **Passes clean** — 0 errors, 0 warnings |
 | `npm run format:check` | Not enforced in CI; run `npm run format` before committing |
 | Coverage thresholds | statements 60 / branches 50 / functions 60 / lines 60 (`vite.config.js`) |

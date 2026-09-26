@@ -140,44 +140,56 @@ Test coverage spans:
 | Test suite                 | Tests |
 | --------------------------- | ----- |
 | Academic calendar          | 6     |
-| Action dispatch            | 54    |
+| Action dispatch            | 61    |
 | Click delegation           | 11    |
 | Study plan agent           | 34    |
 | AI contract                | 37    |
 | Assistant stop control     | 9     |
 | Assistant view             | 14    |
 | App chrome                 | 3     |
-| AI client                  | 21    |
-| Coach                      | 15    |
-| Courses view               | 8     |
-| Dashboard                  | 16    |
-| Date utilities             | 37    |
-| DOM utilities              | 12    |
+| AI client                  | 26    |
+| Calendar config            | 10    |
+| Coach                      | 13    |
+| Courses view               | 14    |
+| Dashboard                  | 21    |
+| Date utilities             | 40    |
+| DOM utilities              | 15    |
+| Event modal                | 5     |
 | Feedback                   | 21    |
-| Formatting                 | 20    |
+| Formatting                 | 25    |
 | Helper utilities           | 34    |
-| SPA shell                  | 4     |
+| SPA shell                  | 6     |
+| IndexedDB mirror           | 5     |
+| Import accessibility       | 2     |
+| Library view               | 7     |
+| App lifecycle              | 9     |
 | Markdown rendering         | 15    |
 | Moodle dashboard & calendar | 5     |
 | NLP / text extraction      | 33    |
+| Planner view               | 13    |
 | Planner scheduling         | 21    |
-| RAG retrieval              | 37    |
+| RAG retrieval              | 43    |
 | Hybrid RAG embeddings      | 15    |
 | Retrieval practice         | 12    |
 | Recent chats               | 15    |
-| Router & navigation        | 18    |
+| Router & navigation        | 19    |
 | UIState scope              | 18    |
-| Secure storage             | 21    |
-| Settings & schema          | 6     |
+| Secure storage             | 26    |
+| Settings & schema          | 7     |
 | NLP standards registry     | 15    |
-| Store & persistence        | 16    |
-| Style tokens & contrast    | 32    |
+| Store & persistence        | 25    |
+| Store IndexedDB mirroring  | 8     |
+| Style tokens & contrast    | 34    |
 | Tasks                      | 15    |
 | Task extensions            | 17    |
 | Task progress              | 6     |
+| To-do view                 | 7     |
+| Term syllabi               | 22    |
+| Untracked-module guard     | 2     |
 | UI namespace               | 8     |
+| XSS id-sink scan           | 2     |
 | Removed workload views     | 3     |
-| **Total**                  | **684** |
+| **Total**                  | **834** |
 
 Suite names map one-to-one to files in `tests/vitest/` — "Planner scheduling" is
 `tests/vitest/planner.test.js`, and so on. The counts are a snapshot, not a gate: the
