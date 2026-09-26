@@ -160,6 +160,7 @@ export function abortPending() {
 function settleCancelled() {
   UIState.set("chatPending", false);
   hideTyping();
+  hideLive();
   toast("Stopped. Nothing was added to the transcript.", "info", "Cancelled");
 }
 
@@ -172,6 +173,70 @@ function showTyping() {
 
 function hideTyping() {
   q("#typingIndicator")?.remove();
+}
+
+/* ── streaming: where the tokens land ──────────────────────────────── */
+
+/*
+ * A provisional assistant bubble, filled from onToken while the answer is
+ * still being generated. It is thrown away, never persisted: the settled
+ * answer is the citation-checked text that appendMsg renders afterwards, so
+ * `hideLive()` runs on every terminal path — settled, cancelled or failed —
+ * before that message appears. It keeps the Stop control the typing row
+ * carried, so cancelling stays possible once the dots have become words.
+ *
+ * The first delta paints at once (text appearing is the whole point); after
+ * that painting is throttled, because re-parsing a growing markdown string
+ * on every token costs more than the wait it saves.
+ */
+const LIVE_ID = "liveAnswer";
+const LIVE_INTERVAL = 90;
+let liveTimer = null;
+let liveText = null;
+
+function paintLive() {
+  const log = q("#chatLog");
+  if (!log) return;
+  let el = q("#" + LIVE_ID);
+  if (!el) {
+    hideTyping();
+    log.insertAdjacentHTML(
+      "beforeend",
+      '<div class="msg ai" id="' +
+        LIVE_ID +
+        '">' +
+        '<div class="msg-ai-body"></div>' +
+        '<div class="typing-row">' +
+        '<button class="pill-stop" data-act="chat-stop" aria-label="Stop generating">Stop</button>' +
+        "</div></div>",
+    );
+    el = q("#" + LIVE_ID);
+    if (!el) return;
+  }
+  const body = el.querySelector(".msg-ai-body");
+  if (body) body.innerHTML = mdToHtml(liveText || "");
+  log.scrollTop = log.scrollHeight;
+}
+
+/** Show the text accumulated so far; safe to call once per delta. */
+export function showLive(text) {
+  liveText = text;
+  if (liveTimer) return; /* a paint is already scheduled for this window */
+  paintLive();
+  liveTimer = setTimeout(() => {
+    liveTimer = null;
+    paintLive();
+  }, LIVE_INTERVAL);
+}
+
+/** Drop the provisional bubble and any paint it still owed. */
+export function hideLive() {
+  if (liveTimer) {
+    clearTimeout(liveTimer);
+    liveTimer = null;
+  }
+  liveText = null;
+  q("#" + LIVE_ID)?.remove();
 }
 
 function renderRecallQuestions(questions) {
@@ -987,6 +1052,11 @@ export function sendChat(forced) {
     chatHistory,
     docIds: UIState.chatSources || [],
     signal: ctrl ? ctrl.signal : undefined,
+    /* Tokens paint as they arrive; the settled message below replaces the
+       provisional bubble with the citation-checked text. */
+    onToken: function (_delta, total) {
+      showLive(total);
+    },
   })
     .then(function (res) {
       endAbort(ctrl);
@@ -1008,6 +1078,7 @@ export function sendChat(forced) {
       UIState.set("chatPending", false);
       Store.saveNow();
       hideTyping();
+      hideLive();
       appendMsg(aiMsg);
 
       // Show retrieval practice widget
@@ -1038,6 +1109,7 @@ export function sendChat(forced) {
       endAbort(ctrl);
       UIState.set("chatPending", false);
       hideTyping();
+      hideLive();
       if (e && e.name === "AbortError") {
         settleCancelled();
         return;
@@ -1068,7 +1140,14 @@ export function requestStudyPlan() {
   Router.renderRecentChats();
   showTyping();
   const ctrl = beginAbort();
-  studyPlanProposal({ signal: ctrl ? ctrl.signal : undefined })
+  studyPlanProposal({
+    signal: ctrl ? ctrl.signal : undefined,
+    /* Only the non-agent planner path streams; StudyPlanAgent builds its own
+       request options, so tool turns never paint here. */
+    onToken: function (_delta, total) {
+      showLive(total);
+    },
+  })
     .then(function (res) {
       endAbort(ctrl);
       if (res && res.cancelled) {
@@ -1086,6 +1165,7 @@ export function requestStudyPlan() {
       UIState.set("chatPending", false);
       Store.saveNow();
       hideTyping();
+      hideLive();
       appendMsg(aiMsg);
       /* A proposal is offered, never applied: the card below is where the
          student accepts, edits or rejects it. */
@@ -1112,6 +1192,7 @@ export function requestStudyPlan() {
       endAbort(ctrl);
       UIState.set("chatPending", false);
       hideTyping();
+      hideLive();
       if (e && e.name === "AbortError") {
         settleCancelled();
         return;

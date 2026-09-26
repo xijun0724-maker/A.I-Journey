@@ -242,6 +242,7 @@ export function answer(question, opts = {}) {
       timeout: CFG.timeouts.apiAnswer,
       maxTokens,
       signal: opts.signal,
+      onToken: opts.onToken,
     }).then((r) => {
       if (r && r.cancelled) {
         return { text: "", mode: "cancelled", cancelled: true, sources: [] };
@@ -329,6 +330,7 @@ export function studyPlan(opts = {}) {
   return chat(messages, {
     timeout: CFG.timeouts.apiRefine,
     signal: opts.signal,
+    onToken: opts.onToken,
   }).then((r) => {
     if (r && r.cancelled) {
       return { text: "", mode: "cancelled", cancelled: true };

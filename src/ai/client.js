@@ -294,6 +294,11 @@ function sleep(ms) {
 
 function buildProviderRequest(messages, opts, s) {
   const provider = s.provider || "gemini";
+  /* Streaming is opt-in per call: a caller that wants to paint tokens passes
+     onToken — the tutor answer and the planner's direct path do. The agent
+     loop builds its own request options, so no tool turn can paint mid-loop,
+     and `test()` never asks. */
+  const stream = typeof opts.onToken === "function";
 
   if (provider === "openrouter") {
     const openaiMsgs = messagesToOpenAI(messages);
@@ -303,6 +308,7 @@ function buildProviderRequest(messages, opts, s) {
       temperature: opts.temperature == null ? 0.25 : opts.temperature,
     };
     if (opts.maxTokens) body.max_tokens = opts.maxTokens;
+    if (stream) body.stream = true;
     return {
       url: CFG.openrouter.baseUrl,
       init: {
@@ -315,6 +321,15 @@ function buildProviderRequest(messages, opts, s) {
         },
         body: JSON.stringify(body),
       },
+      stream,
+      model: body.model,
+      /* One streamed frame: choices[0].delta.content carries the text. */
+      extractDelta: (data) =>
+        (data.choices &&
+          data.choices[0] &&
+          data.choices[0].delta &&
+          data.choices[0].delta.content) ||
+        "",
       extractText: (data) => {
         const text =
           (data.choices &&
@@ -338,7 +353,12 @@ function buildProviderRequest(messages, opts, s) {
   };
   if (opts.maxTokens) genConfig.maxOutputTokens = opts.maxTokens;
   const model = normalizeGeminiModel(s.model);
-  const url = CFG.gemini.baseUrl.replace("{model}", model);
+  const baseUrl = CFG.gemini.baseUrl.replace("{model}", model);
+  /* `:generateContent` answers once; `:streamGenerateContent?alt=sse`
+     answers as `data:` frames. Same body, same auth, same error shape. */
+  const url = stream
+    ? baseUrl.replace(":generateContent", ":streamGenerateContent") + "?alt=sse"
+    : baseUrl;
   const body = { contents, generationConfig: genConfig };
   if (systemInstruction)
     body.systemInstruction = { parts: [{ text: systemInstruction }] };
@@ -352,6 +372,16 @@ function buildProviderRequest(messages, opts, s) {
       },
       body: JSON.stringify(body),
     },
+    stream,
+    model,
+    /* One streamed frame: candidates[0].content.parts carry the text. */
+    extractDelta: (data) =>
+      (data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts.map((p) => p.text || "").join("")) ||
+      "",
     extractText: (data) => {
       const text =
         (data.candidates &&
@@ -368,6 +398,75 @@ function buildProviderRequest(messages, opts, s) {
   };
 }
 
+/**
+ * Read a `text/event-stream` body, handing each text delta to `onToken` as
+ * it lands and returning everything that arrived.
+ *
+ * Frames are `data: <json>`. A frame that does not parse on its own is held
+ * as a fragment until its continuation arrives — SSE is free to split a
+ * payload across `data:` lines, and the transport is free to split a line
+ * across chunks (the partial line stays in `buf`). `[DONE]` is OpenRouter's
+ * end marker; it is not JSON and not an error.
+ *
+ * @param {Response} res - A response whose body is a ReadableStream
+ * @param {object} req - The request descriptor from buildProviderRequest
+ * @param {Function} onToken - Called with (delta, accumulatedText)
+ * @returns {Promise<string>} The full text, in arrival order
+ */
+function readSSE(res, req, onToken) {
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  let text = "";
+  let fragment = "";
+
+  const frame = (payload) => {
+    if (payload === "[DONE]") {
+      fragment = "";
+      return;
+    }
+    const data = fragment ? fragment + "\n" + payload : payload;
+    let json;
+    fragment = "";
+    try {
+      json = JSON.parse(data);
+    } catch (_e) {
+      /* Not complete yet — hold it for the next `data:` line. */
+      fragment = data;
+      return;
+    }
+    const delta = req.extractDelta(json);
+    if (delta) {
+      text += delta;
+      if (onToken) onToken(delta, text);
+    }
+  };
+
+  const line = (raw) => {
+    if (raw.slice(0, 5) !== "data:") return;
+    const payload = raw.slice(5).trim();
+    if (payload) frame(payload);
+  };
+
+  const pump = () =>
+    reader.read().then((chunk) => {
+      if (chunk.done) {
+        /* Flush any byte the decoder was holding mid-character, then any
+           line the transport never terminated. */
+        buf += dec.decode();
+        if (buf) line(buf);
+        return text;
+      }
+      buf += dec.decode(chunk.value, { stream: true });
+      const lines = buf.split(/\r?\n/);
+      buf = lines.pop(); /* keep the partial line for the next chunk */
+      lines.forEach(line);
+      return pump();
+    });
+
+  return pump();
+}
+
 function chatWithRetry(
   messages,
   opts,
@@ -376,6 +475,9 @@ function chatWithRetry(
   maxRetries,
   baseDelay,
   deadline,
+  /* Shared across retries: how many deltas every attempt so far has shown.
+     Survives the recursion on purpose — see the retry guard. */
+  shown = { n: 0 },
 ) {
   const effectiveDeadline =
     deadline != null
@@ -410,6 +512,14 @@ function chatWithRetry(
     typeof AbortController !== "undefined" ? new AbortController() : null;
   let timer = null;
   let timedOut = false;
+  /* A retry restarts the generation from nothing, so once anything has been
+     shown the answer must never be spliced together from two attempts. */
+  const onToken = opts.onToken
+    ? (delta, total) => {
+        shown.n++;
+        opts.onToken(delta, total);
+      }
+    : null;
   if (ctrl)
     timer = setTimeout(() => {
       timedOut = true;
@@ -454,10 +564,34 @@ function chatWithRetry(
           throw err;
         });
       }
+      if (req.stream) {
+        if (res.body && typeof res.body.getReader === "function") {
+          return readSSE(res, req, onToken).then((text) => ({ __sse: text }));
+        }
+        /* The stream was asked for but there is no stream to read — a
+           Response polyfill or a test double. If the payload still parses as
+           JSON the provider answered in one piece and the old shape stands;
+           if it does not, say so rather than hand SSE text to a parser that
+           was never going to understand it. */
+        return res.json().catch(() => {
+          const err = new Error(
+            req.label +
+              " returned a streamed response this browser cannot read.",
+          );
+          err.status = 0;
+          throw err;
+        });
+      }
       return res.json();
     })
     .then((data) => {
       cleanup();
+      if (data && typeof data.__sse === "string") {
+        const text = data.__sse.trim();
+        return text
+          ? { ok: true, text, model: req.model, streamed: true }
+          : { ok: false, error: "The provider returned an empty completion." };
+      }
       return req.extractText(data);
     })
     .catch((e) => {
@@ -486,10 +620,12 @@ function chatWithRetry(
         delay = Math.min(e.retryAfter * 1000, maxRetryAfter);
       }
 
-      /* Never start an attempt the deadline cannot cover, and never retry a cancel. */
+      /* Never start an attempt the deadline cannot cover, and never retry a
+         cancel — or a stream that already showed tokens, which would hand
+         the transcript half an answer followed by a whole new one. */
       const canAfford = effectiveDeadline - Date.now() - delay > minWindow;
 
-      if (retriable && retryCount < maxRetries && canAfford) {
+      if (retriable && retryCount < maxRetries && canAfford && !shown.n) {
         return sleep(delay).then(() =>
           chatWithRetry(
             messages,
@@ -499,6 +635,7 @@ function chatWithRetry(
             maxRetries,
             baseDelay,
             effectiveDeadline,
+            shown,
           ),
         );
       }
@@ -509,6 +646,24 @@ function chatWithRetry(
     });
 }
 
+/**
+ * One chat completion, under the deadline, cancel and retry rules the rest
+ * of the app assumes.
+ *
+ * `opts.onToken(delta, total)` opts a call into streaming: Gemini is then
+ * asked for `:streamGenerateContent?alt=sse`, OpenRouter for
+ * `stream: true`, and each delta is reported as it lands. The returned
+ * promise still resolves with the whole, trimmed text (and
+ * `streamed: true`), so a caller that renders progressively is still handed
+ * the authoritative value to settle on. Without `onToken` the request shape
+ * is exactly what it was before Step 6.
+ *
+ * @param {Array<{role: string, content: string}>} messages
+ * @param {object} [opts] - `timeout`, `deadline`, `signal`, `maxTokens`,
+ *   `temperature`, `retries`, `retryDelay`, `onToken`
+ * @returns {Promise<object>} `{ok, text, model, streamed}` or
+ *   `{ok: false, error, cancelled?, timedOut?}`
+ */
 export async function chat(messages, opts = {}) {
   opts = opts || {};
   const maxRetries = opts.retries != null ? opts.retries : 3;

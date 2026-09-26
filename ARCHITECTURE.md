@@ -54,8 +54,8 @@ index.html (SPA shell, CSP meta, inline load-failure fallback)
 
 | Gate | Result |
 | --- | --- |
-| `npm run test` | **866 passed** (54 files) |
-| `npm run build` | OK — `index.html` 11.46 kB (gzip 3.18), CSS 135.60 kB (gzip 23.87), JS code-split into **two** chunks: 338.07 kB entry + 13.27 kB lazy chunk (gzip 109.24 + 4.30); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
+| `npm run test` | **877 passed** (55 files) |
+| `npm run build` | OK — `index.html` 11.46 kB (gzip 3.18), CSS 135.60 kB (gzip 23.87), JS code-split into **two** chunks: 340.20 kB entry + 13.27 kB lazy chunk (gzip 109.94 + 4.30); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
 | `npm run lint` | **Passes clean** — 0 errors, 0 warnings |
 | `npm run format:check` | Not enforced in CI; run `npm run format` before committing |
 | Coverage thresholds | statements 60 / branches 50 / functions 60 / lines 60 (`vite.config.js`) |
@@ -105,10 +105,17 @@ Known remaining limitations are tracked in the audit documents. Two supersede th
 entries: the heuristic confidence widget is gone (replaced by `answerProvenance` +
 `renderProvenance`, which measure provenance and never claim to measure truth), and the agent's
 wall-clock ceiling does not hold because `chatWithRetry` re-arms the caller's full timeout on each
-retry. Two have since closed: the guidance level now fades on the recall verdicts the drill already
-records (`resolveGuidanceLevel`, "auto" by default), and `style-src` no longer carries
-'unsafe-inline' — every rendered style attribute became a class in `styles/utilities.css`, except
-the handful of values a class cannot express, which became `data-style` and are applied through the
-CSSOM (`tests/vitest/csp.test.js` pins the policy, the absence of the attributes, and the classes
-that replaced them). Still open: no token streaming. See
-`docs/audit-2026-09-25.md` for the current prioritised list and status delta.
+retry. Three have since closed: the guidance level now fades on the recall verdicts the drill already
+records (`resolveGuidanceLevel`, "auto" by default); `style-src` no longer carries 'unsafe-inline' —
+every rendered style attribute became a class in `styles/utilities.css`, except the handful of values
+a class cannot express, which became `data-style` and are applied through the CSSOM
+(`tests/vitest/csp.test.js` pins the policy, the absence of the attributes, and the classes that
+replaced them); and answers now stream — `chat()` takes an `onToken`, so Gemini is asked for
+`:streamGenerateContent?alt=sse` and OpenRouter for `stream: true`, and the assistant paints each
+delta into a provisional bubble that the settled, citation-checked message then replaces
+(`tests/vitest/streaming.test.js`). The agent loop deliberately does not stream: it builds its own
+request options, so no tool turn can paint halfway through a plan.
+
+Still open: the wall-clock ceiling described above (one deadline that every retry honours), a token
+budget that is enforced rather than reported, a sliding key TTL, and `Review:` blocks ordered by
+miss rate. See `docs/audit-2026-09-25.md` §8 for the current prioritised list and status delta.

@@ -183,6 +183,7 @@ Test coverage spans:
 | NLP standards registry     | 15    |
 | Store & persistence        | 25    |
 | Store IndexedDB mirroring  | 8     |
+| Streaming transport        | 11    |
 | Style tokens & contrast    | 34    |
 | Tasks                      | 15    |
 | Task extensions            | 17    |
@@ -193,7 +194,7 @@ Test coverage spans:
 | UI namespace               | 8     |
 | XSS id-sink scan           | 2     |
 | Removed workload views     | 3     |
-| **Total**                  | **866** |
+| **Total**                  | **877** |
 
 Suite names map one-to-one to files in `tests/vitest/` — "Planner scheduling" is
 `tests/vitest/planner.test.js`, and so on. The counts are a snapshot, not a gate: the
