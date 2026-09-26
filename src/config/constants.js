@@ -209,6 +209,14 @@ export const CFG = {
     // one-document library is never zeroed out (its only hit *is* the best
     // hit). Pass `minRelative: 0` to switch the floor off.
     minRelative: 0.1,
+    // Synonym-expanded query terms score at this weight (multi-query
+    // recall), so the student's own words still dominate the ranking.
+    synWeight: 0.5,
+    // A candidate whose character range overlaps an already-kept chunk of
+    // the same document by this fraction (of the shorter chunk) is a
+    // near-duplicate — an overlap window or sweep remainder — and is
+    // dropped rather than spending the context budget twice.
+    dedupOverlap: 0.6,
     hybrid: {
       blend: 0.35, // weight of cosine vs BM25 after normalisation (0 = pure BM25)
       candidateFactor: 3, // BM25 candidates to re-rank = k * factor

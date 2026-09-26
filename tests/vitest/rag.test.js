@@ -441,3 +441,89 @@ describe("index entries do not duplicate document text", () => {
     }
   });
 });
+
+describe("synonym expansion (multi-query recall)", () => {
+  function seed() {
+    Store.resetAll();
+    Store.db.documents = [
+      {
+        id: "syl",
+        courseId: "c1",
+        name: "Syllabus",
+        text:
+          "The midterm evaluation is worth 30 percent. Continuous assessment happens every session of the term.",
+      },
+    ];
+    RAG.reindexAll();
+  }
+
+  it("finds a passage that only uses a synonym of the queried word", () => {
+    seed();
+    const hits = RAG.search("exam");
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0].docId).toBe("syl");
+  });
+
+  it("ranks a direct term match above a synonym-only match", () => {
+    Store.resetAll();
+    Store.db.documents = [
+      {
+        id: "direct",
+        courseId: "c1",
+        name: "Exam guide",
+        text: "This exam covers chapters one to three of the textbook material.",
+      },
+      {
+        id: "syn",
+        courseId: "c1",
+        name: "Policy",
+        text: "The evaluation is worth thirty percent of the final grade for the term.",
+      },
+    ];
+    RAG.reindexAll();
+    const hits = RAG.search("exam");
+    expect(hits.length).toBeGreaterThan(1);
+    expect(hits[0].docId).toBe("direct");
+  });
+
+  it("does not invent results when neither the term nor its synonyms match", () => {
+    seed();
+    expect(RAG.search("quantum chromodynamics")).toEqual([]);
+  });
+});
+
+describe("near-duplicate suppression (precision)", () => {
+  it("drops a chunk that is mostly contained in a higher-scoring one", () => {
+    Store.resetAll();
+    /* Two indexed ranges of the same document that overlap almost entirely,
+       as a sweep remainder would after an over-ceiling split. */
+    const text =
+      "Thermodynamics covers heat, entropy and the second law in closed systems with worked examples for every week of the term.";
+    Store.db.documents = [{ id: "d1", courseId: "c1", name: "Physics", text }];
+    Store.db.chunks = [
+      { id: "d1#0", docId: "d1", courseId: "c1", docName: "Physics", idx: 0, start: 0, len: text.length },
+      { id: "d1#1", docId: "d1", courseId: "c1", docName: "Physics", idx: 1, start: 10, len: text.length - 10 },
+    ];
+    RAG.invalidate();
+    const hits = RAG.search("thermodynamics entropy");
+    expect(hits.length).toBe(1);
+    expect(["d1#0", "d1#1"]).toContain(hits[0].id);
+  });
+
+  it("keeps ordinary overlapping neighbours that share only the overlap window", () => {
+    const para = (i) =>
+      "Paragraph " + i + " discusses entropy and closed systems in its own right with enough distinct body sentences to stand alone as a source of citations for retrieval. " +
+      "It adds a second clause about heat engines and reservoirs, a third about reversible processes, and a fourth closing the argument neatly so the chunker keeps it whole. " +
+      "A fifth sentence pads the paragraph further with technical vocabulary naming work, energy and the second law. " +
+      "The sixth and final sentence adds still more bulk so that pairing this paragraph with a short neighbour would exceed the chunk size and split them apart.";
+    Store.resetAll();
+    Store.db.documents = [
+      { id: "doc", courseId: "c1", name: "Notes", text: [para(1), para(2), para(3)].join("\n\n") },
+    ];
+    RAG.reindexAll();
+    const hits = RAG.search("entropy closed systems heat engines");
+    /* Three distinct paragraphs — neighbours share the 150-char window only,
+       so all must survive to be cited. */
+    expect(hits.length).toBe(3);
+  });
+});

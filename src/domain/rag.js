@@ -36,6 +36,39 @@ RAG.stem = function (t) {
     .replace(/s$/, "");
 };
 
+/* Domain lexicon: a syllabus says "evaluation" where the student asks "exam",
+   and exact-match BM25 never bridges that gap by itself. Raw words are
+   grouped, then stemmed once here so lookups hit the same terms the index
+   stored. Expands recall as multi-query; RAG.search weights the bridge down
+   so the student's own words still dominate. */
+RAG.SYN = (function () {
+  const groups = [
+    ["exam", "test", "quiz", "evaluation", "assessment"],
+    ["assignment", "homework", "task", "exercise"],
+    ["deadline", "due", "submission"],
+    ["lecture", "lesson", "session", "class"],
+    ["reading", "textbook", "article"],
+    ["grade", "mark", "score"],
+    ["project", "capstone", "portfolio"],
+    ["syllabus", "outline", "curriculum"],
+    ["schedule", "timetable", "plan"],
+  ];
+  const syn = {};
+  groups.forEach(function (g) {
+    const stems = {};
+    g.forEach(function (w) {
+      stems[RAG.stem(w)] = 1;
+    });
+    const all = Object.keys(stems);
+    all.forEach(function (key) {
+      syn[key] = all.filter(function (s) {
+        return s !== key;
+      });
+    });
+  });
+  return syn;
+})();
+
 /**
  * Tokenizer: lowercases, drops punctuation, stop-words and single characters,
  * and stems what is left.
@@ -377,10 +410,26 @@ RAG.search = function (query, opts) {
         return Object.assign({ score: 0 }, idx.byId[cid]);
       });
   };
-  const terms = RAG.tokenize(query);
+  /* Multi-query: expand the query with domain synonyms so a passage
+     phrased differently ("evaluation" vs "exam") still ranks. Expanded
+     terms score at synWeight so the student's own words stay on top. */
+  const baseTerms = RAG.tokenize(query);
+  const terms = baseTerms.slice();
+  const seenTerm = {};
+  baseTerms.forEach(function (t) {
+    seenTerm[t] = 1;
+  });
+  baseTerms.forEach(function (t) {
+    (RAG.SYN[t] || []).forEach(function (s) {
+      if (seenTerm[s]) return;
+      seenTerm[s] = 1;
+      terms.push(s);
+    });
+  });
   if (!idx.n || !terms.length) return fallback();
   const scores = {};
   terms.forEach(function (term) {
+    const weight = baseTerms.indexOf(term) !== -1 ? 1 : CFG.rag.synWeight;
     const postings = idx.post[term];
     if (!postings) return;
     const cids = Object.keys(postings);
@@ -390,6 +439,7 @@ RAG.search = function (query, opts) {
       const f = postings[cid],
         len = idx.len[cid] || 1;
       const s =
+        weight *
         idf *
         ((f * (idx.k1 + 1)) /
           (f + idx.k1 * (1 - idx.b + (idx.b * len) / idx.avg)));
@@ -413,13 +463,35 @@ RAG.search = function (query, opts) {
   const ranked = sortBy(Object.keys(scores), function (cid) {
     return -scores[cid];
   });
+  /* Near-duplicate suppression: a sweep remainder or an overlap window can
+     put two largely identical passages in the results; citing both spends the
+     context budget on one sentence twice. Measured against the shorter chunk
+     so a small excerpt fully inside a big passage is caught, while ordinary
+     neighbours (which share only the 150-char overlap window) survive. */
+  const dedupAt =
+    CFG.rag.dedupOverlap != null ? CFG.rag.dedupOverlap : 0.6;
+  const kept = [];
+  ranked.forEach(function (cid) {
+    const c = idx.byId[cid];
+    if (!c) return;
+    const dup = kept.some(function (kid) {
+      const o = idx.byId[kid];
+      if (!o || o.docId !== c.docId) return false;
+      const overlap =
+        Math.min(o.start + o.len, c.start + c.len) -
+        Math.max(o.start, c.start);
+      const shorter = Math.min(o.len, c.len);
+      return shorter > 0 && overlap / shorter >= dedupAt;
+    });
+    if (!dup) kept.push(cid);
+  });
   /* Relevance floor: a hit scoring under `minRelative` of the best match is
      tail noise rather than a source, so it never becomes a numbered citation. */
-  const best = scores[ranked[0]] || 0;
+  const best = scores[kept[0]] || 0;
   const relative =
     opts.minRelative != null ? opts.minRelative : CFG.rag.minRelative;
   const floor = best * (relative > 0 ? relative : 0);
-  return ranked
+  return kept
     .filter(function (cid) {
       return scores[cid] >= floor;
     })
