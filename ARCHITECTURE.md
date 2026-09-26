@@ -54,8 +54,8 @@ index.html (SPA shell, CSP meta, inline load-failure fallback)
 
 | Gate | Result |
 | --- | --- |
-| `npm run test` | **877 passed** (55 files) |
-| `npm run build` | OK — `index.html` 11.46 kB (gzip 3.18), CSS 135.60 kB (gzip 23.87), JS code-split into **two** chunks: 340.20 kB entry + 13.27 kB lazy chunk (gzip 109.94 + 4.30); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
+| `npm run test` | **889 passed** (55 files) |
+| `npm run build` | OK — `index.html` 11.46 kB (gzip 3.18), CSS 135.60 kB (gzip 23.87), JS code-split into **two** chunks: 341.42 kB entry + 13.27 kB lazy chunk (gzip 110.43 + 4.30); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
 | `npm run lint` | **Passes clean** — 0 errors, 0 warnings |
 | `npm run format:check` | Not enforced in CI; run `npm run format` before committing |
 | Coverage thresholds | statements 60 / branches 50 / functions 60 / lines 60 (`vite.config.js`) |
@@ -92,7 +92,7 @@ Status against the original roadmap (details and verification in `docs/audit-202
 0. This document + baseline — **done**; baseline re-verified (767 tests, lint clean, lint:css clean, build green).
 1. Token budget, structured-output validation, citation checks (`src/ai/client.js`, `prompts.js`, `index.js`) — **done**.
 2. Optional hybrid BM25 + ONNX semantic RAG (`rag-embeddings.js`, off by default) — **done**.
-3. Answer confidence widget + Socratic tutor scaffolding — **done** (confidence widget; tutor modes pre-existing).
+3. Answer confidence widget + Socratic tutor scaffolding — **done** (tutor modes pre-existing); the confidence widget itself was later replaced by `answerProvenance`/`renderProvenance`, which measure provenance and never claim to measure truth, and the guidance ladder now fades on real recall verdicts.
 4. `StudyPlanAgent` tool loop (`src/ai/agent.js`) — **done**, and hardened: idempotent tool calls, wall-clock ceiling, aggregated usage, and a user-facing Stop control.
 5. NLP standards registry (PNU / generic / custom) — **done** (`src/config/standards/`).
 6. Planner interleaving and spacing — **done**; the AI plan is a proposal the student accepts, edits or rejects (`studyPlanProposal` + plan-preview flow), and import can no longer overwrite a plan silently.
@@ -101,21 +101,31 @@ Status against the original roadmap (details and verification in `docs/audit-202
 9. Retrieval honesty — **done**: relevance floor, honest source labelling, numeric tokenisation, separate context budget, and pair-safe truncation with untrusted-content fencing.
 10. Dead surface removed — the unused AI syllabus-parser prompts and validator were deleted (parsing is deterministic `NLP.analyse` on-device); Settings/README copy states what a key actually adds.
 
-Known remaining limitations are tracked in the audit documents. Two supersede the 2026-09-23
-entries: the heuristic confidence widget is gone (replaced by `answerProvenance` +
-`renderProvenance`, which measure provenance and never claim to measure truth), and the agent's
-wall-clock ceiling does not hold because `chatWithRetry` re-arms the caller's full timeout on each
-retry. Three have since closed: the guidance level now fades on the recall verdicts the drill already
-records (`resolveGuidanceLevel`, "auto" by default); `style-src` no longer carries 'unsafe-inline' —
-every rendered style attribute became a class in `styles/utilities.css`, except the handful of values
-a class cannot express, which became `data-style` and are applied through the CSSOM
-(`tests/vitest/csp.test.js` pins the policy, the absence of the attributes, and the classes that
-replaced them); and answers now stream — `chat()` takes an `onToken`, so Gemini is asked for
-`:streamGenerateContent?alt=sse` and OpenRouter for `stream: true`, and the assistant paints each
-delta into a provisional bubble that the settled, citation-checked message then replaces
-(`tests/vitest/streaming.test.js`). The agent loop deliberately does not stream: it builds its own
-request options, so no tool turn can paint halfway through a plan.
+Known remaining limitations are tracked in the audit documents. Everything the roadmap in
+`docs/audit-2026-09-25.md` §4 asked for has shipped — §8 records the commit that proves each — and
+the findings this file used to repeat as open have closed with it:
 
-Still open: the wall-clock ceiling described above (one deadline that every retry honours), a token
-budget that is enforced rather than reported, a sliding key TTL, and `Review:` blocks ordered by
-miss rate. See `docs/audit-2026-09-25.md` §8 for the current prioritised list and status delta.
+- the agent's wall-clock ceiling holds: `chatWithRetry` takes one absolute deadline, clamps every
+  attempt to the time left, and refuses to start a retry the deadline cannot cover (`f5857f3`);
+- the token budget is enforced rather than reported, by dropping whole tool-safe units and refusing
+  the request outright when even that cannot fit (`f5857f3`);
+- the API key slides on use with a 90-day absolute cap, and `keyStatus()` says so in Settings and in
+  `status()` instead of the key dying mid-semester with no explanation (`f5857f3`);
+- the guidance level fades on the recall verdicts the drill already records (`resolveGuidanceLevel`,
+  "auto" by default, `5e0282c`);
+- `style-src` no longer carries 'unsafe-inline' — every rendered style attribute became a class in
+  `styles/utilities.css`, except the handful of values a class cannot express, which became
+  `data-style` and are applied through the CSSOM (`tests/vitest/csp.test.js`, `ca4b9db`);
+- answers stream — `chat()` takes an `onToken`, so Gemini is asked for
+  `:streamGenerateContent?alt=sse` and OpenRouter for `stream: true`, and the assistant paints each
+  delta into a provisional bubble that the settled, citation-checked message then replaces
+  (`tests/vitest/streaming.test.js`, `aedc724`). The agent loop deliberately does not stream: it
+  builds its own request options, so no tool turn can paint halfway through a plan;
+- `"Review:"` blocks carry the document they re-test and, among themselves, are ordered by how much
+  of it is being missed, with due-date proximity only as the tiebreak (`ad80e9e`).
+
+Still open from the audit's own findings: the rendering model (the `innerHTML` assignment sites the
+router still owns, P2-1) and the three surfaces that can disagree about which model is running
+(P1-5). The confidence widget stays closed — `answerProvenance` + `renderProvenance` measure
+provenance and never claim to measure truth. See `docs/audit-2026-09-25.md` §8 for the current
+status and §6 for what each finding was verified against on 2026-09-25.

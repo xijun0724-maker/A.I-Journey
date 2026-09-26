@@ -149,10 +149,10 @@ Test coverage spans:
 | App chrome                 | 3     |
 | AI client                  | 26    |
 | Calendar config            | 10    |
-| Coach                      | 13    |
+| Coach                      | 16    |
 | Courses view               | 14    |
 | CSP policy & style attrs   | 7     |
-| Dashboard                  | 21    |
+| Dashboard                  | 24    |
 | Date utilities             | 40    |
 | Document removal           | 3     |
 | DOM utilities              | 15    |
@@ -169,9 +169,9 @@ Test coverage spans:
 | Markdown rendering         | 15    |
 | Moodle dashboard & calendar | 5     |
 | NLP / text extraction      | 33    |
-| Planner view               | 13    |
-| Planner scheduling         | 21    |
-| Practice drills            | 8     |
+| Planner view               | 14    |
+| Planner scheduling         | 25    |
+| Practice drills            | 9     |
 | RAG retrieval              | 45    |
 | Hybrid RAG embeddings      | 15    |
 | Retrieval practice         | 12    |
@@ -194,7 +194,7 @@ Test coverage spans:
 | UI namespace               | 8     |
 | XSS id-sink scan           | 2     |
 | Removed workload views     | 3     |
-| **Total**                  | **877** |
+| **Total**                  | **889** |
 
 Suite names map one-to-one to files in `tests/vitest/` — "Planner scheduling" is
 `tests/vitest/planner.test.js`, and so on. The counts are a snapshot, not a gate: the
