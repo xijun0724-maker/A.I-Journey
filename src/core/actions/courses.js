@@ -71,27 +71,6 @@ export function toggleRemoveFromView(id) {
   );
 }
 
-export function toggleStarCourse(id) {
-  const c = Store.db.courses.find((x) => x.id === id);
-  if (!c) return;
-  c.starred = !c.starred;
-  Store.saveNow();
-  Router.scheduleRender();
-  toast(c.starred ? "Course starred!" : "Course unstarred.", "ok");
-}
-
-export function toggleRemoveFromView(id) {
-  const c = Store.db.courses.find((x) => x.id === id);
-  if (!c) return;
-  c.removedFromView = !c.removedFromView;
-  Store.saveNow();
-  Router.scheduleRender();
-  toast(
-    c.removedFromView ? "Course removed from view." : "Course restored to view.",
-    "ok",
-  );
-}
-
 export function clearChat() {
   confirm("Clear all chat messages? This cannot be undone.", {
     title: "Clear chat",

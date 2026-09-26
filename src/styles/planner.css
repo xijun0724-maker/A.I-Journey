@@ -251,7 +251,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  flex-shrink: 0,
+  flex-shrink: 0;
 }.sched-badge.review{ background: var(--info-soft); color: var(--info); }.sched-badge.urgent{ background: var(--warn-soft); color: var(--warn); }.sched-badge.default{ background: var(--ok-soft); color: var(--ok); }.sched-badge.study{ background: #ede9fe; color: #7c3aed; }.sched-badge.reading{ background: #cffafe; color: #0e7490; }.sched-meta-row{
   display: flex;
   align-items: center;

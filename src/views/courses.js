@@ -10,6 +10,7 @@ import { esc, sortBy, safeCssUrl } from "../utils/helpers.js";
 import { empty, pageHead } from "./shared.js";
 import { getCourseBanner } from "../config/templates.js";
 import { q, qa } from "../utils/dom.js";
+import { toggleStarCourse, toggleRemoveFromView } from "../core/actions/courses.js";
 import {
   renderVisualRoadmapTree,
   renderDeadlines,

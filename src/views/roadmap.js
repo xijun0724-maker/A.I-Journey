@@ -228,10 +228,10 @@ function renderTables() {
  * @param {Object} course - Active course
  * @param {Array} allLessons - Lessons/topics from syllabus
  * @param {Array} allEvents - Course events/assessments
- * @param {Array} allReadings - Course readings
+ * @param {Array} _allReadings - Course readings (unused: the matrix shows ILOs, content, TLA and assessments)
  * @returns {string} HTML markup
  */
-function renderCurriculumMatrix(course, allLessons, allEvents, allReadings) {
+function renderCurriculumMatrix(course, allLessons, allEvents, _allReadings) {
   if (!course) return "";
   const courseLessons = (allLessons || []).filter(
     (l) => l.courseId === course.id,
@@ -356,27 +356,6 @@ function renderVisualRoadmapTree(
     );
   }
 
-=======
-function renderVisualRoadmapTree(
-  course,
-  allLessons,
-  allEvents,
-  allReadings,
-) {
-  if (!course) {
-    return (
-      '<div class="card">' +
-      empty(
-        "",
-        "No course selected",
-        "Select a course to view its curriculum roadmap.",
-        '<button type="button" class="btn primary mt" data-act="scope-clear-to-courses">View all courses</button>',
-      ) +
-      "</div>"
-    );
-  }
-
->>>>>>> ba2b6b567d39d148d56485bdb115cfefd6234af8
   const courseLessons = (allLessons || []).filter(
     (l) => l.courseId === course.id,
   );
