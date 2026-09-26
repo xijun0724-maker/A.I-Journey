@@ -252,63 +252,14 @@ RAG.invalidate = function () {
   RAG._idx = null;
 };
 
-/**
- * Incrementally update the index for a single document.
- * @param {string} docId - Document ID
- * @param {string} text - Full document text
- * @param {boolean} isRemoval - If true, remove the document from index
+/*
+ * There is deliberately no incremental index path anymore. `RAG.updateIndex`
+ * (2026-09-25 audit, Step 3) built entries with a different shape than
+ * `reindexAll()` — its add-branch had no caller left, and its removal branch
+ * diverged from the chunk store it was supposed to mirror. Everything goes
+ * through `reindexAll()` → `invalidate()` → `index()`, so the index can only
+ * ever describe `Store.db.chunks`.
  */
-RAG.updateIndex = function (docId, text, isRemoval = false) {
-  const idx = RAG.index(); // ensures initialized
-  if (isRemoval) {
-    // Remove all chunks for this docId
-    Object.keys(idx.byId).forEach((cid) => {
-      if (idx.byId[cid].docId === docId) {
-        delete idx.byId[cid];
-        delete idx.len[cid];
-        idx.n--;
-        Object.keys(idx.post).forEach((term) => delete idx.post[term][cid]);
-      }
-    });
-    // Recalc avg
-    const total = Object.values(idx.len).reduce((a, b) => a + b, 0);
-    idx.avg = idx.n ? total / idx.n : 1;
-    return;
-  }
-  // Add/update chunks for this document
-  const ranges = RAG.chunkRanges(text);
-  ranges.forEach((r, i) => {
-    const cid = docId + "#" + i;
-    const chunkText = text.substr(r.start, r.len);
-    const toks = RAG.tokenize(chunkText);
-    if (!toks.length) return;
-    // Remove old chunk if exists
-    if (idx.byId[cid]) {
-      Object.keys(idx.post).forEach((term) => delete idx.post[term][cid]);
-      idx.n--;
-    }
-    idx.byId[cid] = {
-      id: cid,
-      docId,
-      start: r.start,
-      len: r.len,
-      /* Incremental path: the supplied text may not be persisted yet, so
-         this entry keeps its own copy (one document, not the library). */
-      text: chunkText,
-    };
-    idx.len[cid] = toks.length;
-    idx.n++;
-    const tf = {};
-    toks.forEach((t) => (tf[t] = (tf[t] || 0) + 1));
-    Object.keys(tf).forEach((t) => {
-      if (!idx.post[t]) idx.post[t] = {};
-      idx.post[t][cid] = tf[t];
-    });
-  });
-  // Recalc avg
-  const total = Object.values(idx.len).reduce((a, b) => a + b, 0);
-  idx.avg = idx.n ? total / idx.n : 1;
-};
 
 RAG.index = function () {
   if (RAG._idx) return RAG._idx;

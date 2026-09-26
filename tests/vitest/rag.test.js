@@ -527,3 +527,24 @@ describe("near-duplicate suppression (precision)", () => {
     expect(hits.length).toBe(3);
   });
 });
+
+describe("the incremental index path is gone (audit Step 3)", () => {
+  it("has no RAG.updateIndex left to diverge from Store.db.chunks", () => {
+    expect(RAG.updateIndex).toBeUndefined();
+  });
+
+  it("keeps exactly one build path: reindex all, invalidate, rebuild lazily", () => {
+    Store.resetAll();
+    Store.db.documents = [
+      {
+        id: "d1",
+        courseId: "c1",
+        name: "Physics",
+        text: "Entropy grows in closed systems and never decreases over time.",
+      },
+    ];
+    RAG.reindexAll();
+    expect(RAG._idx).toBeNull();
+    expect(RAG.index().n).toBeGreaterThan(0);
+  });
+});

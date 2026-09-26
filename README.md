@@ -171,7 +171,7 @@ Test coverage spans:
 | Planner view               | 13    |
 | Planner scheduling         | 21    |
 | Practice drills            | 8     |
-| RAG retrieval              | 43    |
+| RAG retrieval              | 45    |
 | Hybrid RAG embeddings      | 15    |
 | Retrieval practice         | 12    |
 | Recent chats               | 15    |
@@ -192,7 +192,7 @@ Test coverage spans:
 | UI namespace               | 8     |
 | XSS id-sink scan           | 2     |
 | Removed workload views     | 3     |
-| **Total**                  | **857** |
+| **Total**                  | **859** |
 
 Suite names map one-to-one to files in `tests/vitest/` — "Planner scheduling" is
 `tests/vitest/planner.test.js`, and so on. The counts are a snapshot, not a gate: the
