@@ -294,19 +294,52 @@ describe("Store entity namespaces & change events", () => {
     expect(r.done).toBe(false);
   });
 
-  it("Store.chat methods append, group into conversations, and clear", () => {
-    Store.chat.append({ role: "user", content: "hello" });
+  it("Store.chat.append opens its conversation, returns the cid, and emits", () => {
+    const seen = [];
+    const off = Store.on("change", (c) => seen.push(c));
+    const cid = Store.chat.append({ role: "user", content: "hello" });
+    off();
+
+    /* Result, not side effect: the caller is handed the conversation id
+       instead of reading mutated state off its own message object. */
+    expect(typeof cid).toBe("string");
+    expect(Store.chat.activeId()).toBe(cid);
+    /* Appends are mutations like any other: they emit, and the repaint
+       policy (Router.onStoreChange) decides what that repaints. */
+    expect(seen).toContainEqual({ entity: "chat", op: "append", id: cid });
+
     Store.chat.append({ role: "assistant", content: "hi" });
     Store.chat.append({ role: "user", content: "how to code?" });
     expect(Store.chat.all()).toHaveLength(3);
 
-    /* One conversation: every message shares the cid the first append
-       opened, and Recents lists it once, titled by the first prompt. */
+    /* One conversation, titled by the first prompt, listed once. */
     const convos = Store.chat.conversations();
     expect(convos).toHaveLength(1);
     expect(convos[0].title).toBe("hello");
-    expect(Store.chat.activeId()).toBe(convos[0].cid);
     expect(Store.chat.activeMessages()).toHaveLength(3);
+  });
+
+  it("Store.chat.appendTo files a reply without opening its conversation", () => {
+    const cid = Store.chat.append({ role: "user", content: "first chat" });
+    Store.chat.newConversation(); /* the student pressed New mid-stream */
+
+    expect(Store.chat.appendTo(cid, { role: "assistant", content: "late reply" })).toBe(cid);
+
+    /* The reply joined its conversation… */
+    expect(Store.chat.conversations()).toHaveLength(1);
+    /* …and left the landing page alone. */
+    expect(Store.chat.activeId()).toBeNull();
+    expect(Store.chat.activeMessages()).toEqual([]);
+
+    Store.chat.open(cid);
+    expect(Store.chat.activeMessages().map((m) => m.content)).toEqual([
+      "first chat",
+      "late reply",
+    ]);
+  });
+
+  it("Store.chat keeps history across New, and the next message starts a second conversation", () => {
+    Store.chat.append({ role: "user", content: "first chat" });
 
     /* New: nothing open, the landing page shows, history stays listed. */
     Store.chat.newConversation();

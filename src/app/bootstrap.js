@@ -41,9 +41,13 @@ async function boot() {
     Router.init();
 
     // Reactive seam: render automatically whenever Store mutations occur.
-    // Retrieval cache freshness is RAG's own concern — it subscribes to this
-    // same change seam in domain/rag.js, so no caller has to invalidate.
-    Store.on("change", () => Router.scheduleRender());
+    // The policy — *what* each mutation repaints — lives in one place,
+    // Router.onStoreChange: chat appends repaint Recents only (the
+    // assistant paints its own transcript), everything else repaints the
+    // view. Retrieval cache freshness is RAG's own concern — it subscribes
+    // to this same change seam in domain/rag.js, so no caller has to
+    // invalidate.
+    Store.on("change", Router.onStoreChange);
 
     // Hide loader once app is ready
     const app = document.getElementById("app");

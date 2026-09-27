@@ -1,5 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+// @vitest-environment happy-dom
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Router } from "../../src/core/router.js";
+import { Store } from "../../src/core/store.js";
+import { UIState } from "../../src/core/state.js";
 import { esc } from "../../src/utils/helpers.js";
 
 describe("Router.mark() SVG generation", () => {
@@ -129,6 +132,7 @@ describe("Router navigation", () => {
     expect(typeof Router.renderNav).toBe("function");
     expect(typeof Router.render).toBe("function");
     expect(typeof Router.scheduleRender).toBe("function");
+    expect(typeof Router.onStoreChange).toBe("function");
     expect(typeof Router.navigate).toBe("function");
     expect(typeof Router.init).toBe("function");
   });
@@ -150,5 +154,63 @@ describe("esc() HTML escaping", () => {
   it("leaves normal text unchanged", () => {
     expect(esc("hello world")).toBe("hello world");
     expect(esc("abc 123")).toBe("abc 123");
+  });
+});
+
+/**
+ * The Store -> Router repaint policy: bootstrap subscribes this function
+ * to `Store.on("change")`, so it is the one place that decides what a
+ * mutation repaints. Chat appends repaint Recents only (the assistant
+ * paints its transcript incrementally); everything else repaints the view.
+ */
+function waitFor(predicate, ms = 500) {
+  return new Promise((resolve, reject) => {
+    const started = Date.now();
+    const tick = () => {
+      if (predicate()) return resolve();
+      if (Date.now() - started > ms) return reject(new Error("timed out"));
+      setTimeout(tick, 5);
+    };
+    tick();
+  });
+}
+
+describe("Router.onStoreChange repaint policy", () => {
+  let list;
+
+  beforeEach(() => {
+    Store.resetAll();
+    document.body.innerHTML =
+      '<div id="recentChatList"></div><div id="viewRoot"></div>';
+    list = document.getElementById("recentChatList");
+    Router.registerView("policy-view", {
+      title: "Policy",
+      fn: () => '<div id="policyMarker">view</div>',
+    });
+    UIState.view = "policy-view";
+    document.getElementById("viewRoot").innerHTML = '<div id="stale"></div>';
+  });
+
+  afterEach(() => {
+    delete Router.viewDefs["policy-view"];
+    UIState.view = "dashboard";
+  });
+
+  it("repaints only Recents for a chat append, leaving the view alone", () => {
+    Store.db.chat = [{ role: "user", content: "hello there" }];
+
+    Router.onStoreChange({ entity: "chat", op: "append", id: "c1" });
+
+    expect(list.querySelectorAll(".recent-chat-link")).toHaveLength(1);
+    expect(list.textContent).toContain("hello there");
+    /* The transcript � and any half-typed draft in it � was not rebuilt. */
+    expect(document.getElementById("viewRoot").innerHTML).toContain("stale");
+  });
+
+  it("repaints the whole view for any other mutation", async () => {
+    Router.onStoreChange({ entity: "events", op: "save", id: "e1" });
+
+    await waitFor(() => document.getElementById("policyMarker"));
+    expect(document.getElementById("stale")).toBeNull();
   });
 });

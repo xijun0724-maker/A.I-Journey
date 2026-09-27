@@ -272,6 +272,26 @@ function render() {
 }
 
 /**
+ * Store → Router repaint policy: the one place that decides what a
+ * mutation repaints.
+ *
+ * The assistant paints chat messages incrementally (bubbles stream in), so
+ * a full re-render on a chat append would rebuild the transcript — and any
+ * half-typed draft — mid-conversation. Those repaint the Recents sidebar
+ * only; every other mutation repaints the whole view.
+ *
+ * Subscribed by bootstrap: `Store.on("change", Router.onStoreChange)`.
+ * @param {Object} change - { entity, op, id } emitted by the Store
+ */
+function onStoreChange(change) {
+  if (change && change.entity === "chat" && change.op === "append") {
+    renderRecentChats();
+    return;
+  }
+  scheduleRender();
+}
+
+/**
  * Navigate to a view
  * @param {string} view - View ID
  */
@@ -321,6 +341,7 @@ export const Router = {
   renderRecentChats,
   render,
   scheduleRender,
+  onStoreChange,
   navigate,
   init,
 };

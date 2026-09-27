@@ -368,7 +368,7 @@ function startDrill(title, questions) {
     ts: Date.now(),
     mode: "drill",
   };
-  Store.chat.append(msg, { open: true });
+  Store.chat.append(msg);
   Router.navigate("assistant");
   return true;
 }
@@ -1048,15 +1048,13 @@ export function sendChat(forced) {
     content: text,
     ts: Date.now(),
   };
-  Store.chat.append(userMsg);
   /* The conversation this exchange belongs to: replies are filed into it
      even if the student presses New while the answer is still streaming. */
-  const cid = userMsg.cid;
+  const cid = Store.chat.append(userMsg);
 
   UIState.set("chatPending", true);
 
   appendMsg(userMsg);
-  Router.renderRecentChats();
   showTyping();
 
   /* Context for the model is the open conversation only: a question asked
@@ -1090,7 +1088,7 @@ export function sendChat(forced) {
         mode: res.mode,
         model: res.model || null,
       };
-      Store.chat.append(aiMsg, { cid: cid });
+      Store.chat.appendTo(cid, aiMsg);
       UIState.set("chatPending", false);
       hideTyping();
       hideLive();
@@ -1136,7 +1134,7 @@ export function sendChat(forced) {
         ts: Date.now(),
         mode: "offline",
       };
-      Store.chat.append(errMsg, { cid: cid });
+      Store.chat.appendTo(cid, errMsg);
       appendMsg(errMsg);
     });
 }
@@ -1148,11 +1146,9 @@ export function requestStudyPlan() {
     content: "Build me a personalised study plan for the coming weeks.",
     ts: Date.now(),
   };
-  Store.chat.append(userMsg);
-  const cid = userMsg.cid;
+  const cid = Store.chat.append(userMsg);
   UIState.set("chatPending", true);
   appendMsg(userMsg);
-  Router.renderRecentChats();
   showTyping();
   const ctrl = beginAbort();
   studyPlanProposal({
@@ -1176,7 +1172,7 @@ export function requestStudyPlan() {
         ts: Date.now(),
         mode: res.mode,
       };
-      Store.chat.append(aiMsg, { cid: cid });
+      Store.chat.appendTo(cid, aiMsg);
       UIState.set("chatPending", false);
       hideTyping();
       hideLive();

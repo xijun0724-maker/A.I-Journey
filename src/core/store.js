@@ -778,6 +778,27 @@ function cidOf(msg) {
  */
 let _activeCid;
 
+/**
+ * The one write path both appends share — an *internal* seam, not part of
+ * the interface: cid adoption, trimming and persistence live here so
+ * `append`/`appendTo` differ in exactly one fact a caller can see (does the
+ * conversation open?).
+ *
+ * Emits `change` like every other Store mutation; what a chat append
+ * repaints is decided at the Store→Router seam (`Router.onStoreChange`),
+ * because the assistant paints messages incrementally.
+ */
+function writeMessage(msg, cid, opens) {
+  msg.cid = cid;
+  if (opens) _activeCid = cid;
+  const list = db.chat || [];
+  list.push(msg);
+  const max = CFG.maxChatMessages || 100;
+  db.chat = list.length > max ? list.slice(list.length - max) : list;
+  notifyChange("chat", "append", cid);
+  return cid;
+}
+
 const chatNamespace = {
   all() {
     return (db && db.chat) || [];
@@ -869,33 +890,34 @@ const chatNamespace = {
   },
 
   /**
-   * Append one message, assigning it to the open conversation (creating one
-   * when nothing is open). A user message always focuses the conversation it
-   * lands in; an assistant message only follows the open one, so a reply
-   * arriving after the student pressed New cannot pull them out of the
-   * landing page. Pass `{ open: true }` when the message itself should open
-   * its conversation (e.g. a practice drill started from the Library).
-   *
-   * Persists without emitting `change`: the assistant paints messages
-   * incrementally, and a change event would schedule a full re-render of the
-   * transcript mid-stream. Callers refresh Recents themselves.
+   * Append one message to the open conversation — starting one when nothing
+   * is open — and open it. This is the path for anything that should bring
+   * its conversation on screen: a sent message, a practice drill.
    *
    * @param {Object} msg - Message to append
-   * @param {Object} [opts] - { cid, open }
+   * @returns {string|null} The conversation id it landed in, or null when
+   *   there was no message
    */
-  append(msg, opts) {
-    if (!msg) return;
-    const o = opts || {};
-    const cid = o.cid || msg.cid || this.activeId() || uid("c");
-    msg.cid = cid;
-    if (o.open || _activeCid !== null || msg.role === "user") {
-      _activeCid = cid;
-    }
-    const list = db.chat || [];
-    list.push(msg);
-    const max = CFG.maxChatMessages || 100;
-    db.chat = list.length > max ? list.slice(list.length - max) : list;
-    saveNow();
+  append(msg) {
+    if (!msg) return null;
+    const cid = msg.cid || this.activeId() || uid("c");
+    return writeMessage(msg, cid, true);
+  },
+
+  /**
+   * Append one message to a specific conversation *without* opening it —
+   * the path for replies: a response that arrives after the student pressed
+   * New files itself into its own conversation and leaves the landing page
+   * alone. Falls back to append() when no cid is given.
+   *
+   * @param {string} cid - Conversation to file the message into
+   * @param {Object} msg - Message to append
+   * @returns {string|null} The conversation id it landed in
+   */
+  appendTo(cid, msg) {
+    if (!msg) return null;
+    if (!cid) return this.append(msg);
+    return writeMessage(msg, cid, false);
   },
 
   /** Remove one conversation entirely. */
