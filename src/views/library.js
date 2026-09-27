@@ -219,7 +219,7 @@ export function library() {
   h += '</div>'; // .library-side-col
   h += '</div>'; // .library-layout-grid
 
-  return '<div class="view-padded">' + h + '</div>';
+  return h;
 }
 
 /** Wire live filter and search listeners for the Library view */

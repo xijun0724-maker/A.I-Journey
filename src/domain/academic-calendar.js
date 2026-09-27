@@ -103,11 +103,8 @@ export function saveAcademicCalendar({
   if (!termStart) termStart = dateOnly(new Date());
   if (!termEnd) termEnd = dateOnly(addDays(fromIso(termStart) || new Date(), 120));
 
-  // 1. Update active settings
-  Store.db.settings.academicYear = academicYear;
-  Store.db.settings.termName = termName;
-  Store.db.settings.termStart = termStart;
-  Store.db.settings.termEnd = termEnd;
+  // 1. Update active settings through the Store namespace (notifies + persists)
+  Store.settings.update({ academicYear, termName, termStart, termEnd });
 
   // 2. Manage academicCalendars registry
   if (!Array.isArray(Store.db.academicCalendars)) {

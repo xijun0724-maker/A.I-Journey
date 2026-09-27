@@ -77,29 +77,29 @@ export function configureCalendar(settings) {
     if (settings.termStart || settings.termEnd || settings.academicYear || settings.termName) {
       return configureAcademicCalendar(settings);
     }
-    if (!Store.db.settings) Store.db.settings = {};
+    const patch = {};
     if (settings.startOfWeek !== undefined) {
-      Store.db.settings.calendarStartOfWeek = Number(settings.startOfWeek) === 0 ? 0 : 1;
+      patch.calendarStartOfWeek = Number(settings.startOfWeek) === 0 ? 0 : 1;
     }
     if (settings.maxEventsPerCell !== undefined) {
-      Store.db.settings.calendarMaxEvents = Math.max(1, Math.min(10, Number(settings.maxEventsPerCell) || 4));
+      patch.calendarMaxEvents = Math.max(1, Math.min(10, Number(settings.maxEventsPerCell) || 4));
     }
     if (settings.timeFormat !== undefined) {
-      Store.db.settings.calendarTimeFormat = settings.timeFormat === "24h" ? "24h" : "12h";
+      patch.calendarTimeFormat = settings.timeFormat === "24h" ? "24h" : "12h";
     }
     if (settings.showMilestones !== undefined) {
-      Store.db.settings.calendarShowMilestones = Boolean(settings.showMilestones);
+      patch.calendarShowMilestones = Boolean(settings.showMilestones);
     }
     if (settings.showExams !== undefined) {
-      Store.db.settings.calendarShowExams = Boolean(settings.showExams);
+      patch.calendarShowExams = Boolean(settings.showExams);
     }
     if (settings.showAssignments !== undefined) {
-      Store.db.settings.calendarShowAssignments = Boolean(settings.showAssignments);
+      patch.calendarShowAssignments = Boolean(settings.showAssignments);
     }
     if (settings.showOther !== undefined) {
-      Store.db.settings.calendarShowOther = Boolean(settings.showOther);
+      patch.calendarShowOther = Boolean(settings.showOther);
     }
-    Store.saveNow();
+    if (Object.keys(patch).length) Store.settings.update(patch);
     Router.scheduleRender();
     return getCalendarConfig();
   }
@@ -477,7 +477,7 @@ export function afterCalendar(root) {
 
 /** Full-page Calendar view function */
 export function calendarView() {
-  return `<div class="view-padded"><div class="moodle-dashboard-container">${renderCalendarCard()}</div></div>`;
+  return `<div class="moodle-dashboard-container">${renderCalendarCard()}</div>`;
 }
 
 export { academicCalendarModal };

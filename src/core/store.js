@@ -575,36 +575,107 @@ function notifyChange(entity, op, id) {
   emit("change", { entity, op, id });
 }
 
+/**
+ * Build a Store entity namespace.
+ *
+ * Every entity shares one insert/update/remove rule: find by id → assign →
+ * notify, or build the default shape → push → notify. That rule is written
+ * once here; each entity supplies only its defaults, an optional `onSave`
+ * hook (recompute derived fields) and an optional `cascade` (side-arrays to
+ * prune on removal). `get`/`all`/`save`/`remove` come from the factory, so a
+ * new entity is a descriptor rather than a copy of ~40 lines.
+ *
+ * @param {Object} spec
+ * @param {string} spec.name - Collection key on the DB (`db[name]`)
+ * @param {Function} spec.defaults - `(data) => default record` (no spread)
+ * @param {Function} [spec.onSave] - Run on every saved record
+ * @param {Function} [spec.cascade] - `(id) => void`, extra cleanup on remove
+ * @returns {Object} The namespace
+ */
+function makeEntity({ name, defaults, onSave, cascade }) {
+  return {
+    all() {
+      return (db && db[name]) || [];
+    },
+    get(id) {
+      return ((db && db[name]) || []).find((x) => x.id === id) || null;
+    },
+    save(data) {
+      if (!data) return null;
+      const list = db[name] || [];
+      const existing = data.id ? list.find((x) => x.id === data.id) : null;
+      if (existing) {
+        Object.assign(existing, data);
+        if (onSave) onSave(existing);
+        notifyChange(name, "update", existing.id);
+        return existing;
+      }
+      const rec = Object.assign(defaults(data), data);
+      if (onSave) onSave(rec);
+      list.push(rec);
+      db[name] = list;
+      notifyChange(name, "insert", rec.id);
+      return rec;
+    },
+    remove(id) {
+      db[name] = (db[name] || []).filter((x) => x.id !== id);
+      if (cascade) cascade(id);
+      notifyChange(name, "remove", id);
+      return true;
+    },
+  };
+}
+
+/* Per-entity default shapes: the data the factory needs to create a record. */
+function courseDefaults(data) {
+  return {
+    id: data.id || uid("crs"),
+    code: data.code || "",
+    name: data.name || "",
+    color: data.color || (CFG.palette && CFG.palette[0]) || "#2f5d8c",
+    termId: data.termId || "current",
+    starred: !!data.starred,
+  };
+}
+function eventDefaults(data) {
+  return {
+    id: data.id || uid("ev"),
+    title: data.title || "",
+    courseId: data.courseId || "",
+    type: data.type || "assignment",
+    due: data.due || "",
+    status: data.status || "open",
+    createdAt: data.createdAt || new Date().toISOString(),
+  };
+}
+function lessonDefaults(data) {
+  return {
+    id: data.id || uid("lsn"),
+    courseId: data.courseId || "",
+    title: data.title || "",
+    done: !!data.done,
+  };
+}
+function readingDefaults(data) {
+  return {
+    id: data.id || uid("rdg"),
+    courseId: data.courseId || "",
+    title: data.title || "",
+    done: !!data.done,
+  };
+}
+function documentDefaults(data) {
+  return {
+    id: data.id || uid("doc"),
+    name: data.name || "",
+    courseId: data.courseId || "",
+    text: data.text || "",
+  };
+}
+
 const coursesNamespace = {
-  all() {
-    return (db && db.courses) || [];
-  },
-  get(id) {
-    return course(id);
-  },
-  save(data) {
-    if (!data) return null;
-    const list = db.courses || [];
-    const existing = data.id ? list.find((c) => c.id === data.id) : null;
-    if (existing) {
-      Object.assign(existing, data);
-      notifyChange("courses", "update", existing.id);
-      return existing;
-    }
-    const c = {
-      id: data.id || uid("crs"),
-      code: data.code || "",
-      name: data.name || "",
-      color: data.color || (CFG.palette && CFG.palette[0]) || "#2f5d8c",
-      termId: data.termId || "current",
-      starred: !!data.starred,
-      ...data,
-    };
-    list.push(c);
-    db.courses = list;
-    notifyChange("courses", "insert", c.id);
-    return c;
-  },
+  ...makeEntity({ name: "courses", defaults: courseDefaults }),
+  /* Course removal is a cascade, not a row delete, so it keeps its own verb. */
   remove(id) {
     removeCourse(id);
     return true;
@@ -619,44 +690,14 @@ const coursesNamespace = {
 };
 
 const eventsNamespace = {
-  all() {
-    return (db && db.events) || [];
-  },
-  get(id) {
-    return event(id);
-  },
-  save(data) {
-    if (!data) return null;
-    const list = db.events || [];
-    const existing = data.id ? list.find((e) => e.id === data.id) : null;
-    if (existing) {
-      Object.assign(existing, data);
-      recomputeTask(existing);
-      notifyChange("events", "update", existing.id);
-      return existing;
-    }
-    const ev = {
-      id: data.id || uid("ev"),
-      title: data.title || "",
-      courseId: data.courseId || "",
-      type: data.type || "assignment",
-      due: data.due || "",
-      status: data.status || "open",
-      createdAt: data.createdAt || new Date().toISOString(),
-      ...data,
-    };
-    recomputeTask(ev);
-    list.push(ev);
-    db.events = list;
-    notifyChange("events", "insert", ev.id);
-    return ev;
-  },
-  remove(id) {
-    db.events = (db.events || []).filter((e) => e.id !== id);
-    db.plan = (db.plan || []).filter((p) => p.eventId !== id);
-    notifyChange("events", "remove", id);
-    return true;
-  },
+  ...makeEntity({
+    name: "events",
+    defaults: eventDefaults,
+    onSave: recomputeTask,
+    cascade(id) {
+      db.plan = (db.plan || []).filter((p) => p.eventId !== id);
+    },
+  }),
   toggle(id) {
     const ev = event(id);
     if (!ev) return null;
@@ -683,38 +724,7 @@ const eventsNamespace = {
 };
 
 const lessonsNamespace = {
-  all() {
-    return (db && db.lessons) || [];
-  },
-  get(id) {
-    return lesson(id);
-  },
-  save(data) {
-    if (!data) return null;
-    const list = db.lessons || [];
-    const existing = data.id ? list.find((l) => l.id === data.id) : null;
-    if (existing) {
-      Object.assign(existing, data);
-      notifyChange("lessons", "update", existing.id);
-      return existing;
-    }
-    const l = {
-      id: data.id || uid("lsn"),
-      courseId: data.courseId || "",
-      title: data.title || "",
-      done: !!data.done,
-      ...data,
-    };
-    list.push(l);
-    db.lessons = list;
-    notifyChange("lessons", "insert", l.id);
-    return l;
-  },
-  remove(id) {
-    db.lessons = (db.lessons || []).filter((l) => l.id !== id);
-    notifyChange("lessons", "remove", id);
-    return true;
-  },
+  ...makeEntity({ name: "lessons", defaults: lessonDefaults }),
   toggle(id) {
     const l = lesson(id);
     if (!l) return false;
@@ -725,38 +735,7 @@ const lessonsNamespace = {
 };
 
 const readingsNamespace = {
-  all() {
-    return (db && db.readings) || [];
-  },
-  get(id) {
-    return (db && db.readings && db.readings.find((r) => r.id === id)) || null;
-  },
-  save(data) {
-    if (!data) return null;
-    const list = db.readings || [];
-    const existing = data.id ? list.find((r) => r.id === data.id) : null;
-    if (existing) {
-      Object.assign(existing, data);
-      notifyChange("readings", "update", existing.id);
-      return existing;
-    }
-    const r = {
-      id: data.id || uid("rdg"),
-      courseId: data.courseId || "",
-      title: data.title || "",
-      done: !!data.done,
-      ...data,
-    };
-    list.push(r);
-    db.readings = list;
-    notifyChange("readings", "insert", r.id);
-    return r;
-  },
-  remove(id) {
-    db.readings = (db.readings || []).filter((r) => r.id !== id);
-    notifyChange("readings", "remove", id);
-    return true;
-  },
+  ...makeEntity({ name: "readings", defaults: readingDefaults }),
   toggle(id) {
     const r = readingsNamespace.get(id);
     if (!r) return false;
@@ -767,41 +746,13 @@ const readingsNamespace = {
   },
 };
 
-const documentsNamespace = {
-  all() {
-    return (db && db.documents) || [];
-  },
-  get(id) {
-    return doc(id);
-  },
-  save(data) {
-    if (!data) return null;
-    const list = db.documents || [];
-    const existing = data.id ? list.find((d) => d.id === data.id) : null;
-    if (existing) {
-      Object.assign(existing, data);
-      notifyChange("documents", "update", existing.id);
-      return existing;
-    }
-    const d = {
-      id: data.id || uid("doc"),
-      name: data.name || "",
-      courseId: data.courseId || "",
-      text: data.text || "",
-      ...data,
-    };
-    list.push(d);
-    db.documents = list;
-    notifyChange("documents", "insert", d.id);
-    return d;
-  },
-  remove(id) {
-    db.documents = (db.documents || []).filter((x) => x.id !== id);
+const documentsNamespace = makeEntity({
+  name: "documents",
+  defaults: documentDefaults,
+  cascade(id) {
     db.chunks = (db.chunks || []).filter((c) => c.docId !== id);
-    notifyChange("documents", "remove", id);
-    return true;
   },
-};
+});
 
 const chatNamespace = {
   all() {

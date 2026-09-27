@@ -4,7 +4,6 @@
 
 import { Store } from "../store.js";
 import { UIState } from "../state.js";
-import { RAG } from "../../domain/rag.js";
 import { toast } from "../../utils/dom.js";
 import { confirm } from "../../utils/feedback.js";
 
@@ -43,14 +42,10 @@ export function deleteDocument(id) {
     danger: true,
   }).then((yes) => {
     if (!yes) return;
+    /* The Store drops the document's chunks, and RAG invalidates its cached
+       index off the same `documents` change event (domain/rag.js) — the
+       source deletion and the cache never have to agree here. */
     Store.documents.remove(id);
-    /* The Store drops the document's chunks, but the BM25 index is a cached
-       build — search already primed `_idx` before the delete, so a stale
-       index keeps scoring the removed document. The app-level listener in
-       bootstrap.js also invalidates on a `documents` change; this is the
-       invariant at its source, so it holds for any caller (and it replaces
-       the incremental `RAG.updateIndex(id, "", true)` the merge dropped). */
-    RAG.invalidate();
     const newSources = (UIState.chatSources || []).filter(
       (sourceId) => sourceId !== id,
     );

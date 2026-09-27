@@ -301,7 +301,7 @@ export function tasks() {
   h += "</div>"; // .todo-side-col
   h += "</div>"; // .tasks-layout-grid
 
-  return '<div class="view-padded">' + h + "</div>";
+  return h;
 }
 
 /** Wire task events, sort dropdown, and quick-add handlers */

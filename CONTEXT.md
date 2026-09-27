@@ -13,9 +13,12 @@
 
 ## Architectural Vocabulary
 
-- **Store (Deep Module)**: Owns the persistent schema, storage quota monitoring, IndexedDB mirroring, and atomic entity mutations (`courses`, `events`, `lessons`, `readings`, `documents`, `chat`, `settings`). Emits in-process `change` events on every mutation and guarantees automatic persistence.
+- **Store (Deep Module)**: Owns the persistent schema, storage quota monitoring, IndexedDB mirroring, and atomic entity mutations (`courses`, `events`, `lessons`, `readings`, `documents`, `chat`, `settings`). The five array entities come from one `makeEntity` factory — each supplies only its defaults, an optional `onSave` hook and an optional `cascade` — so the insert/update/remove rule is written once. Emits in-process `change` events on every mutation and guarantees automatic persistence.
+- **Settings Schema (Deep Module)**: `config/settings.js` is the single source of truth for every setting's default, storage type, form binding and coercion. `createBlankDB()` derives the blank settings from it and `readSettingsForm()` maps the live form back to a typed patch, so the Settings view and every writer go through `Store.settings.update` rather than assigning `db.settings` directly.
+- **Layout Seam**: The router composes the page frame (`view-padded` + scope chip); every view returns its body only, so no view encodes the wrapper and the chip needs no string matching.
 - **Seam**: The interface between modules. 
   - *Store &rarr; Router Seam*: `Store.on('change', Router.scheduleRender)` allows the UI to stay reactive without action handlers coupling to the view layer.
-  - *Action Delegation Seam*: `data-act` attributes on DOM elements routed declaratively through `actions-delegation.js` to semantic action handlers.
+  - *RAG &rarr; Store Seam*: `RAG.observe()` subscribes the retrieval cache to the same `change` event, so index invalidation is owned by RAG instead of every mutation call site.
+  - *Action Delegation Seam*: `data-act` attributes on DOM elements routed declaratively through `actions-delegation.js` to semantic action handlers. `DIRECT_HANDLERS`, `STATIC_HANDLERS` and `CONTEXT_HANDLERS` are the three registries; `KNOWN_ACTIONS` derives from all three.
 - **Locality**: Concentrating related invariants (e.g. course deletion cascading to its events, lessons, readings, and document chunks) inside the Store rather than scattering array mutations across multiple action files and modals.
 - **Leverage**: Action handlers and modals shrink to single semantic method calls (`Store.courses.remove(id)`), hiding persistence, cascade cleanup, and change notifications behind one deep interface.

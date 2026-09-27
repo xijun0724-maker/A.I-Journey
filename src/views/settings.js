@@ -257,30 +257,30 @@ export function settings() {
     '<p class="small muted">Resetting removes every course, task, document and chat message from this browser. Export a backup first if you want to keep it.</p>' +
     '<button class="btn danger block sm" data-act="data-reset">Reset everything</button></div>';
   h += "</div></div>";
-  return '<div class="view-padded">' + h + "</div>";
+  return h;
 }
 
 export function afterSettings(root) {
+  /* These controls persist on change through the Store.settings seam rather
+     than poking the DB object: the namespace is the one writer that also
+     notifies, persists and keeps the change event flowing to the router. */
   const sel = root.querySelector("#setTutorMode");
   if (sel) {
     sel.addEventListener("change", function () {
-      Store.db.settings.tutorMode = sel.value;
-      Store.saveNow();
+      Store.settings.update({ tutorMode: sel.value });
     });
   }
   const std = root.querySelector("#setSyllabusStandard");
   if (std) {
     std.addEventListener("change", function () {
-      Store.db.settings.syllabusStandard = std.value;
-      Store.saveNow();
+      Store.settings.update({ syllabusStandard: std.value });
     });
   }
   const hybrid = root.querySelector("#setHybridRAG");
   if (hybrid) {
     hybrid.addEventListener("change", function () {
-      Store.db.settings.hybridRAG = hybrid.checked;
       if (!hybrid.checked) Hybrid.reset();
-      Store.saveNow();
+      Store.settings.update({ hybridRAG: hybrid.checked });
     });
   }
 }

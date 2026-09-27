@@ -253,6 +253,26 @@ RAG.invalidate = function () {
 };
 
 /*
+ * The index is a cache over `Store.db.chunks`, and any documents/courses write
+ * makes it stale. RAG owns that invariant: it subscribes to the Store's change
+ * seam as soon as the module loads, so no mutation path has to remember to
+ * invalidate — including delete paths a future refactor might add. Callers
+ * stop knowing the index exists at all.
+ */
+RAG.observe = function () {
+  if (RAG._unobserve) return RAG._unobserve;
+  RAG._unobserve = Store.on("change", function (change) {
+    const entity = change && change.entity;
+    if (entity === "documents" || entity === "courses" || entity === "all") {
+      RAG.invalidate();
+    }
+  });
+  return RAG._unobserve;
+};
+
+RAG.observe();
+
+/*
  * There is deliberately no incremental index path anymore. `RAG.updateIndex`
  * (2026-09-25 audit, Step 3) built entries with a different shape than
  * `reindexAll()` — its add-branch had no caller left, and its removal branch

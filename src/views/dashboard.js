@@ -538,7 +538,6 @@ export function dashboard() {
       headActions,
     );
     return (
-      '<div class="view-padded">' +
       emptyHead +
       '<div  class="card u-empty-48">' +
       empty(
@@ -550,7 +549,6 @@ export function dashboard() {
           '<button type="button" class="btn" data-act="new-course">Add course</button>' +
         '</div>',
       ) +
-      '</div>' +
       '</div>'
     );
   }
@@ -635,7 +633,7 @@ export function dashboard() {
   h += renderCalendarCard();
   h += '</div>';
 
-  return '<div class="view-padded">' + h + '</div>';
+  return h;
 }
 
 /** Wire DOM event listeners for the Dashboard */

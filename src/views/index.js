@@ -78,6 +78,8 @@ export function registerAll(Router) {
     title: "AI study assistant",
     fn: assistantView.fn,
     after: assistantView.after,
+    // The chat area fills the viewport; the padded frame would inset it.
+    padded: false,
   });
   Router.registerView("library", {
     title: "Library",

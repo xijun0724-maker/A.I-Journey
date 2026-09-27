@@ -234,19 +234,16 @@ function render() {
       '<button class="btn primary mt" data-act="nav" data-arg="dashboard">Back to dashboard</button></div>';
     if (typeof console !== "undefined" && console.error) console.error(e);
   }
+  /* Layout seam: the router owns the page frame. Every view returns its body
+     only, so the scope chip lands inside the frame without any view having to
+     know the wrapper or the chip exists. A view that fills the viewport
+     (`padded: false`, e.g. the chat assistant) opts out of the padded frame. */
   const chip = scopeChipHtml();
-  if (chip && html) {
-    if (html.includes('class="view-padded')) {
-      root.innerHTML = html.replace(
-        /(<div[^>]*class="[^"]*view-padded[^"]*"[^>]*>)/,
-        `$1${chip}`,
-      );
-    } else {
-      root.innerHTML = '<div class="view-padded">' + chip + html + "</div>";
-    }
-  } else {
-    root.innerHTML = html;
-  }
+  const body = html || "";
+  root.innerHTML =
+    def.padded === false
+      ? chip + body
+      : '<div class="view-padded">' + chip + body + "</div>";
   /* Dynamic declarations (a colour, a computed width) ride as data-style
      and land here — CSSOM writes, which CSP style-src does not block. */
   applyDataStyles(root);

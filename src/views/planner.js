@@ -273,7 +273,6 @@ export function planner() {
     const s = Store.db.settings || {};
     const weeklyCap = Math.round((s.studyWeekday || 2) * 5 + (s.studyWeekend || 4) * 2);
     return (
-      '<div class="view-padded">' +
       h +
       '<div  class="card todo-empty-ruled u-empty-32">' +
       empty(
@@ -290,7 +289,6 @@ export function planner() {
           "h/week total capacity).",
         '<button type="button" class="btn primary mt" data-act="plan-generate">Generate my study plan</button>',
       ) +
-      "</div>" +
       "</div>"
     );
   }
@@ -437,7 +435,7 @@ export function planner() {
         '<button type="button" class="btn primary sm mt" data-act="plan-toggle-completed">Back to active schedule</button>',
       ) +
       "</div>";
-    return '<div class="view-padded">' + h + "</div>";
+    return h;
   }
 
   if (isShowingReviews && reviewBlocks === 0) {
@@ -450,7 +448,7 @@ export function planner() {
         '<button type="button" class="btn primary sm mt" data-act="plan-toggle-reviews">Back to active schedule</button>',
       ) +
       "</div>";
-    return '<div class="view-padded">' + h + "</div>";
+    return h;
   }
 
   // ── HIERARCHY LEVEL 4: BALANCED DAY-BY-DAY SCHEDULE GRID (FULL WIDTH) ─
@@ -488,7 +486,7 @@ export function planner() {
         "</div>",
       ) +
       "</div>";
-    return '<div class="view-padded">' + h + "</div>";
+    return h;
   }
 
   h += '<div class="planner-days-grid">';
@@ -655,7 +653,7 @@ export function planner() {
   });
   h += "</div>"; // .planner-days-grid
 
-  return '<div class="view-padded">' + h + "</div>";
+  return h;
 }
 
 function renderPlannerPreview(preview) {
@@ -813,7 +811,7 @@ function renderPlannerPreview(preview) {
   });
   h += "</div>";
 
-  return '<div class="view-padded">' + h + "</div>";
+  return h;
 }
 
 /**

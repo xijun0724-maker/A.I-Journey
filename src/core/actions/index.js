@@ -49,28 +49,114 @@ import {
 } from "./planner.js";
 
 /**
- * Actions handled by their own control flow in act(), before the dispatch
- * table is consulted. Kept next to the branches that implement them.
+ * Direct-action handlers: name and behaviour in one table.
+ *
+ * These were previously a name list plus a parallel if-ladder inside `act()`,
+ * so adding one meant editing two registries nothing kept in sync. Each
+ * handler receives a context `{ el, arg, id }` — the same facts the ladder
+ * read off the element — so the name and its implementation share a home.
  */
-const DIRECT_ACTIONS = [
-  "nav",
-  "view",
-  "go-import",
-  "ask",
-  "tab",
-  "course-view",
-  "course-open-roadmap",
-  "roadmap-view",
-  "scope-course",
-  "scope-clear",
-  "scope-clear-to-courses",
-  "task-ask",
-  "cal-prev",
-  "cal-next",
-  "cal-today",
-  "cal-day-view",
-  "cal-day-new",
-];
+
+/** Sidebar / hash navigation, shared by `nav` and `view`. */
+function directRoute({ arg }) {
+  if (arg === "courses") {
+    UIState.set("tab.courses", "courses");
+    UIState.set("tab.roadmap", "courses");
+  } else if (arg === "roadmap") {
+    UIState.set("tab.courses", "roadmap");
+    UIState.set("tab.roadmap", "roadmap");
+  }
+  return Router.navigate(arg || "dashboard");
+}
+
+/** Open a course's roadmap, shared by `course-view` and `course-open-roadmap`. */
+function directCourseRoadmap({ id }) {
+  if (id) UIState.set("courseId", id);
+  UIState.set("tab.courses", "roadmap");
+  UIState.set("tab.roadmap", "roadmap");
+  if (UIState.view !== "courses" && UIState.view !== "roadmap") {
+    Router.navigate("courses");
+  } else {
+    Router.scheduleRender();
+  }
+}
+
+const DIRECT_HANDLERS = Object.freeze({
+  nav: directRoute,
+  view: directRoute,
+  "go-import": () => Router.navigate("import"),
+  ask: ({ arg }) => {
+    Router.navigate("assistant");
+    requestAnimationFrame(async () => {
+      const { sendChat } = await import("../../views/assistant.js");
+      sendChat(arg);
+    });
+  },
+  tab: ({ el, arg }) => {
+    const v = el?.dataset?.view;
+    if (v && arg) {
+      UIState.set(`tab.${v}`, arg);
+      if (v === "courses" || v === "roadmap") {
+        UIState.set("tab.courses", arg);
+        UIState.set("tab.roadmap", arg);
+      }
+      Router.scheduleRender();
+    }
+  },
+  "course-view": directCourseRoadmap,
+  "course-open-roadmap": directCourseRoadmap,
+  "roadmap-view": ({ el }) => {
+    const v = el?.dataset?.view || "tree";
+    UIState.set("roadmapView", v);
+    Router.scheduleRender();
+  },
+  "scope-course": ({ id }) => {
+    UIState.set("courseId", id || "all");
+    Router.scheduleRender();
+  },
+  "scope-clear": () => {
+    UIState.set("courseId", "all");
+    Router.scheduleRender();
+  },
+  "scope-clear-to-courses": () => {
+    UIState.set("courseId", "all");
+    UIState.set("tab.courses", "courses");
+    UIState.set("tab.roadmap", "courses");
+    Router.scheduleRender();
+  },
+  "task-ask": ({ id }) => {
+    Router.navigate("assistant");
+    const ev = Store.db.events.find((e) => e.id === id);
+    if (ev)
+      requestAnimationFrame(async () => {
+        const { sendChat } = await import("../../views/assistant.js");
+        sendChat(
+          'Help me understand "' +
+            String(ev.title || "").replace(/["'`]/g, "") +
+            '"',
+        );
+      });
+  },
+  "cal-prev": () => {
+    import("../../views/calendar.js").then((m) => m.stepCalendarMonth(-1));
+  },
+  "cal-next": () => {
+    import("../../views/calendar.js").then((m) => m.stepCalendarMonth(1));
+  },
+  "cal-today": () => {
+    import("../../views/calendar.js").then((m) => m.jumpToToday());
+  },
+  "cal-day-view": ({ el }) => {
+    const dStr = el?.dataset?.date;
+    if (dStr) {
+      import("../../views/calendar.js").then((m) => m.showDayEventsModal(dStr));
+    }
+  },
+  "cal-day-new": ({ el }) => {
+    const dStr = el?.dataset?.date;
+    return _modal("eventModal", null, dStr ? { due: dStr } : {});
+  },
+});
 
 /**
  * Context-free handlers: a frozen map shared by every dispatch.
@@ -149,110 +235,9 @@ function act(action, el) {
   const arg = el?.dataset?.arg || el?.dataset?.id || null;
   const id = el?.dataset?.id || null;
 
-  // Navigation actions
-  if (action === "nav" || action === "view") {
-    if (arg === "courses") {
-      UIState.set("tab.courses", "courses");
-      UIState.set("tab.roadmap", "courses");
-    } else if (arg === "roadmap") {
-      UIState.set("tab.courses", "roadmap");
-      UIState.set("tab.roadmap", "roadmap");
-    }
-    return Router.navigate(arg || "dashboard");
-  }
-  if (action === "go-import") return Router.navigate("import");
-  if (action === "ask") {
-    Router.navigate("assistant");
-    requestAnimationFrame(async () => {
-      const { sendChat } = await import("../../views/assistant.js");
-      sendChat(arg);
-    });
-    return;
-  }
-  if (action === "tab") {
-    const v = el?.dataset?.view;
-    if (v && arg) {
-      UIState.set(`tab.${v}`, arg);
-      if (v === "courses" || v === "roadmap") {
-        UIState.set("tab.courses", arg);
-        UIState.set("tab.roadmap", arg);
-      }
-      Router.scheduleRender();
-    }
-    return;
-  }
-  if (action === "course-open-roadmap" || action === "course-view") {
-    if (id) UIState.set("courseId", id);
-    UIState.set("tab.courses", "roadmap");
-    UIState.set("tab.roadmap", "roadmap");
-    if (UIState.view !== "courses" && UIState.view !== "roadmap") {
-      Router.navigate("courses");
-    } else {
-      Router.scheduleRender();
-    }
-    return;
-  }
-  if (action === "roadmap-view") {
-    const v = el?.dataset?.view || "tree";
-    UIState.set("roadmapView", v);
-    Router.scheduleRender();
-    return;
-  }
-  if (action === "scope-course") {
-    UIState.set("courseId", id || "all");
-    Router.scheduleRender();
-    return;
-  }
-  if (action === "scope-clear") {
-    UIState.set("courseId", "all");
-    Router.scheduleRender();
-    return;
-  }
-  if (action === "scope-clear-to-courses") {
-    UIState.set("courseId", "all");
-    UIState.set("tab.courses", "courses");
-    UIState.set("tab.roadmap", "courses");
-    Router.scheduleRender();
-    return;
-  }
-
-  if (action === "task-ask") {
-    Router.navigate("assistant");
-    const ev = Store.db.events.find((e) => e.id === id);
-    if (ev)
-      requestAnimationFrame(async () => {
-        const { sendChat } = await import("../../views/assistant.js");
-        sendChat(
-          'Help me understand "' +
-            String(ev.title || "").replace(/["'`]/g, "") +
-            '"',
-        );
-      });
-    return;
-  }
-  if (action === "cal-prev") {
-    import("../../views/calendar.js").then((m) => m.stepCalendarMonth(-1));
-    return;
-  }
-  if (action === "cal-next") {
-    import("../../views/calendar.js").then((m) => m.stepCalendarMonth(1));
-    return;
-  }
-  if (action === "cal-today") {
-    import("../../views/calendar.js").then((m) => m.jumpToToday());
-    return;
-  }
-  if (action === "cal-day-view") {
-    const dStr = el?.dataset?.date;
-    if (dStr) {
-      import("../../views/calendar.js").then((m) => m.showDayEventsModal(dStr));
-    }
-    return;
-  }
-  if (action === "cal-day-new") {
-    const dStr = el?.dataset?.date;
-    return _modal("eventModal", null, dStr ? { due: dStr } : {});
-  }
+  // Direct actions carry their own behaviour; the table is the source of truth.
+  const direct = DIRECT_HANDLERS[action];
+  if (direct) return direct({ el, arg, id });
 
   const dispatch = buildDispatch(el, arg, id);
   const handler = dispatch[action];
@@ -361,7 +346,7 @@ const CONTEXT_ACTION_NAMES = Object.freeze(Object.keys(CONTEXT_HANDLERS));
 
 /**
  * Every action name the dispatcher can handle, derived from the static table,
- * the context table, and the direct-action list — never by calling
+ * the context table, and the direct-handler table — never by calling
  * `buildDispatch` with placeholder nulls.
  *
  * The previous manual list had drifted: `chat-resend` is emitted by the
@@ -369,7 +354,7 @@ const CONTEXT_ACTION_NAMES = Object.freeze(Object.keys(CONTEXT_HANDLERS));
  * "unknown action" warning while still working.
  */
 const KNOWN_ACTIONS = new Set([
-  ...DIRECT_ACTIONS,
+  ...Object.keys(DIRECT_HANDLERS),
   ...Object.keys(STATIC_HANDLERS),
   ...CONTEXT_ACTION_NAMES,
 ]);
@@ -379,7 +364,7 @@ const KNOWN_ACTIONS = new Set([
  *
  * Static handlers are spread from the frozen map; context handlers are
  * instantiated once for this element. `KNOWN_ACTIONS` is the union of both
- * tables plus `DIRECT_ACTIONS`, so a handler cannot exist without the guard
+ * tables plus `DIRECT_HANDLERS`, so a handler cannot exist without the guard
  * knowing about it, and a mistyped data-act cannot look registered.
  *
  * @param {Element|null} el - The [data-act] element (null when probing keys)

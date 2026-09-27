@@ -20,7 +20,6 @@ export function importPick() {
       ? UIState.courseId
       : (Store.db.courses[0] && Store.db.courses[0].id) || "";
   return (
-    '<div class="view-padded">' +
     pageHead(
       "Import documents",
       "Upload a syllabus, brief, notes or textbook. Journey A.I extracts the text and tables, then maps them to topics, deadlines, readings and subtasks.",
@@ -70,7 +69,6 @@ export function importPick() {
     "</select></label>" +
     '<div class="notice info"><div>Type it as <strong>Course syllabus</strong> and a full lesson roadmap with deadlines and readings is generated. Other types are indexed for the AI assistant and summarised.</div></div>' +
     '<div id="impMsg" class="mt"></div>' +
-    "</div>" +
     "</div>" +
     "</div>"
   );
@@ -478,7 +476,7 @@ export function importReview() {
     h += "</div>";
   });
 
-  return '<div class="view-padded">' + h + "</div>";
+  return h;
 }
 
 function standardReview(analysis) {

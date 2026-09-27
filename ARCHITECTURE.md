@@ -50,12 +50,33 @@ index.html (SPA shell, CSP meta, inline load-failure fallback)
 4. **Action dispatch** — UI events use `data-act` attributes routed through `src/core/actions/` and `src/app/actions-delegation.js`.
 5. **Sync load, async mirror** — `Store.load()` stays synchronous (localStorage); boot then `await Store.hydrateFromIDB()` so a newer IndexedDB snapshot wins before any view reads. When `indexedDB` is missing (tests / happy-dom) the app is localStorage-only.
 
+## Deepening pass (2026-09-27)
+
+Five shallow seams were turned into deep modules, each verified against the
+full suite (889 passed, lint clean, build green):
+
+- **Settings schema** — `config/settings.js` owns every setting's default, type
+  and form coercion (`defaultSettings` / `readSettingsForm`). The Settings view,
+  calendar and academic-calendar writers all go through `Store.settings.update`;
+  no module assigns `db.settings.*` directly.
+- **One registry per direct action** — the old `DIRECT_ACTIONS` name list and its
+  parallel if-ladder in `act()` became `DIRECT_HANDLERS`, one `{ name: handler }`
+  table, so an action's name and behaviour cannot drift apart.
+- **RAG owns its cache** — `RAG.observe()` subscribes to the Store change seam,
+  so documents/courses writes invalidate the index without any call site
+  remembering to (`deleteDocument` no longer calls `RAG.invalidate()`).
+- **Store entity factory** — `makeEntity` generates `courses`, `events`,
+  `lessons`, `readings` and `documents` from a descriptor.
+- **Layout seam** — `Router.render` composes `view-padded` + scope chip; views
+  return their body only and no longer string-match their own wrapper. A view
+  that fills the viewport opts out with `padded: false` (the chat assistant).
+
 ## Baseline (re-verified 2026-09-27)
 
 | Gate | Result |
 | --- | --- |
 | `npm run test` | **889 passed** (55 files) |
-| `npm run build` | OK — `index.html` 11.46 kB (gzip 3.18), CSS 135.60 kB (gzip 23.87), JS code-split into **two** chunks: 341.42 kB entry + 13.27 kB lazy chunk (gzip 110.43 + 4.30); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
+| `npm run build` | OK — `index.html` 11.46 kB (gzip 3.18), CSS 135.60 kB (gzip 23.87), JS code-split into **two** chunks: 340.63 kB entry + 13.27 kB lazy chunk (gzip 110.22 + 4.30); prints three dynamic-import warnings (the three views imported both statically via `views/index.js` and dynamically via `core/actions/index.js` never actually split) |
 | `npm run lint` | **Passes clean** — 0 errors, 0 warnings |
 | `npm run format:check` | Not enforced in CI; run `npm run format` before committing |
 | Coverage thresholds | statements 60 / branches 50 / functions 60 / lines 60 (`vite.config.js`) |

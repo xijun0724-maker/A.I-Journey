@@ -5,6 +5,7 @@
 import { Store } from "../store.js";
 import { UI } from "../state.js";
 import { CFG } from "../../config/constants.js";
+import { readSettingsForm } from "../../config/settings.js";
 import { q, toast } from "../../utils/dom.js";
 import * as AI from "../../ai/index.js";
 import {
@@ -34,11 +35,18 @@ export function applyProviderModel(provider, model) {
 
 export function saveSettings() {
   const s = Store.settings.get();
-  const patch = {};
   const keyInput = q("#setKey");
   const typedKey = keyInput && keyInput.value.trim();
   const providerSelect = q("#setProvider");
   const modelSelect = q("#setModel");
+
+  /* The schema maps every present form control to a typed value in one pass;
+     provider/model and apiKey are pulled back out because they need the
+     special handling below (model normalisation, sessionStorage). */
+  const patch = readSettingsForm(null, s);
+  delete patch.provider;
+  delete patch.model;
+  delete patch.apiKey;
 
   if (providerSelect) {
     applyProviderModel(providerSelect.value || "gemini", modelSelect ? modelSelect.value : null);
@@ -46,10 +54,9 @@ export function saveSettings() {
     patch.model = modelSelect.value;
   }
 
-  const currentSettings = Store.settings.get();
-  const provider = currentSettings.provider || "gemini";
+  const provider = Store.settings.get().provider || "gemini";
 
-  if (currentSettings.provider === "gemini" && patch.model) {
+  if (!providerSelect && provider === "gemini" && patch.model) {
     patch.model = AI.normalizeGeminiModel(patch.model);
   }
 
@@ -66,30 +73,9 @@ export function saveSettings() {
     }
   }
 
-  /* Only fields that are actually on screen are written, so a save fired
-     from a screen without these inputs cannot throw on a null lookup. */
-  const aiToggle = q("#setAiEnabled");
-  if (aiToggle) patch.aiEnabled = aiToggle.checked;
-  const hybridInput = q("#setHybridRAG");
-  if (hybridInput) patch.hybridRAG = hybridInput.checked;
-  const standardSelect = q("#setSyllabusStandard");
-  if (standardSelect) patch.syllabusStandard = standardSelect.value;
-  const weekdayInput = q("#setWeekday");
-  if (weekdayInput) patch.studyWeekday = parseFloat(weekdayInput.value) || 2;
-  const weekendInput = q("#setWeekend");
-  if (weekendInput) patch.studyWeekend = parseFloat(weekendInput.value) || 4;
-  const weeksInput = q("#setWeeks");
-  if (weeksInput) patch.plannerWeeks = parseInt(weeksInput.value, 10) || 6;
-  const defaultViewInput = q("#setDefaultView");
-  if (defaultViewInput) patch.defaultView = defaultViewInput.value || "dashboard";
-  const termStartInput = q("#setTermStart");
-  if (termStartInput) patch.termStart = termStartInput.value || s.termStart;
-  const termEndInput = q("#setTermEnd");
-  if (termEndInput) patch.termEnd = termEndInput.value || s.termEnd;
-  const academicYearInput = q("#setAcademicYear");
-  if (academicYearInput) patch.academicYear = academicYearInput.value || s.academicYear;
-  const termNameInput = q("#setTermName");
-  if (termNameInput) patch.termName = termNameInput.value || s.termName;
+  if (patch.defaultView !== undefined && !patch.defaultView) {
+    patch.defaultView = "dashboard";
+  }
 
   const updated = Store.settings.update(patch);
   hydrateKey(updated);

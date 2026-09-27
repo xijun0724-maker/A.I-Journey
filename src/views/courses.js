@@ -132,7 +132,6 @@ export function courses() {
 
   if (!Store.db.courses.length) {
     return (
-      '<div class="view-padded">' +
       h +
       '<div class="card">' +
       empty(
@@ -141,7 +140,6 @@ export function courses() {
         "Add a course or import a syllabus to begin tracking your academic term.",
         '<button class="btn primary mt" data-act="new-course">Add your first course</button><button class="btn mt" data-act="go-import">Import a syllabus</button>',
       ) +
-      "</div>" +
       "</div>"
     );
   }
@@ -320,7 +318,7 @@ export function courses() {
       "</div>";
 
     out += "</div>"; // closes .course-overview-card
-    return '<div class="view-padded">' + h + out + "</div>";
+    return h + out;
   }
 
   // Roadmap Sub-tabs (Weekly Outline, Deadlines, Readings, Tables)
@@ -335,15 +333,13 @@ export function courses() {
         ? Store.course(UIState.courseId)
         : Store.db.courses[0];
     return (
-      '<div class="view-padded">' +
       focusedBanner +
       renderVisualRoadmapTree(
         activeCourse,
         Store.db.lessons,
         Store.db.events,
         Store.db.readings,
-      ) +
-      "</div>"
+      )
     );
   }
 
@@ -356,13 +352,7 @@ export function courses() {
     subContent = renderTables();
   }
 
-  return (
-    '<div class="view-padded">' +
-    h +
-    focusedBanner +
-    subContent +
-    "</div>"
-  );
+  return h + focusedBanner + subContent;
 }
 
 /**

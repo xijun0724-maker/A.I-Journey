@@ -40,14 +40,10 @@ async function boot() {
     initLifecycle();
     Router.init();
 
-    // Reactive seam: render automatically whenever Store mutations occur,
-    // and invalidate RAG index when library documents or courses change.
-    Store.on("change", ({ entity }) => {
-      Router.scheduleRender();
-      if (entity === "documents" || entity === "courses" || entity === "all") {
-        RAG.invalidate();
-      }
-    });
+    // Reactive seam: render automatically whenever Store mutations occur.
+    // Retrieval cache freshness is RAG's own concern — it subscribes to this
+    // same change seam in domain/rag.js, so no caller has to invalidate.
+    Store.on("change", () => Router.scheduleRender());
 
     // Hide loader once app is ready
     const app = document.getElementById("app");
