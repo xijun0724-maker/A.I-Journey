@@ -206,9 +206,10 @@ const EMITTED = emittedActions();
 
 describe("action coverage", () => {
   it("matches KNOWN_ACTIONS to the dispatch table, not a hand-written list", () => {
-    /* chat-resend is emitted by the recent-chat markup. It was missing from the
-       old manual set, so every click logged a false "unknown action". */
-    expect(KNOWN_ACTIONS.has("chat-resend")).toBe(true);
+    /* chat-open is emitted by the recent-chat markup. Its predecessor,
+       chat-resend, went missing from the old manual set, so every click
+       logged a false "unknown action". */
+    expect(KNOWN_ACTIONS.has("chat-open")).toBe(true);
     expect(KNOWN_ACTIONS.has("chat-send")).toBe(true);
     expect(KNOWN_ACTIONS.has("nav")).toBe(true);
   });
@@ -217,7 +218,7 @@ describe("action coverage", () => {
     expect(EMITTED.files.length).toBeGreaterThan(50);
     expect(EMITTED.literal.size).toBeGreaterThan(30);
     expect(EMITTED.literal.has("chat-send")).toBe(true);
-    expect(EMITTED.literal.has("chat-resend")).toBe(true);
+    expect(EMITTED.literal.has("chat-open")).toBe(true);
   });
 
   it("knows every action the markup emits", () => {

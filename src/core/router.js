@@ -163,10 +163,13 @@ function renderSidebarActions() {
 }
 
 /**
- * Render recent chats in sidebar
+ * Render recent chats in sidebar: one row per conversation, with the open
+ * conversation carrying the active pill.
  */
 function renderRecentChats() {
-  renderRecents(q("#recentChatList"), Store.db.chat);
+  renderRecents(q("#recentChatList"), Store.chat.conversations(), {
+    activeCid: Store.chat.activeId(),
+  });
 }
 
 /**

@@ -235,10 +235,8 @@ export function toggleSidebarChatSearch() {
         return;
       }
       /* Filtered results are not "the current conversation", so no pill. */
-      renderRecents(q("#recentChatList"), Store.db.chat, {
-        query: query,
+      renderRecents(q("#recentChatList"), Store.chat.conversations(query), {
         limit: 0,
-        activeFirst: false,
         emptyLabel: "No matches",
       });
     });

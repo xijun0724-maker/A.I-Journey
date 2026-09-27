@@ -189,7 +189,10 @@ const STATIC_HANDLERS = Object.freeze({
     const { abortPending } = await import("../../views/assistant.js");
     if (!abortPending()) toast("Nothing is running.", "info");
   },
+  /* New = a fresh conversation: close the current one so the landing page
+     shows, keep everything else in Recents. */
   "chat-new": () => {
+    Store.chat.newConversation();
     Router.navigate("assistant");
   },
   "chat-search": toggleSidebarChatSearch,
@@ -326,19 +329,15 @@ const CONTEXT_HANDLERS = Object.freeze({
       sendChat(q);
     }
   },
-  "chat-resend": (el) => async () => {
-    const q = el?.dataset?.q;
-    if (q) {
-      Router.navigate("assistant");
-      requestAnimationFrame(async () => {
-        const { sendChat } = await import("../../views/assistant.js");
-        sendChat(q);
-      });
-    }
+  /* A Recents row *is* a conversation: clicking it resumes that chat. */
+  "chat-open": (el) => () => {
+    const cid = el?.dataset?.cid;
+    if (cid) Store.chat.open(cid);
+    Router.navigate("assistant");
   },
   "chat-remove-recent": (el) => () => {
-    const content = el?.dataset?.q;
-    if (content) Store.chat.removeRecent(content);
+    const cid = el?.dataset?.cid;
+    if (cid) Store.chat.removeConversation(cid);
   },
 });
 
@@ -349,9 +348,10 @@ const CONTEXT_ACTION_NAMES = Object.freeze(Object.keys(CONTEXT_HANDLERS));
  * the context table, and the direct-handler table — never by calling
  * `buildDispatch` with placeholder nulls.
  *
- * The previous manual list had drifted: `chat-resend` is emitted by the
- * recent-chat markup but was missing here, so clicking it logged a false
- * "unknown action" warning while still working.
+ * Historically this list was hand-maintained and drifted: `chat-resend`
+ * was emitted by the recent-chat markup but missing here, so clicking it
+ * logged a false "unknown action" warning while still working. Deriving it
+ * from the registries keeps that impossible.
  */
 const KNOWN_ACTIONS = new Set([
   ...Object.keys(DIRECT_HANDLERS),

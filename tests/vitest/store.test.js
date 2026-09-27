@@ -294,15 +294,49 @@ describe("Store entity namespaces & change events", () => {
     expect(r.done).toBe(false);
   });
 
-  it("Store.chat methods append, clear, and removeRecent", () => {
+  it("Store.chat methods append, group into conversations, and clear", () => {
     Store.chat.append({ role: "user", content: "hello" });
     Store.chat.append({ role: "assistant", content: "hi" });
     Store.chat.append({ role: "user", content: "how to code?" });
     expect(Store.chat.all()).toHaveLength(3);
 
-    Store.chat.removeRecent("hello");
-    expect(Store.chat.all()).toHaveLength(2);
-    expect(Store.chat.all().find((m) => m.content === "hello")).toBeUndefined();
+    /* One conversation: every message shares the cid the first append
+       opened, and Recents lists it once, titled by the first prompt. */
+    const convos = Store.chat.conversations();
+    expect(convos).toHaveLength(1);
+    expect(convos[0].title).toBe("hello");
+    expect(Store.chat.activeId()).toBe(convos[0].cid);
+    expect(Store.chat.activeMessages()).toHaveLength(3);
+
+    /* New: nothing open, the landing page shows, history stays listed. */
+    Store.chat.newConversation();
+    expect(Store.chat.activeId()).toBeNull();
+    expect(Store.chat.activeMessages()).toEqual([]);
+    expect(Store.chat.conversations()).toHaveLength(1);
+
+    /* The next message starts a second conversation. */
+    Store.chat.append({ role: "user", content: "new topic" });
+    const after = Store.chat.conversations();
+    expect(after).toHaveLength(2);
+    expect(after[0].title).toBe("new topic");
+    expect(Store.chat.activeMessages().map((m) => m.content)).toEqual([
+      "new topic",
+    ]);
+  });
+
+  it("Store.chat.removeConversation drops one chat and closes it", () => {
+    Store.chat.append({ role: "user", content: "first chat" });
+    const first = Store.chat.activeId();
+    Store.chat.newConversation();
+    Store.chat.append({ role: "user", content: "second chat" });
+
+    Store.chat.removeConversation(first);
+    expect(Store.chat.conversations()).toHaveLength(1);
+    expect(Store.chat.activeId()).not.toBe(first);
+
+    Store.chat.removeConversation(Store.chat.activeId());
+    expect(Store.chat.all()).toEqual([]);
+    expect(Store.chat.activeId()).toBeNull();
 
     Store.chat.clear();
     expect(Store.chat.all()).toEqual([]);

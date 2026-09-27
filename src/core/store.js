@@ -296,6 +296,7 @@ function ingestRaw(raw) {
  * @returns {Object} Database object
  */
 function load() {
+  _activeCid = undefined;
   let raw = null;
   try {
     raw = localStorage.getItem(CFG.storageKey);
@@ -564,6 +565,7 @@ function removeCourse(id) {
  * Reset all data to blank state
  */
 function resetAll() {
+  _activeCid = undefined;
   db = maybeSeal(blank());
   saveNow();
   emit("reset", db);
@@ -754,28 +756,162 @@ const documentsNamespace = makeEntity({
   },
 });
 
+/* ── Chat conversations ─────────────────────────────────────────────
+   The transcript is stored as one flat message list; a *conversation* is
+   the group of messages sharing a cid. Messages stored before this concept
+   existed carry no cid and form one legacy conversation, so old data keeps
+   its shape with no schema migration. */
+
+const LEGACY_CID = "c-legacy";
+
+function cidOf(msg) {
+  return (msg && msg.cid) || LEGACY_CID;
+}
+
+/*
+ * Which conversation is open — session view state, deliberately not part of
+ * the persisted schema:
+ *   undefined → nothing chosen yet: resume the newest conversation (the
+ *               pre-conversation behaviour, so a reload shows the transcript)
+ *   null      → "New" was pressed: nothing open, the landing page shows
+ *   string    → that conversation is open
+ */
+let _activeCid;
+
 const chatNamespace = {
   all() {
     return (db && db.chat) || [];
   },
-  append(msg) {
+
+  /** cid of the open conversation, or null when the landing page shows. */
+  activeId() {
+    if (_activeCid === null) return null;
+    const list = this.all();
+    if (typeof _activeCid === "string") return _activeCid;
+    return list.length ? cidOf(list[list.length - 1]) : null;
+  },
+
+  /** Messages of the open conversation, oldest first. */
+  activeMessages() {
+    const id = this.activeId();
+    if (!id) return [];
+    return this.all().filter(function (m) {
+      return cidOf(m) === id;
+    });
+  },
+
+  /**
+   * Conversations, newest first: one entry per cid, titled by the
+   * conversation's first user message (falling back to its first message,
+   * so a drill-only conversation still has a label).
+   *
+   * @param {string} [query] - Keep only conversations whose text matches,
+   *   case-insensitively; omit to keep them all
+   * @returns {Array<{cid: string, title: string, ts: number}>}
+   */
+  conversations(query) {
+    const needle = String(query == null ? "" : query).toLowerCase();
+    const groups = new Map();
+    this.all().forEach(function (m, i) {
+      const cid = cidOf(m);
+      const text = String(m.content == null ? "" : m.content);
+      let g = groups.get(cid);
+      if (!g) {
+        g = {
+          cid: cid,
+          title: "",
+          firstText: text,
+          last: i,
+          ts: m.ts || 0,
+          hit: false,
+        };
+        groups.set(cid, g);
+      }
+      g.last = i;
+      g.ts = m.ts || g.ts;
+      if (m.role === "user" && !g.title && text) g.title = text;
+      if (needle && text.toLowerCase().indexOf(needle) !== -1) g.hit = true;
+    });
+    const out = [];
+    groups.forEach(function (g) {
+      if (needle && !g.hit) return;
+      out.push({
+        cid: g.cid,
+        title: g.title || g.firstText,
+        ts: g.ts,
+        last: g.last,
+      });
+    });
+    /* Newest first by position in the log, not by timestamp, so messages
+       without a ts still sort the way they were written. */
+    out.sort(function (a, b) {
+      return b.last - a.last;
+    });
+    out.forEach(function (c) {
+      delete c.last;
+    });
+    return out;
+  },
+
+  /**
+   * Start a fresh conversation: nothing is open, so the assistant shows the
+   * landing page. The previous conversation stays in `chat` and in Recents.
+   */
+  newConversation() {
+    _activeCid = null;
+    notifyChange("chat", "new", null);
+  },
+
+  /** Open an existing conversation. */
+  open(cid) {
+    _activeCid = cid || null;
+    notifyChange("chat", "open", _activeCid);
+  },
+
+  /**
+   * Append one message, assigning it to the open conversation (creating one
+   * when nothing is open). A user message always focuses the conversation it
+   * lands in; an assistant message only follows the open one, so a reply
+   * arriving after the student pressed New cannot pull them out of the
+   * landing page. Pass `{ open: true }` when the message itself should open
+   * its conversation (e.g. a practice drill started from the Library).
+   *
+   * Persists without emitting `change`: the assistant paints messages
+   * incrementally, and a change event would schedule a full re-render of the
+   * transcript mid-stream. Callers refresh Recents themselves.
+   *
+   * @param {Object} msg - Message to append
+   * @param {Object} [opts] - { cid, open }
+   */
+  append(msg, opts) {
     if (!msg) return;
+    const o = opts || {};
+    const cid = o.cid || msg.cid || this.activeId() || uid("c");
+    msg.cid = cid;
+    if (o.open || _activeCid !== null || msg.role === "user") {
+      _activeCid = cid;
+    }
     const list = db.chat || [];
     list.push(msg);
     const max = CFG.maxChatMessages || 100;
     db.chat = list.length > max ? list.slice(list.length - max) : list;
-    notifyChange("chat", "append", null);
+    saveNow();
   },
+
+  /** Remove one conversation entirely. */
+  removeConversation(cid) {
+    if (!cid) return;
+    db.chat = (db.chat || []).filter(function (m) {
+      return cidOf(m) !== cid;
+    });
+    if (_activeCid === cid) _activeCid = null;
+    notifyChange("chat", "remove", cid);
+  },
+
   clear() {
     db.chat = [];
+    _activeCid = undefined;
     notifyChange("chat", "clear", null);
-  },
-  removeRecent(content) {
-    if (!content) return;
-    db.chat = (db.chat || []).filter(function (m) {
-      return !(m.role === "user" && m.content === content);
-    });
-    notifyChange("chat", "remove", content);
   },
 };
 

@@ -265,67 +265,44 @@ export function tabBtn(id, label, active, viewName) {
 
 /* ── Sidebar Recents ───────────────────────────────────────────────
    One implementation shared by the sidebar renderer and the chat search,
-   so both escape through esc() and both agree on what a row looks like. */
+   so both escape through esc() and both agree on what a row looks like.
+   Rows are conversations (Store.chat.conversations()), not prompts: one
+   chat in the transcript is one row in the list, the way a chat product
+   lists its conversations. */
 
 const RECENT_MAX = 5;
 const RECENT_LABEL_CHARS = 28;
 
 /**
- * Pick the most recent distinct prompts from a chat log, newest first.
- * @param {Array} chats - Chat message list (Store.db.chat)
- * @param {string} query - Optional filter; matched case-insensitively
- * @param {number} limit - Max entries; 0 means no limit
- * @returns {Array} Matching user messages, newest first
- */
-export function recentPrompts(chats, query, limit) {
-  const max = limit == null ? RECENT_MAX : limit;
-  const needle = String(query == null ? "" : query).toLowerCase();
-  const out = [];
-  const seen = new Set();
-  const list = chats || [];
-  for (let i = list.length - 1; i >= 0; i--) {
-    const msg = list[i];
-    if (!msg || msg.role !== "user") continue;
-    const content = String(msg.content == null ? "" : msg.content);
-    if (seen.has(content)) continue;
-    if (needle && content.toLowerCase().indexOf(needle) === -1) continue;
-    seen.add(content);
-    out.push(msg);
-    if (max > 0 && out.length >= max) break;
-  }
-  return out;
-}
-
-/**
- * Build Recents row markup. Rows are plain text; the newest prompt is the
- * conversation in progress, so it carries the active pill.
- * @param {Array} prompts - Result of recentPrompts()
- * @param {Object} opts - { activeFirst }
+ * Build Recents row markup. Each row opens its conversation; the open
+ * conversation carries the active pill.
+ * @param {Array} conversations - Result of Store.chat.conversations()
+ * @param {Object} opts - { activeCid }
  * @returns {string} HTML string
  */
-export function recentsHTML(prompts, opts) {
-  const activeFirst = !opts || opts.activeFirst !== false;
-  return (prompts || [])
-    .map(function (m, i) {
-      const full = String(m.content == null ? "" : m.content);
+export function recentsHTML(conversations, opts) {
+  const o = opts || {};
+  return (conversations || [])
+    .map(function (c) {
+      const full = String(c.title == null ? "" : c.title);
       const text =
         full.length > RECENT_LABEL_CHARS
           ? full.slice(0, RECENT_LABEL_CHARS) + "\u2026"
           : full;
-      const active = activeFirst && i === 0;
+      const active = o.activeCid && c.cid === o.activeCid;
       return (
         '<div class="recent-chat-item">' +
         '<button class="recent-chat-link' +
         (active ? " active" : "") +
-        '" data-act="chat-resend" data-q="' +
-        esc(full) +
+        '" data-act="chat-open" data-cid="' +
+        esc(c.cid) +
         '"' +
         (active ? ' aria-current="true"' : "") +
         ">" +
         esc(text) +
         "</button>" +
-        '<button class="recent-chat-remove" data-act="chat-remove-recent" data-q="' +
-        esc(full) +
+        '<button class="recent-chat-remove" data-act="chat-remove-recent" data-cid="' +
+        esc(c.cid) +
         '" aria-label="Remove">&times;</button>' +
         "</div>"
       );
@@ -336,20 +313,27 @@ export function recentsHTML(prompts, opts) {
 /**
  * Render the Recents list into a container.
  * @param {Element} list - Container element
- * @param {Array} chats - Chat log
- * @param {Object} opts - { query, limit, activeFirst, emptyLabel }
+ * @param {Array} conversations - Conversations, newest first
+ * @param {Object} opts - { limit, activeCid, emptyLabel }
  * @returns {number} Rows rendered
  */
-export function renderRecents(list, chats, opts) {
+export function renderRecents(list, conversations, opts) {
   if (!list) return 0;
   const o = opts || {};
-  const prompts = recentPrompts(chats, o.query, o.limit);
-  if (!prompts.length) {
+  const all = conversations || [];
+  /* limit 0 means no limit (the sidebar search shows every hit). */
+  const rows =
+    o.limit == null
+      ? all.slice(0, RECENT_MAX)
+      : o.limit === 0
+        ? all
+        : all.slice(0, o.limit);
+  if (!rows.length) {
     list.innerHTML = o.emptyLabel
       ? '<div class="sb-section-label">' + esc(o.emptyLabel) + "</div>"
       : "";
     return 0;
   }
-  list.innerHTML = recentsHTML(prompts, o);
-  return prompts.length;
+  list.innerHTML = recentsHTML(rows, o);
+  return rows.length;
 }

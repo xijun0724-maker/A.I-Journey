@@ -368,11 +368,7 @@ function startDrill(title, questions) {
     ts: Date.now(),
     mode: "drill",
   };
-  Store.db.chat.push(msg);
-  if (Store.db.chat.length > CFG.maxChatMessages) {
-    Store.db.chat = Store.db.chat.slice(-CFG.maxChatMessages);
-  }
-  Store.saveNow();
+  Store.chat.append(msg, { open: true });
   Router.navigate("assistant");
   return true;
 }
@@ -626,26 +622,26 @@ function renderElicitLanding() {
 function renderElicitCards() {
   const cards = [];
 
-  /* First card: Resume recent chat if available */
-  const chats = Store.db.chat || [];
-  let recentUser = null;
-  for (let i = chats.length - 1; i >= 0; i--) {
-    if (chats[i].role === "user") {
-      recentUser = chats[i];
-      break;
-    }
-  }
-  if (recentUser) {
+  /* First card: resume the newest conversation that is not already open.
+     The landing page only shows when nothing is open, so "not open" simply
+     means: take the newest one. */
+  const open = Store.chat.activeId();
+  const resume = Store.chat
+    .conversations()
+    .find(function (c) {
+      return c.cid !== open;
+    });
+  if (resume && resume.title) {
     const text =
-      recentUser.content.length > 60
-        ? recentUser.content.slice(0, 60) + "..."
-        : recentUser.content;
-    const ago = timeAgo(recentUser.ts);
+      resume.title.length > 60
+        ? resume.title.slice(0, 60) + "..."
+        : resume.title;
+    const ago = timeAgo(resume.ts);
     cards.push({
       badge: "resume",
       text: text,
       meta: ago || null,
-      q: recentUser.content,
+      cid: resume.cid,
     });
   }
 
@@ -665,10 +661,15 @@ function renderElicitCards() {
 
   let h = '<div class="elicit-grid">';
   cards.forEach(function (c) {
-    h +=
-      '<div class="elicit-suggestion-card" data-act="chat-suggest" data-q="' +
-      esc(c.q) +
-      '">';
+    /* Resume opens the stored conversation; suggestions send a prompt into
+       whatever conversation is open. */
+    h += c.cid
+      ? '<div class="elicit-suggestion-card" data-act="chat-open" data-cid="' +
+        esc(c.cid) +
+        '">'
+      : '<div class="elicit-suggestion-card" data-act="chat-suggest" data-q="' +
+        esc(c.q) +
+        '">';
 
     /* Badge */
     if (c.badge === "resume") {
@@ -850,7 +851,9 @@ function timeAgo(ts) {
 /* ── Main view rendering ───────────────────────────────────────────── */
 
 export function assistant() {
-  const msgs = Store.db.chat || [];
+  /* Only the open conversation renders: after "New" this is empty and the
+     landing page below shows, while older conversations wait in Recents. */
+  const msgs = Store.chat.activeMessages();
   const hasMsgs = msgs.length > 0;
 
   let h = '<div class="chat-area">';
@@ -1033,7 +1036,10 @@ export function sendChat(forced) {
 
   if (UIState.chatPending) return;
 
-  const lastMsg = Store.db.chat[Store.db.chat.length - 1];
+  /* Duplicate-send guard: the last message of the conversation being
+     written into — the open one, or the one this send is about to start. */
+  const before = Store.chat.activeMessages();
+  const lastMsg = before[before.length - 1];
   if (lastMsg && lastMsg.role === "user" && lastMsg.content === text) return;
 
   const userMsg = {
@@ -1042,20 +1048,20 @@ export function sendChat(forced) {
     content: text,
     ts: Date.now(),
   };
-  Store.db.chat.push(userMsg);
-
-  if (Store.db.chat.length > CFG.maxChatMessages) {
-    Store.db.chat = Store.db.chat.slice(-CFG.maxChatMessages);
-  }
+  Store.chat.append(userMsg);
+  /* The conversation this exchange belongs to: replies are filed into it
+     even if the student presses New while the answer is still streaming. */
+  const cid = userMsg.cid;
 
   UIState.set("chatPending", true);
-  Store.saveNow();
 
   appendMsg(userMsg);
   Router.renderRecentChats();
   showTyping();
 
-  const chatHistory = Store.db.chat.slice(0, -1);
+  /* Context for the model is the open conversation only: a question asked
+     in a new chat must not carry the previous chat's history with it. */
+  const chatHistory = Store.chat.activeMessages().slice(0, -1);
   const ctrl = beginAbort();
   answer(text, {
     k: 5,
@@ -1084,9 +1090,8 @@ export function sendChat(forced) {
         mode: res.mode,
         model: res.model || null,
       };
-      Store.db.chat.push(aiMsg);
+      Store.chat.append(aiMsg, { cid: cid });
       UIState.set("chatPending", false);
-      Store.saveNow();
       hideTyping();
       hideLive();
       appendMsg(aiMsg);
@@ -1131,8 +1136,7 @@ export function sendChat(forced) {
         ts: Date.now(),
         mode: "offline",
       };
-      Store.db.chat.push(errMsg);
-      Store.saveNow();
+      Store.chat.append(errMsg, { cid: cid });
       appendMsg(errMsg);
     });
 }
@@ -1144,7 +1148,8 @@ export function requestStudyPlan() {
     content: "Build me a personalised study plan for the coming weeks.",
     ts: Date.now(),
   };
-  Store.db.chat.push(userMsg);
+  Store.chat.append(userMsg);
+  const cid = userMsg.cid;
   UIState.set("chatPending", true);
   appendMsg(userMsg);
   Router.renderRecentChats();
@@ -1171,9 +1176,8 @@ export function requestStudyPlan() {
         ts: Date.now(),
         mode: res.mode,
       };
-      Store.db.chat.push(aiMsg);
+      Store.chat.append(aiMsg, { cid: cid });
       UIState.set("chatPending", false);
-      Store.saveNow();
       hideTyping();
       hideLive();
       appendMsg(aiMsg);
