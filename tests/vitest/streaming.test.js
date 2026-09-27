@@ -3,10 +3,11 @@
  * Step 6 of docs/audit-2026-09-25.md — stream the answer instead of
  * withholding it until the whole thing exists.
  *
- * These tests pin the request shape (`:streamGenerateContent?alt=sse`,
- * `stream: true`), the frame reader (split lines, split chunks, `[DONE]`),
- * the one rule that protects the transcript from a half-shown answer being
- * retried into a spliced one, and the provisional bubble the tokens paint.
+ * These tests pin the request shape (`stream: true` against OpenRouter's
+ * chat-completions endpoint), the frame reader (split lines, split chunks,
+ * `[DONE]`), the one rule that protects the transcript from a half-shown
+ * answer being retried into a spliced one, and the provisional bubble the
+ * tokens paint.
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { Store } from "../../src/core/store.js";
@@ -15,16 +16,11 @@ import { RAG } from "../../src/domain/rag.js";
 import { chat } from "../../src/ai/client.js";
 import { answer } from "../../src/ai/index.js";
 import { showLive, hideLive } from "../../src/views/assistant.js";
+import { CFG } from "../../src/config/constants.js";
 
-function keyed(provider = "gemini") {
+function keyed() {
   Store.db.settings.aiEnabled = true;
-  Store.db.settings.provider = provider;
-  setApiKey(
-    provider === "openrouter"
-      ? "sk-or-" + "a".repeat(20)
-      : "test-key-0123456789abcdef",
-    provider,
-  );
+  setApiKey("sk-or-" + "a".repeat(20));
 }
 
 /** A Response stand-in whose body is a readable stream of `chunks`. */
@@ -56,12 +52,6 @@ function sse(chunks, opts = {}) {
   };
 }
 
-/** One Gemini frame carrying `text`. */
-const geminiFrame = (text) =>
-  'data: {"candidates":[{"content":{"parts":[{"text":"' +
-  text +
-  '"}]}}]}\n\n';
-
 /** One OpenRouter frame carrying `text`. */
 const openrouterFrame = (text) =>
   'data: {"choices":[{"delta":{"content":"' + text + '"}}]}\n\n';
@@ -80,13 +70,15 @@ afterEach(() => {
 });
 
 describe("a request that asked to stream", () => {
-  it("uses Gemini's event-stream endpoint and reports each delta", async () => {
+  it("posts to OpenRouter's endpoint and reports each delta", async () => {
     keyed();
     let url = null;
-    globalThis.fetch = (u) => {
+    let body = null;
+    globalThis.fetch = (u, init) => {
       url = u;
+      body = JSON.parse(init.body);
       return Promise.resolve(
-        sse([geminiFrame("Hel"), geminiFrame("lo"), "data: [DONE]\n\n"]),
+        sse([openrouterFrame("Hel"), openrouterFrame("lo"), "data: [DONE]\n\n"]),
       );
     };
 
@@ -95,7 +87,8 @@ describe("a request that asked to stream", () => {
       onToken: (delta, total) => seen.push([delta, total]),
     });
 
-    expect(url).toContain(":streamGenerateContent?alt=sse");
+    expect(url).toBe(CFG.openrouter.baseUrl);
+    expect(body.stream).toBe(true);
     expect(seen).toEqual([
       ["Hel", "Hel"],
       ["lo", "Hello"],
@@ -111,8 +104,8 @@ describe("a request that asked to stream", () => {
     globalThis.fetch = () =>
       Promise.resolve(
         sse([
-          'data: {"candidates":[{"content":{"parts":[{"te',
-          'xt":"Split frame"}]}}]}\n\ndata: {"candidates":[{"content":{"parts":[{"text":" too"}]}}]}\n\n',
+          'data: {"choices":[{"delta":{"con',
+          'tent":"Split frame"}}]}\n\ndata: {"choices":[{"delta":{"content":" too"}}]}\n\n',
         ]),
       );
 
@@ -125,28 +118,31 @@ describe("a request that asked to stream", () => {
     expect(r.text).toBe("Split frame too");
   });
 
-  it("sends `stream: true` to OpenRouter and reads delta.content", async () => {
-    keyed("openrouter");
-    let body = null;
-    globalThis.fetch = (u, init) => {
-      body = JSON.parse(init.body);
-      return Promise.resolve(
-        sse([openrouterFrame("One."), openrouterFrame(" Two."), "data: [DONE]\n\n"]),
-      );
+  it("sends the OpenRouter request shape: bearer auth and the chosen model", async () => {
+    keyed();
+    Store.db.settings.model = "deepseek/deepseek-v4-flash-0731:free";
+    let init = null;
+    globalThis.fetch = (_u, i) => {
+      init = i;
+      return Promise.resolve(sse([openrouterFrame("One."), "data: [DONE]\n\n"]));
     };
 
     const r = await chat([{ role: "user", content: "hi" }], {
       onToken: () => {},
     });
 
+    const body = JSON.parse(init.body);
+    expect(init.headers.Authorization).toContain("Bearer ");
+    expect(init.headers["X-Title"]).toBe("Journey A.I");
+    expect(body.model).toBe("deepseek/deepseek-v4-flash-0731:free");
     expect(body.stream).toBe(true);
     expect(r.ok).toBe(true);
-    expect(r.text).toBe("One. Two.");
+    expect(r.text).toBe("One.");
   });
 });
 
 describe("a request that did not", () => {
-  it("keeps the one-shot endpoint and the old response shape", async () => {
+  it("keeps the one-shot request and the plain completion shape", async () => {
     keyed();
     let url = null;
     let sent = null;
@@ -156,15 +152,14 @@ describe("a request that did not", () => {
       return Promise.resolve({
         ok: true,
         json: async () => ({
-          candidates: [{ content: { parts: [{ text: "All at once." }] } }],
+          choices: [{ message: { content: "All at once." } }],
         }),
       });
     };
 
     const r = await chat([{ role: "user", content: "hi" }]);
 
-    expect(url).toContain(":generateContent");
-    expect(url).not.toContain("streamGenerateContent");
+    expect(url).toBe(CFG.openrouter.baseUrl);
     expect(sent.stream).toBeUndefined();
     expect(r.ok).toBe(true);
     expect(r.text).toBe("All at once.");
@@ -177,7 +172,7 @@ describe("a request that did not", () => {
       Promise.resolve({
         ok: true,
         json: async () => ({
-          candidates: [{ content: { parts: [{ text: "No body here." }] } }],
+          choices: [{ message: { content: "No body here." } }],
         }),
       });
 
@@ -197,7 +192,7 @@ describe("the transcript cannot be spliced from two attempts", () => {
     globalThis.fetch = () => {
       calls++;
       return Promise.resolve(
-        sse([geminiFrame("Half an answer")], {
+        sse([openrouterFrame("Half an answer")], {
           failAt: 1,
           failStatus: 429,
           failMessage: "rate limited",
@@ -244,8 +239,8 @@ describe("answer() hands its tokens to the caller", () => {
     globalThis.fetch = () =>
       Promise.resolve(
         sse([
-          geminiFrame("Photosynthesis "),
-          geminiFrame("makes sugar."),
+          openrouterFrame("Photosynthesis "),
+          openrouterFrame("makes sugar."),
           "data: [DONE]\n\n",
         ]),
       );

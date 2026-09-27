@@ -9,7 +9,7 @@ import { esc, uid, sortBy, minutesToHM } from "../utils/helpers.js";
 import { planProvenance } from "../utils/format.js";
 import { mdToHtml } from "../utils/markdown.js";
 import { q, toast } from "../utils/dom.js";
-import { applyProviderModel } from "../core/actions/settings.js";
+import { applyModel } from "../core/actions/settings.js";
 import Router from "../core/router.js";
 import { RAG } from "../domain/rag.js";
 
@@ -412,23 +412,14 @@ export function practiseCourse(courseId) {
 
 function renderModelSelector() {
   const s = Store.db.settings;
-  const provider = s.provider || "gemini";
-  const model =
-    s.model ||
-    (provider === "openrouter" ? CFG.openrouter.model : CFG.gemini.model);
+  const model = s.model || CFG.openrouter.model;
 
-  let label = "Flash";
-  if (provider === "openrouter") {
-    const found = CFG.openrouter.freeModels.find(function (m) {
-      return m.id === model;
-    });
-    label = found ? found.label.split(" ")[0] : "OpenRouter";
-  } else {
-    label = model
-      .replace("gemini-", "")
-      .replace("2.5-", "")
-      .replace("3.6-", "");
-  }
+  /* Short pill label: the first word of the model's friendly name when it
+     is one we list, otherwise the endpoint itself. */
+  const found = CFG.openrouter.freeModels.find(function (m) {
+    return m.id === model;
+  });
+  const label = found ? found.label.split(" ")[0] : "OpenRouter";
 
   let h = '<div class="pill-model-wrap">';
   h +=
@@ -437,19 +428,11 @@ function renderModelSelector() {
     "</button>";
   h += '<div class="model-dropdown" id="modelDropdown">';
 
-  h +=
-    '<button class="model-option' +
-    (provider === "gemini" ? " active" : "") +
-    '" data-provider="gemini" data-model="' +
-    CFG.gemini.model +
-    '">';
-  h += '<span class="model-dot"></span>Flash</button>';
-
   CFG.openrouter.freeModels.forEach(function (m) {
     h +=
       '<button class="model-option' +
-      (provider === "openrouter" && s.model === m.id ? " active" : "") +
-      '" data-provider="openrouter" data-model="' +
+      (model === m.id ? " active" : "") +
+      '" data-model="' +
       esc(m.id) +
       '">';
     h += '<span class="model-dot"></span>' + esc(m.label) + "</button>";
@@ -973,8 +956,8 @@ export function afterAssistant(root) {
     });
     modelDrop.querySelectorAll(".model-option").forEach(function (opt) {
       opt.addEventListener("click", function () {
-        /* Same preset/normalise/save logic as the Settings form. */
-        applyProviderModel(opt.dataset.provider, opt.dataset.model);
+        /* Same save logic as the Settings form. */
+        applyModel(opt.dataset.model);
         modelDrop.classList.remove("open");
         Router.render();
       });

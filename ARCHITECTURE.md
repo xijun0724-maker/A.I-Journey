@@ -1,6 +1,6 @@
 # Journey A.I — Architecture
 
-Journey A.I is a single-page web app written in **vanilla JavaScript (ES modules)**. There is **no backend**: no FastAPI, no PostgreSQL, no React, no LangChain, no vector database. Persistence is `localStorage`; retrieval is BM25 in the browser; AI calls go directly from the page to Gemini or OpenRouter over `fetch()`.
+Journey A.I is a single-page web app written in **vanilla JavaScript (ES modules)**. There is **no backend**: no FastAPI, no PostgreSQL, no React, no LangChain, no vector database. Persistence is `localStorage`; retrieval is BM25 in the browser; AI calls go directly from the page to OpenRouter over `fetch()`.
 
 > Note: `docs/architecture.md` is the short module-layer tour; this root document is the source of truth for the stack, the invariants and the refactor baseline.
 
@@ -12,7 +12,7 @@ Journey A.I is a single-page web app written in **vanilla JavaScript (ES modules
 | State / persistence | `localStorage` key `journeyai.db.v1` (sync bootstrap) + IndexedDB mirror `journeyai/kv` (async, larger capacity), schemaVersion 4 (`src/core/store.js`, `src/core/idb.js`, `src/config/settings.js`) |
 | API keys | `sessionStorage` only (`src/utils/secure.js`): per-provider record, last-used stamp, TTL; not encrypted (a browser cannot hide a secret from same-origin script), stripped before persist |
 | RAG | Lexical BM25 index over chunked documents (`src/domain/rag.js`); optional hybrid BM25 + ONNX re-rank (`src/domain/rag-embeddings.js`, off by default via `settings.hybridRAG`) |
-| AI providers | Gemini + OpenRouter via browser `fetch()` (`src/ai/client.js`) |
+| AI provider | OpenRouter via browser `fetch()` (`src/ai/client.js`) |
 | Offline fallback | Rule-based extractive answers (`src/ai/offline.js`) |
 | Styling | CSS custom properties in `src/styles/` (tokens, layout, components); every token read without a fallback must be declared there (`tests/vitest/styles.test.js`); width breakpoints limited to the canonical scale in `src/styles/index.css` (same test file) |
 | Build / test | Vite 5 + Vitest 2 (`vite.config.js`); zero runtime npm dependencies |
@@ -137,8 +137,8 @@ the findings this file used to repeat as open have closed with it:
 - `style-src` no longer carries 'unsafe-inline' — every rendered style attribute became a class in
   `styles/utilities.css`, except the handful of values a class cannot express, which became
   `data-style` and are applied through the CSSOM (`tests/vitest/csp.test.js`, `ca4b9db`);
-- answers stream — `chat()` takes an `onToken`, so Gemini is asked for
-  `:streamGenerateContent?alt=sse` and OpenRouter for `stream: true`, and the assistant paints each
+- answers stream — `chat()` takes an `onToken`, so the request asks OpenRouter for `stream: true`
+  and the assistant paints each
   delta into a provisional bubble that the settled, citation-checked message then replaces
   (`tests/vitest/streaming.test.js`, `aedc724`). The agent loop deliberately does not stream: it
   builds its own request options, so no tool turn can paint halfway through a plan;

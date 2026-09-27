@@ -131,39 +131,39 @@ describe("model dropdown applies settings through the shared path", () => {
     Router.render.mockClear();
   });
 
-  it("switching provider from the dropdown uses the settings preset logic", () => {
-    Store.db.settings.provider = "gemini";
-    Store.db.settings.model = CFG.gemini.model;
+  it("switching model from the dropdown goes through the shared save path", () => {
+    Store.db.settings.model = CFG.openrouter.model;
     seedChat();
     buildDom(assistant());
     afterAssistant(document.getElementById("viewRoot"));
 
-    const openrouter = [...document.querySelectorAll(".model-option")].find(
-      (b) => b.dataset.provider === "openrouter",
+    const deepseek = [...document.querySelectorAll(".model-option")].find(
+      (b) => b.dataset.model === "deepseek/deepseek-v4-flash-0731:free",
     );
-    expect(openrouter).toBeTruthy();
+    expect(deepseek).toBeTruthy();
 
-    click(openrouter);
+    click(deepseek);
 
-    expect(Store.db.settings.provider).toBe("openrouter");
-    expect(Store.db.settings.model).toBe(CFG.openrouter.model);
+    expect(Store.db.settings.model).toBe(
+      "deepseek/deepseek-v4-flash-0731:free",
+    );
     expect(Router.render).toHaveBeenCalled();
   });
 
-  it("switching back to gemini normalises the model like Settings does", () => {
-    Store.db.settings.provider = "openrouter";
-    Store.db.settings.model = "openrouter/free";
+  it("switching back to the auto-router restores the default model", () => {
+    Store.db.settings.model = "deepseek/deepseek-v4-flash-0731:free";
     seedChat();
     buildDom(assistant());
     afterAssistant(document.getElementById("viewRoot"));
 
-    const gemini = [...document.querySelectorAll(".model-option")].find(
-      (b) => b.dataset.provider === "gemini",
+    const auto = [...document.querySelectorAll(".model-option")].find(
+      (b) => b.dataset.model === CFG.openrouter.model,
     );
-    click(gemini);
+    expect(auto).toBeTruthy();
 
-    expect(Store.db.settings.provider).toBe("gemini");
-    expect(Store.db.settings.model).toBe(CFG.gemini.model);
+    click(auto);
+
+    expect(Store.db.settings.model).toBe(CFG.openrouter.model);
   });
 });
 
@@ -224,7 +224,7 @@ describe("answer provenance line", () => {
   it("states where the answer came from instead of a confidence percentage", () => {
     seedAnswer({
       mode: "ai",
-      model: "gemini-2.5-flash",
+      model: "deepseek/deepseek-v4-flash-0731:free",
       provenance: {
         band: "grounded",
         mode: "ai",
@@ -232,13 +232,13 @@ describe("answer provenance line", () => {
         docs: 2,
         cited: true,
         allCitationsValid: true,
-        model: "gemini-2.5-flash",
+        model: "deepseek/deepseek-v4-flash-0731:free",
       },
     });
     const html = renderLog().innerHTML;
     expect(html).toContain("Grounded in your documents");
     expect(html).toContain("4 passages from 2 documents");
-    expect(html).toContain("composed by gemini-2.5-flash");
+    expect(html).toContain("composed by deepseek/deepseek-v4-flash-0731:free");
     expect(html).not.toMatch(/\d+%/);
     expect(html).not.toContain("conf-widget");
   });

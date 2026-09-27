@@ -411,7 +411,6 @@ describe("settings actions", () => {
   function renderSettingsForm() {
     document.body.innerHTML =
       '<input id="setKey" value="">' +
-      '<select id="setProvider"><option value="gemini" selected>Gemini</option></select>' +
       '<input type="checkbox" id="setAiEnabled" checked>' +
       '<input type="checkbox" id="setHybridRAG">' +
       '<input id="setWeekday" value="2">' +

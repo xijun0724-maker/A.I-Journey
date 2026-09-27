@@ -23,15 +23,15 @@ describe('secure.js', () => {
   });
 
   describe('setApiKey / getApiKey', () => {
-    it('stores and retrieves a Gemini key (default provider)', () => {
+    it('stores and retrieves the key', () => {
       setApiKey('sk-test-123');
       expect(getApiKey()).toBe('sk-test-123');
     });
 
-    it('stores a key under a specific provider namespace', () => {
-      setApiKey('openai-key-123', 'openai');
-      expect(getApiKey('openai')).toBe('openai-key-123');
-      expect(getApiKey('gemini')).toBe('');
+    it('stores it under the single openrouter slot', () => {
+      setApiKey('sk-key-12345');
+      const raw = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+      expect(raw.keys.openrouter.value).toBe('sk-key-12345');
     });
 
     it('deletes the key when called with empty string', () => {
@@ -47,11 +47,26 @@ describe('secure.js', () => {
       expect(getApiKey()).toBe('');
     });
 
-    it('stores both namespaced and legacy apiKey for Gemini', () => {
-      setApiKey('g-key-12345', 'gemini');
+    it('never reads the Gemini slots: they are pruned on the first access', () => {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 2,
+          keys: {
+            gemini: { value: 'g-key-12345', created: Date.now(), lastUsed: Date.now() },
+            apiKey: { value: 'g-key-12345', created: Date.now(), lastUsed: Date.now() },
+          },
+          meta: { gemini: { expired: true } },
+        }),
+      );
+
+      expect(getApiKey()).toBe('');
+      expect(hasApiKey()).toBe(false);
+
       const raw = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
-      expect(raw.keys.gemini.value).toBe('g-key-12345');
-      expect(raw.keys.apiKey.value).toBe('g-key-12345');
+      expect(raw.keys.gemini).toBeUndefined();
+      expect(raw.keys.apiKey).toBeUndefined();
+      expect(raw.meta.gemini).toBeUndefined();
     });
   });
 
@@ -64,12 +79,12 @@ describe('secure.js', () => {
       expect(getApiKey()).toBe('');
     });
 
-    it('only removes the target provider key', () => {
-      setApiKey('g-key-12345', 'gemini');
-      setApiKey('o-key-12345', 'openai');
-      clearApiKey('openai');
-      expect(getApiKey('gemini')).toBe('g-key-12345');
-      expect(getApiKey('openai')).toBe('');
+    it('marks the key expired when the TTL clears it', () => {
+      setApiKey('sk-ttl-123456');
+      expect(keyStatus()).toEqual({ present: true, expired: false });
+      clearApiKey(true);
+      expect(hasApiKey()).toBe(false);
+      expect(keyStatus()).toEqual({ present: false, expired: true });
     });
   });
 
@@ -87,26 +102,19 @@ describe('secure.js', () => {
   describe('hydrateKey', () => {
     it('sets settings.apiKey from sessionStorage when available', () => {
       setApiKey('sk-hydrate-123');
-      const settings = { provider: 'gemini', apiKey: '' };
+      const settings = { apiKey: '' };
       hydrateKey(settings);
       expect(settings.apiKey).toBe('sk-hydrate-123');
     });
 
     it('leaves settings.apiKey empty when nothing stored', () => {
-      const settings = { provider: 'gemini', apiKey: '' };
+      const settings = { apiKey: '' };
       hydrateKey(settings);
       expect(settings.apiKey).toBeUndefined();
     });
 
     it('handles null settings gracefully', () => {
       expect(() => hydrateKey(null)).not.toThrow();
-    });
-
-    it('reads the correct provider namespace', () => {
-      setApiKey('o-hydrate-123', 'openai');
-      const settings = { provider: 'openai', apiKey: '' };
-      hydrateKey(settings);
-      expect(settings.apiKey).toBe('o-hydrate-123');
     });
   });
 
@@ -117,19 +125,19 @@ describe('secure.js', () => {
     });
 
     it('leaves the live object untouched', () => {
-      const db = { settings: { apiKey: 'sk-secret', provider: 'gemini' } };
+      const db = { settings: { apiKey: 'sk-secret' } };
       stripKey(db);
       expect(db.settings.apiKey).toBe('sk-secret');
     });
 
     it('keeps the rest of the database intact', () => {
       const db = {
-        settings: { apiKey: 'sk-secret', provider: 'openrouter' },
+        settings: { apiKey: 'sk-secret', termName: '1st Term' },
         courses: [{ id: 'c1' }],
         chat: [{ role: 'user', content: 'hi' }],
       };
       const out = stripKey(db);
-      expect(out.settings.provider).toBe('openrouter');
+      expect(out.settings.termName).toBe('1st Term');
       expect(out.courses).toBe(db.courses);
       expect(out.chat).toBe(db.chat);
       expect(out).not.toBe(db);
@@ -182,8 +190,8 @@ describe('secure.js', () => {
       setApiKey('sk-valid-key-1234');
       const raw = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
       const THIRTY_ONE_DAYS = 31 * 24 * 60 * 60 * 1000;
-      raw.keys.gemini.lastUsed = Date.now() - THIRTY_ONE_DAYS;
-      raw.keys.gemini.created = Date.now() - THIRTY_ONE_DAYS;
+      raw.keys.openrouter.lastUsed = Date.now() - THIRTY_ONE_DAYS;
+      raw.keys.openrouter.created = Date.now() - THIRTY_ONE_DAYS;
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
 
       expect(keyStatus()).toEqual({ present: false, expired: true });
@@ -195,14 +203,14 @@ describe('secure.js', () => {
       setApiKey('sk-valid-key-1234');
       const raw = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
       const TWENTY_DAYS = 20 * 24 * 60 * 60 * 1000;
-      raw.keys.gemini.created = Date.now() - TWENTY_DAYS;
-      raw.keys.gemini.lastUsed = Date.now() - TWENTY_DAYS;
+      raw.keys.openrouter.created = Date.now() - TWENTY_DAYS;
+      raw.keys.openrouter.lastUsed = Date.now() - TWENTY_DAYS;
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
 
       // Accessing key should slide created timestamp
       expect(getApiKey()).toBe('sk-valid-key-1234');
       const updated = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
-      expect(Date.now() - updated.keys.gemini.created).toBeLessThan(1000);
+      expect(Date.now() - updated.keys.openrouter.created).toBeLessThan(1000);
       expect(keyStatus()).toEqual({ present: true, expired: false });
     });
 
@@ -210,8 +218,8 @@ describe('secure.js', () => {
       setApiKey('sk-valid-key-1234');
       const raw = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
       const NINETY_ONE_DAYS = 91 * 24 * 60 * 60 * 1000;
-      raw.keys.gemini.created = Date.now() - NINETY_ONE_DAYS;
-      raw.keys.gemini.lastUsed = Date.now() - 1000; // active 1s ago
+      raw.keys.openrouter.created = Date.now() - NINETY_ONE_DAYS;
+      raw.keys.openrouter.lastUsed = Date.now() - 1000; // active 1s ago
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(raw));
 
       expect(keyStatus()).toEqual({ present: false, expired: true });

@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from "vitest";
 import { Store } from "../../src/core/store.js";
 import { setApiKey, clearApiKey } from "../../src/utils/secure.js";
@@ -6,7 +7,6 @@ import {
   chat,
   status,
   usable,
-  normalizeGeminiModel,
   checkTokenBudget,
   messageChars,
 } from "../../src/ai/client.js";
@@ -71,22 +71,22 @@ describe("status", () => {
     expect(s.why).toContain("No API key");
   });
 
-  it("returns online when key is valid", () => {
+  it("returns online when key is valid, naming the model and endpoint", () => {
     Store.db.settings.aiEnabled = true;
     setApiKey("a".repeat(20));
-    Store.db.settings.provider = "gemini";
-    const s = status();
-    expect(s.on).toBe(true);
-    expect(s.label).toContain("Gemini");
-  });
-
-  it("returns online for OpenRouter provider", () => {
-    Store.db.settings.aiEnabled = true;
-    setApiKey("sk-or-" + "a".repeat(20), "openrouter");
-    Store.db.settings.provider = "openrouter";
     const s = status();
     expect(s.on).toBe(true);
     expect(s.label).toContain("OpenRouter");
+    expect(s.label).toContain(CFG.openrouter.model);
+  });
+
+  it("labels the status with the selected model", () => {
+    Store.db.settings.aiEnabled = true;
+    setApiKey("sk-or-" + "a".repeat(20));
+    Store.db.settings.model = "deepseek/deepseek-v4-flash-0731:free";
+    const s = status();
+    expect(s.on).toBe(true);
+    expect(s.label).toContain("deepseek/deepseek-v4-flash-0731:free");
   });
 });
 
@@ -106,14 +106,6 @@ describe("usable", () => {
     Store.db.settings.aiEnabled = true;
     setApiKey("a".repeat(20));
     expect(usable()).toBe(true);
-  });
-});
-
-describe("normalizeGeminiModel", () => {
-  it("normalizes stale Gemini aliases to the current supported model", () => {
-    expect(normalizeGeminiModel("gemini-2.5-flash")).toBe(CFG.gemini.model);
-    expect(normalizeGeminiModel("gemini-3.6-flash")).toBe(CFG.gemini.model);
-    expect(normalizeGeminiModel("")).toBe(CFG.gemini.model);
   });
 });
 
@@ -264,7 +256,7 @@ describe("chat", () => {
     Store.db.settings.aiEnabled = true;
     setApiKey("test-key-0123456789abcdef");
     const raw = JSON.parse(sessionStorage.getItem("journeyai.secure.v2"));
-    raw.keys.gemini.lastUsed = Date.now() - 35 * 24 * 60 * 60 * 1000;
+    raw.keys.openrouter.lastUsed = Date.now() - 35 * 24 * 60 * 60 * 1000;
     sessionStorage.setItem("journeyai.secure.v2", JSON.stringify(raw));
 
     const s = status();

@@ -158,20 +158,17 @@ describe("recall widget in the chat", () => {
 
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    Store.db.settings.provider = "gemini";
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     originalFetch = globalThis.fetch;
     globalThis.fetch = () =>
       Promise.resolve({
         ok: true,
         json: async () => ({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [
-                  { text: "Entropy never decreases in an isolated system." },
-                ],
+              message: {
+                content: "Entropy never decreases in an isolated system.",
               },
             },
           ],

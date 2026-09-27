@@ -2,8 +2,13 @@
  * Secure storage for sensitive data (API keys).
  *
  * The key is held in sessionStorage for the current tab only, with a
- * per-provider record, last-used audit and a TTL. `stripKey()` removes it
- * from every localStorage write, so it never reaches disk.
+ * last-used audit and a TTL. `stripKey()` removes it from every localStorage
+ * write, so it never reaches disk.
+ *
+ * There is exactly one credential — the OpenRouter key, kept under the
+ * `openrouter` slot so a session that predates the Gemini removal keeps it.
+ * Gemini's slots are pruned on read: a key for an endpoint the app no longer
+ * calls must never be mistaken for a live credential.
  *
  * Note: the value is not encrypted. A browser cannot keep a secret from
  * same-origin script, and the guard that actually matters is not persisting
@@ -13,6 +18,10 @@
 const SESSION_KEY = "journeyai.secure.v2";
 const KEY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const KEY_TTL_ABSOLUTE_MS = 90 * 24 * 60 * 60 * 1000;
+
+/** The one key slot, and the pre-v5 slots that must never be read again. */
+const SLOT = "openrouter";
+const LEGACY_SLOTS = ["gemini", "apiKey"];
 
 function getSessionStorage() {
   return typeof globalThis !== "undefined" ? globalThis.sessionStorage : null;
@@ -26,6 +35,22 @@ function getStore() {
     if (!raw) return { keys: {}, meta: {} };
     const parsed = JSON.parse(raw);
     if (parsed.version !== 2) return { keys: {}, meta: {} };
+    /* Prune Gemini's credentials (and the pre-namespacing alias) the first
+       time anything touches the store. */
+    let pruned = false;
+    parsed.keys = parsed.keys || {};
+    parsed.meta = parsed.meta || {};
+    for (const legacy of LEGACY_SLOTS) {
+      if (legacy in parsed.keys) {
+        delete parsed.keys[legacy];
+        pruned = true;
+      }
+      if (legacy in parsed.meta) {
+        delete parsed.meta[legacy];
+        pruned = true;
+      }
+    }
+    if (pruned) saveStore(parsed);
     return parsed;
   } catch (_e) {
     return { keys: {}, meta: {} };
@@ -46,36 +71,31 @@ function now() {
   return Date.now();
 }
 
-export function setApiKey(key, provider = "gemini") {
+export function setApiKey(key) {
   const store = getStore();
-  const p = provider.toLowerCase();
   store.meta = store.meta || {};
   if (key && key.trim().length > 10) {
-    store.keys[p] = {
+    store.keys[SLOT] = {
       value: key.trim(),
       created: now(),
       lastUsed: now(),
-      provider: p,
     };
-    if (p === "gemini") store.keys.apiKey = store.keys[p];
-    delete store.meta[p];
+    delete store.meta[SLOT];
   } else {
-    delete store.keys[p];
-    if (p === "gemini") delete store.keys.apiKey;
-    delete store.meta[p];
+    delete store.keys[SLOT];
+    delete store.meta[SLOT];
   }
   saveStore(store);
 }
 
-export function getApiKey(provider = "gemini") {
+export function getApiKey() {
   const store = getStore();
-  const p = provider.toLowerCase();
-  const entry = store.keys[p] || (p === "gemini" ? store.keys.apiKey : null);
+  const entry = store.keys[SLOT];
   if (!entry) return "";
   const idle = now() - (entry.lastUsed || entry.created);
   const aged = now() - entry.created;
   if (idle > KEY_TTL_MS || aged > KEY_TTL_ABSOLUTE_MS) {
-    clearApiKey(provider, true);
+    clearApiKey(true);
     return "";
   }
   entry.lastUsed = now();
@@ -86,56 +106,47 @@ export function getApiKey(provider = "gemini") {
   return entry.value;
 }
 
-export function clearApiKey(provider = "gemini", expired = false) {
+export function clearApiKey(expired = false) {
   const store = getStore();
-  const p = provider.toLowerCase();
-  delete store.keys[p];
-  if (p === "gemini") delete store.keys.apiKey;
+  delete store.keys[SLOT];
   store.meta = store.meta || {};
   if (expired) {
-    store.meta[p] = { expired: true, at: now() };
+    store.meta[SLOT] = { expired: true, at: now() };
   } else {
-    delete store.meta[p];
+    delete store.meta[SLOT];
   }
   saveStore(store);
 }
 
 /** @returns {{present: boolean, expired: boolean}} — lets Settings explain the fallback */
-export function keyStatus(provider = "gemini") {
+export function keyStatus() {
   const store = getStore();
-  const p = provider.toLowerCase();
-  const entry = store.keys[p] || (p === "gemini" ? store.keys.apiKey : null);
+  const entry = store.keys[SLOT];
   if (entry) {
     const idle = now() - (entry.lastUsed || entry.created);
     const aged = now() - entry.created;
     const expired = idle > KEY_TTL_MS || aged > KEY_TTL_ABSOLUTE_MS;
     return { present: !expired, expired };
   }
-  if (store.meta && store.meta[p] && store.meta[p].expired) {
+  if (store.meta && store.meta[SLOT] && store.meta[SLOT].expired) {
     return { present: false, expired: true };
   }
   return { present: false, expired: false };
 }
 
-export function hasApiKey(provider = "gemini") {
-  return !!getApiKey(provider);
+export function hasApiKey() {
+  return !!getApiKey();
 }
 
 export function hydrateKey(settings) {
   if (!settings) return;
-  const provider = settings.provider || "gemini";
-  const key = getApiKey(provider);
+  const key = getApiKey();
   if (key) settings.apiKey = key;
   else delete settings.apiKey;
 }
 
 export function stripKey(db) {
   if (!db || !db.settings) return db;
-  const {
-    apiKey: _apiKey,
-    gemini_apiKey: _gemini_apiKey,
-    openrouter_apiKey: _openrouter_apiKey,
-    ...rest
-  } = db.settings;
+  const { apiKey: _apiKey, ...rest } = db.settings;
   return { ...db, settings: { ...rest, apiKey: "" } };
 }

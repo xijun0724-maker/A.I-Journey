@@ -9,8 +9,8 @@
 
 Journey A.I is a single-page web app in vanilla JavaScript (ES modules) with
 **zero runtime npm dependencies** and **no backend**. AI calls go directly
-from the page to **Gemini or OpenRouter** over `fetch()` — there is no
-OpenAI-compatible layer, no SDK and no proxy. Every AI path has a deterministic
+from the page to **OpenRouter** over `fetch()` — there is no
+SDK and no proxy. Every AI path has a deterministic
 offline fallback, so the app is fully usable with no key and no network.
 
 Persistence is dual-layer: `localStorage` is the synchronous bootstrap path,
@@ -43,7 +43,7 @@ mirrored to IndexedDB for capacity and recovery. API keys live in
 │  ├── Dashboard (KPIs, charts)               │
 │  └── Pipeline (document import)             │
 ├─────────────────────────────────────────────┤
-│  src/ai/ (client: Gemini/OpenRouter fetch;  │
+│  src/ai/ (client: OpenRouter fetch;        │
 │  agent: bounded tool loop; prompts; offline)│
 ├─────────────────────────────────────────────┤
 │  src/utils/ (date, dom, helpers, format,    │
@@ -96,7 +96,7 @@ instead of keeping a second copy in memory.
 
 ### `src/ai/`
 
-- `client.js` — Gemini/OpenRouter `fetch()` with retries, timeout, abort
+- `client.js` — OpenRouter `fetch()` with retries, timeout, abort
   support, token-budget truncation that never splits a tool call from its
   result, and usage recording.
 - `agent.js` — bounded `StudyPlanAgent` tool loop: memoised tool calls, a

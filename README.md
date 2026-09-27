@@ -14,7 +14,7 @@ Journey A.I helps students manage coursework, deadlines, and study schedules wit
 - **Syllabus Import** — Upload PDF, DOCX, or text syllabi. Journey parses deadlines, lessons, readings, and assessment weights automatically.
 - **Task Management** — Track assignments, exams, projects, and quizzes with automatic effort estimation and priority scoring.
 - **Study Planner** — Generates a weekly study schedule based on your available hours, deadlines, and priorities.
-- **AI Study Tutor** — Ask questions about your courses, get summaries, and receive personalised study guidance (optionally connected to Google Gemini or OpenRouter free models).
+- **AI Study Tutor** — Ask questions about your courses, get summaries, and receive personalised study guidance (optionally connected to OpenRouter free models).
 - **Library & RAG** — Upload lecture notes, textbooks, and references. Built-in BM25 retrieval surfaces relevant passages for the AI tutor — no API key required.
 - **Dashboard** — Visualise workload by week, track completion rates, view grades, and monitor study trends.
 - **Calendar Export** — Export deadlines to Google Calendar, Outlook, or Apple Calendar as `.ics` files.
@@ -57,7 +57,7 @@ A demo dataset is seeded automatically on first visit.
 ### Using the AI Tutor
 
 1. Navigate to **AI tutor** in the sidebar.
-2. Optionally connect Google Gemini or OpenRouter in **Settings** — Journey works without a provider.
+2. Optionally connect OpenRouter in **Settings** — Journey works without a key.
 3. Ask questions about your uploaded documents and courses.
 
 ### Building a Study Plan
@@ -74,7 +74,7 @@ Journey A.I is a single-page web application with:
 - **UMD libraries** loaded via CDN for PDF parsing (`pdf.js`) and DOCX extraction (`mammoth`).
 - **localStorage** for all persistence — no backend required.
 - **BM25 retrieval** for document search — runs entirely in the browser.
-- **Two AI providers** — Google Gemini and OpenRouter free models, called directly from the browser with no SDK and no proxy.
+- **One AI provider** — OpenRouter free models, called directly from the browser with no SDK and no proxy.
 - **Service Worker** caches CDN libraries and Google Fonts for faster repeat loads.
 
 ### Security
@@ -98,7 +98,7 @@ A.I-Project/
 │   │   └── ...
 │   ├── utils/              # Helpers, dates, DOM, markdown, secure storage
 │   ├── domain/             # Business logic — tasks, NLP, RAG, planner, coach, dashboard, pipeline
-│   ├── ai/                 # LLM provider layer (Gemini + OpenRouter, no SDK)
+│   ├── ai/                 # LLM layer (OpenRouter, no SDK)
 │   └── views/              # Screen renderers
 │       ├── modals/         # Entity modals (course, event, lesson, doc, reading, help)
 │       └── ...
@@ -205,26 +205,27 @@ All tests run without a browser, API keys, or network access — they exercise p
 
 ## AI Provider Setup
 
-Journey A.I works without any AI provider — the syllabus analyser, deadline extraction, task decomposition, retrieval, and planner are all built in. Connecting a provider adds conversational explanations, tutoring modes, and a written study plan. Syllabi are always parsed on-device.
+Journey A.I works without any AI key — the syllabus analyser, deadline extraction, task decomposition, retrieval, and planner are all built in. Connecting OpenRouter adds conversational explanations, tutoring modes, and a written study plan. Syllabi are always parsed on-device.
 
 Keys are entered in the in-app **Settings** panel and live only in `sessionStorage`. A `.env`
 file is never read — the app is client-only — so [`.env.example`](.env.example) is documentation
 only, not a setup step.
 
-**Supported providers:**
+**Provider:**
 
-| Provider                 | Key Required | Default Model      |
-| ------------------------ | ------------ | ------------------ |
-| Google Gemini            | Yes          | `gemini-2.5-flash` |
-| OpenRouter (free models) | Yes          | `openrouter/free`  |
+| Provider                 | Key Required | Default Model     |
+| ------------------------ | ------------ | ----------------- |
+| OpenRouter (free models) | Yes          | `openrouter/free` |
 
-Gemini keys come from [Google AI Studio](https://aistudio.google.com/apikey) and OpenRouter keys
-from [OpenRouter](https://openrouter.ai/keys). OpenRouter defaults to its free auto-router and
-offers a fixed list of free models (DeepSeek, Gemma, Qwen, Nemotron) in the model dropdown.
+Get a key from [OpenRouter](https://openrouter.ai/keys). OpenRouter defaults to its free
+auto-router and offers a fixed list of free models (DeepSeek, Gemma, Qwen, Nemotron) in the
+model dropdown. (Google Gemini was removed in schema v5; a stored v4 database is migrated on
+first load — its Gemini model id is swapped for the OpenRouter default and its Gemini key is
+dropped.)
 
-Those two hosts are the only endpoints the app may reach: `index.html` sets a CSP `connect-src`
-allowlisting exactly `generativelanguage.googleapis.com` and `openrouter.ai`. Adding a provider
-means updating both `src/ai/client.js` and that policy.
+`openrouter.ai` is the only remote API host the app may reach: `index.html` sets a CSP
+`connect-src` allowlisting `openrouter.ai` (plus `self` and the CDN for assets). Adding a
+second provider would mean updating both `src/ai/client.js` and that policy.
 
 ## Service Worker
 

@@ -35,8 +35,10 @@ const TERM = termDefaults();
  * writes them (e.g. `tutorMode`, whose readers supply their own fallback).
  */
 const FIELDS = {
-  provider: { type: "enum", default: "gemini", form: "#setProvider" },
-  model: { type: "string", default: CFG.gemini.model, form: "#setModel" },
+  /* No `provider` field: v5 removed Gemini and with it the provider concept —
+     OpenRouter is the AI layer, not one option among several. A stored v4
+     `provider` is deleted by MIGRATIONS[5]. */
+  model: { type: "string", default: CFG.openrouter.model, form: "#setModel" },
   apiKey: { type: "string", default: "" },
   aiEnabled: { type: "boolean", default: true, form: "#setAiEnabled" },
   termStart: {
@@ -192,6 +194,24 @@ export const MIGRATIONS = {
       c.len = c.text.length;
       delete c.text;
     });
+    return d;
+  },
+  5: function (d) {
+    /* v5 removed Gemini — and with it the provider concept. A stored
+       provider no longer names anything, and a Gemini model id would be
+       sent to OpenRouter and rejected, so drop the field and move any
+       Gemini-flavoured model (including `models/…` aliases and blanks)
+       onto the default OpenRouter router. */
+    const s = d.settings || (d.settings = {});
+    delete s.provider;
+    /* Pre-namespacing key fields never persist (`stripKey` only knew about
+       `apiKey`), so the migration is where they die. */
+    delete s.gemini_apiKey;
+    delete s.openrouter_apiKey;
+    const model = String(s.model || "").trim();
+    if (!model || /gemini/i.test(model) || /^models\//.test(model)) {
+      s.model = CFG.openrouter.model;
+    }
     return d;
   },
 };

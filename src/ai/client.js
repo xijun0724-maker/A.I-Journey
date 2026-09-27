@@ -12,32 +12,13 @@ export function settings() {
 
 export function usable() {
   const s = settings();
-  const key = getApiKey(s.provider || "gemini");
+  const key = getApiKey();
   return !!(s.aiEnabled && key && key.length > 10);
-}
-
-export function normalizeGeminiModel(model) {
-  const raw = String(model || "").trim();
-  if (!raw) return CFG.gemini.model;
-  const cleaned = raw
-    .replace(/^models\//, "")
-    .replace(/\/generateContent$/, "")
-    .trim();
-  if (!cleaned) return CFG.gemini.model;
-
-  const aliases = new Set([
-    "gemini-2.5-flash",
-    "gemini-3.6-flash",
-    "gemini-2.5-pro",
-  ]);
-
-  return aliases.has(cleaned) ? CFG.gemini.model : cleaned;
 }
 
 export function status() {
   const s = settings();
-  const provider = s.provider || "gemini";
-  const key = getApiKey(provider);
+  const key = getApiKey();
   if (!s.aiEnabled)
     return {
       on: false,
@@ -45,7 +26,7 @@ export function status() {
       why: "AI is switched off in Settings.",
     };
   if (!key) {
-    const ks = keyStatus(provider);
+    const ks = keyStatus();
     if (ks && ks.expired) {
       return {
         on: false,
@@ -65,29 +46,9 @@ export function status() {
       label: "Offline mode",
       why: "API key looks invalid - check the key in Settings.",
     };
-  const model =
-    provider === "openrouter"
-      ? s.model || CFG.openrouter.model
-      : normalizeGeminiModel(s.model);
-  const label = provider === "openrouter" ? "OpenRouter" : "Google Gemini";
+  const model = s.model || CFG.openrouter.model;
+  const label = "OpenRouter";
   return { on: true, label: model + " (" + label + ")", why: label };
-}
-
-function messagesToContents(messages) {
-  const contents = [];
-  let systemInstruction = null;
-  for (const m of messages) {
-    if (m.role === "system") {
-      systemInstruction =
-        typeof m.content === "string" ? m.content : JSON.stringify(m.content);
-    } else {
-      const role = m.role === "assistant" ? "model" : "user";
-      const text =
-        typeof m.content === "string" ? m.content : JSON.stringify(m.content);
-      contents.push({ role, parts: [{ text }] });
-    }
-  }
-  return { systemInstruction, contents };
 }
 
 function messagesToOpenAI(messages) {
@@ -292,109 +253,54 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function buildProviderRequest(messages, opts, s) {
-  const provider = s.provider || "gemini";
+function buildRequest(messages, opts, s) {
   /* Streaming is opt-in per call: a caller that wants to paint tokens passes
      onToken — the tutor answer and the planner's direct path do. The agent
      loop builds its own request options, so no tool turn can paint mid-loop,
      and `test()` never asks. */
   const stream = typeof opts.onToken === "function";
 
-  if (provider === "openrouter") {
-    const openaiMsgs = messagesToOpenAI(messages);
-    const body = {
-      model: s.model || CFG.openrouter.model,
-      messages: openaiMsgs,
-      temperature: opts.temperature == null ? 0.25 : opts.temperature,
-    };
-    if (opts.maxTokens) body.max_tokens = opts.maxTokens;
-    if (stream) body.stream = true;
-    return {
-      url: CFG.openrouter.baseUrl,
-      init: {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + s.apiKey,
-          "HTTP-Referer": window.location.origin,
-          "X-Title": "Journey A.I",
-        },
-        body: JSON.stringify(body),
-      },
-      stream,
-      model: body.model,
-      /* One streamed frame: choices[0].delta.content carries the text. */
-      extractDelta: (data) =>
-        (data.choices &&
-          data.choices[0] &&
-          data.choices[0].delta &&
-          data.choices[0].delta.content) ||
-        "",
-      extractText: (data) => {
-        const text =
-          (data.choices &&
-            data.choices[0] &&
-            data.choices[0].message &&
-            data.choices[0].message.content) ||
-          "";
-        const model = data.model || body.model;
-        return text
-          ? { ok: true, text: text.trim(), model }
-          : { ok: false, error: "The provider returned an empty completion." };
-      },
-      label: "OpenRouter",
-    };
-  }
-
-  // Default: Gemini — use Authorization header, not query string
-  const { systemInstruction, contents } = messagesToContents(messages);
-  const genConfig = {
+  const body = {
+    model: s.model || CFG.openrouter.model,
+    messages: messagesToOpenAI(messages),
     temperature: opts.temperature == null ? 0.25 : opts.temperature,
   };
-  if (opts.maxTokens) genConfig.maxOutputTokens = opts.maxTokens;
-  const model = normalizeGeminiModel(s.model);
-  const baseUrl = CFG.gemini.baseUrl.replace("{model}", model);
-  /* `:generateContent` answers once; `:streamGenerateContent?alt=sse`
-     answers as `data:` frames. Same body, same auth, same error shape. */
-  const url = stream
-    ? baseUrl.replace(":generateContent", ":streamGenerateContent") + "?alt=sse"
-    : baseUrl;
-  const body = { contents, generationConfig: genConfig };
-  if (systemInstruction)
-    body.systemInstruction = { parts: [{ text: systemInstruction }] };
+  if (opts.maxTokens) body.max_tokens = opts.maxTokens;
+  if (stream) body.stream = true;
   return {
-    url,
+    url: CFG.openrouter.baseUrl,
     init: {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${s.apiKey}`,
+        Authorization: "Bearer " + s.apiKey,
+        "HTTP-Referer": window.location.origin,
+        "X-Title": "Journey A.I",
       },
       body: JSON.stringify(body),
     },
     stream,
-    model,
-    /* One streamed frame: candidates[0].content.parts carry the text. */
+    model: body.model,
+    /* One streamed frame: choices[0].delta.content carries the text. */
     extractDelta: (data) =>
-      (data.candidates &&
-        data.candidates[0] &&
-        data.candidates[0].content &&
-        data.candidates[0].content.parts &&
-        data.candidates[0].content.parts.map((p) => p.text || "").join("")) ||
+      (data.choices &&
+        data.choices[0] &&
+        data.choices[0].delta &&
+        data.choices[0].delta.content) ||
       "",
     extractText: (data) => {
       const text =
-        (data.candidates &&
-          data.candidates[0] &&
-          data.candidates[0].content &&
-          data.candidates[0].content.parts &&
-          data.candidates[0].content.parts.map((p) => p.text || "").join("")) ||
+        (data.choices &&
+          data.choices[0] &&
+          data.choices[0].message &&
+          data.choices[0].message.content) ||
         "";
+      const model = data.model || body.model;
       return text
         ? { ok: true, text: text.trim(), model }
         : { ok: false, error: "The provider returned an empty completion." };
     },
-    label: "Google Gemini",
+    label: "OpenRouter",
   };
 }
 
@@ -493,7 +399,7 @@ function chatWithRetry(
     });
   }
 
-  const req = buildProviderRequest(messages, opts, s);
+  const req = buildRequest(messages, opts, s);
   const timeout = Math.min(opts.timeout || CFG.timeouts.apiDefault, remaining);
   const callerSignal = opts.signal || null;
 
@@ -650,10 +556,9 @@ function chatWithRetry(
  * One chat completion, under the deadline, cancel and retry rules the rest
  * of the app assumes.
  *
- * `opts.onToken(delta, total)` opts a call into streaming: Gemini is then
- * asked for `:streamGenerateContent?alt=sse`, OpenRouter for
- * `stream: true`, and each delta is reported as it lands. The returned
- * promise still resolves with the whole, trimmed text (and
+ * `opts.onToken(delta, total)` opts a call into streaming: the request then
+ * asks OpenRouter for `stream: true` and each delta is reported as it lands.
+ * The returned promise still resolves with the whole, trimmed text (and
  * `streamed: true`), so a caller that renders progressively is still handed
  * the authoritative value to settle on. Without `onToken` the request shape
  * is exactly what it was before Step 6.
@@ -706,7 +611,7 @@ export async function chat(messages, opts = {}) {
 
   async function attempt(retryCount) {
     const s = settings();
-    const key = getApiKey(s.provider || "gemini");
+    const key = getApiKey();
     if (!s.aiEnabled)
       return {
         ok: false,

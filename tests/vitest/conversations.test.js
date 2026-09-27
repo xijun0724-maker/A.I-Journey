@@ -113,17 +113,14 @@ beforeEach(() => {
   requests = [];
 
   Store.db.settings.aiEnabled = true;
-  Store.db.settings.provider = "gemini";
-  setApiKey("test-key-0123456789abcdef", "gemini");
+  setApiKey("test-key-0123456789abcdef");
 
   globalThis.fetch = (_url, init) => {
     requests.push(String((init && init.body) || ""));
     return Promise.resolve({
       ok: true,
       json: async () => ({
-        candidates: [
-          { content: { parts: [{ text: "Here you go." }] } },
-        ],
+        choices: [{ message: { content: "Here you go." } }],
       }),
     });
   };

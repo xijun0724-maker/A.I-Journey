@@ -41,8 +41,7 @@ function waitFor(predicate, ms = 2000) {
 
 function keyed() {
   Store.db.settings.aiEnabled = true;
-  Store.db.settings.provider = "gemini";
-  setApiKey("test-key-0123456789abcdef", "gemini");
+  setApiKey("test-key-0123456789abcdef");
 }
 
 let originalFetch = null;
@@ -97,7 +96,7 @@ describe("assistant Stop control", () => {
       Promise.resolve({
         ok: true,
         json: async () => ({
-          candidates: [{ content: { parts: [{ text: "Here you go." }] } }],
+          choices: [{ message: { content: "Here you go." } }],
         }),
       });
 

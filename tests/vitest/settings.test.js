@@ -20,7 +20,7 @@ describe("createBlankDB", () => {
 
   it("initializes settings with defaults", () => {
     const db = createBlankDB();
-    expect(db.settings).toHaveProperty("apiKey", CFG.gemini.defaultKey);
+    expect(db.settings).toHaveProperty("apiKey", CFG.openrouter.defaultKey);
     expect(db.version).toBe(CFG.schemaVersion);
     expect(db.settings).toHaveProperty("aiEnabled");
     expect(db.settings).toHaveProperty("termStart");

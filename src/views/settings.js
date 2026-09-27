@@ -20,15 +20,12 @@ export function settings() {
 
   let h = pageHead(
     "Settings",
-    "Connect an AI provider (Google Gemini or OpenRouter free models), set your available study hours, and manage your data.",
+    "Connect OpenRouter free models, set your available study hours, and manage your data.",
   );
 
   h += '<div class="grid g-2-1"><div class="grid gap-md">';
 
   /* AI provider */
-  const provider = s.provider || "gemini";
-  const provCfg = CFG.providers[provider] || CFG.providers.gemini;
-
   h +=
     '<div class="card"><div class="card-head"><h2>AI provider</h2><span class="spacer"></span>' +
     '<span class="badge ' +
@@ -39,34 +36,20 @@ export function settings() {
   h +=
     '<div class="notice info mb"><div>Journey A.I works without an API key - the syllabus analyser, deadline extraction, task decomposition, retrieval and planner are all built in. Adding a key adds conversational explanations, tutoring modes and a written study plan. Syllabi are always parsed on-device.</div></div>';
 
-  h += '<label class="fld"><span>Provider</span><select id="setProvider">';
-  h +=
-    '<option value="gemini"' +
-    (provider === "gemini" ? " selected" : "") +
-    ">Google Gemini</option>";
-  h +=
-    '<option value="openrouter"' +
-    (provider === "openrouter" ? " selected" : "") +
-    ">OpenRouter (free models)</option>";
+  h += '<label class="fld"><span>Model</span><select id="setModel">';
+  CFG.openrouter.freeModels.forEach(function (m) {
+    h +=
+      '<option value="' +
+      m.id +
+      '"' +
+      ((s.model || CFG.openrouter.model) === m.id ? " selected" : "") +
+      ">" +
+      esc(m.label) +
+      "</option>";
+  });
   h += "</select></label>";
 
-  if (provider === "openrouter") {
-    h +=
-      '<label class="fld"><span>OpenRouter model</span><select id="setModel">';
-    CFG.openrouter.freeModels.forEach(function (m) {
-      h +=
-        '<option value="' +
-        m.id +
-        '"' +
-        ((s.model || CFG.openrouter.model) === m.id ? " selected" : "") +
-        ">" +
-        esc(m.label) +
-        "</option>";
-    });
-    h += "</select></label>";
-  }
-
-  const ks = keyStatus(provider);
+  const ks = keyStatus();
   if (ks && ks.expired) {
     h +=
       '<div class="notice warn mb"><div>Your saved key expired after 30 days without use — paste it again to keep AI answers on.</div></div>';
@@ -80,19 +63,19 @@ export function settings() {
 
   h +=
     '<label class="fld"><span>' +
-    provCfg.label +
+    CFG.openrouter.label +
     " API key" +
     keyBadge +
     "</span>" +
     '<input id="setKey" type="password" value="" autocomplete="off" spellcheck="false" placeholder="' +
     (s.apiKey
       ? "••••••••  - leave blank to keep the stored key"
-      : provCfg.keyHint) +
+      : CFG.openrouter.keyHint) +
     '"></label>' +
     '<p class="hint">Get a free key at <a href="' +
-    provCfg.keyUrl +
+    CFG.openrouter.keyUrl +
     '" target="_blank" rel="noopener">' +
-    provCfg.keyUrl.replace("https://", "") +
+    CFG.openrouter.keyUrl.replace("https://", "") +
     "</a>.</p>";
   if (s.apiKey)
     h +=
@@ -100,7 +83,7 @@ export function settings() {
   h +=
     '<label  class="row small u-gap-8"><input type="checkbox" id="setAiEnabled"' +
     (s.aiEnabled ? " checked" : "") +
-    "> Use the AI provider when a key is present</label>";
+    "> Use OpenRouter when a key is present</label>";
   h +=
     '<div class="row mt"><button class="btn primary" data-act="settings-save">Save</button>' +
     '<button class="btn" data-act="ai-test">Test connection</button>' +

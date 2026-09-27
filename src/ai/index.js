@@ -35,7 +35,6 @@ export {
   settings,
   usable,
   status,
-  normalizeGeminiModel,
   chat,
   parseJson,
   test,

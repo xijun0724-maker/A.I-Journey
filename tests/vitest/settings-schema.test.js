@@ -8,10 +8,12 @@
  * the FIELDS table's internals.
  */
 import { describe, it, expect, beforeEach } from "vitest";
+import { CFG } from "../../src/config/constants.js";
 import {
   defaultSettings,
   coerceSetting,
   readSettingsForm,
+  migrateSchema,
 } from "../../src/config/settings.js";
 
 beforeEach(() => {
@@ -21,7 +23,9 @@ beforeEach(() => {
 describe("defaultSettings", () => {
   it("carries the documented defaults", () => {
     const s = defaultSettings();
-    expect(s.provider).toBe("gemini");
+    /* v5: the provider concept is gone — OpenRouter is the AI layer. */
+    expect("provider" in s).toBe(false);
+    expect(s.model).toBe(CFG.openrouter.model);
     expect(s.aiEnabled).toBe(true);
     expect(s.studyWeekday).toBe(2);
     expect(s.studyWeekend).toBe(4);
@@ -96,5 +100,51 @@ describe("readSettingsForm", () => {
     expect(patch.termStart).toBe("2026-01-05");
     // a real value wins over the current one
     expect(patch.termName).toBe("2nd Term");
+  });
+});
+
+/**
+ * Migration 4 → 5: Gemini was removed and OpenRouter is the only provider,
+ * so a stored v4 database can name a provider that no longer exists and a
+ * model string OpenRouter would reject. The migration is what keeps an
+ * existing user's data working after the upgrade.
+ */
+describe("migration 4 → 5 (Gemini removal)", () => {
+  const v4 = () => ({
+    version: 4,
+    settings: {
+      provider: "gemini",
+      model: "gemini-2.5-flash",
+      aiEnabled: true,
+      termName: "2nd Term",
+    },
+    courses: [],
+  });
+
+  it("drops the provider field and moves a Gemini model to OpenRouter", () => {
+    const out = migrateSchema(v4());
+    expect(out).not.toBeNull();
+    expect(out.version).toBe(CFG.schemaVersion);
+    expect("provider" in out.settings).toBe(false);
+    expect(out.settings.model).toBe(CFG.openrouter.model);
+  });
+
+  it("leaves an OpenRouter model and unrelated settings untouched", () => {
+    const blob = v4();
+    blob.settings.provider = "openrouter";
+    blob.settings.model = "deepseek/deepseek-v4-flash-0731:free";
+    const out = migrateSchema(blob);
+    expect(out.settings.model).toBe("deepseek/deepseek-v4-flash-0731:free");
+    expect(out.settings.termName).toBe("2nd Term");
+    expect(out.settings.aiEnabled).toBe(true);
+  });
+
+  it("normalises any stale Gemini spelling, not just the default", () => {
+    for (const stale of ["gemini-2.5-pro", "models/gemini-2.5-flash", ""]) {
+      const blob = v4();
+      blob.settings.model = stale;
+      const out = migrateSchema(blob);
+      expect(out.settings.model).toBe(CFG.openrouter.model);
+    }
   });
 });

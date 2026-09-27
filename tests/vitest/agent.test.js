@@ -13,11 +13,10 @@ import { CFG } from "../../src/config/constants.js";
 import { isToolRequest, isToolResult } from "../../src/ai/client.js";
 
 /** Arm the client's key checks so the agent loop runs instead of falling back. */
-async function useRealKey(provider = "gemini") {
+async function useRealKey() {
   const { setApiKey } = await import("../../src/utils/secure.js");
   Store.db.settings.aiEnabled = true;
-  Store.db.settings.provider = provider;
-  setApiKey("test-key-0123456789abcdef", provider);
+  setApiKey("test-key-0123456789abcdef");
 }
 
 beforeEach(() => {
@@ -186,8 +185,7 @@ describe("StudyPlanAgent", () => {
     // secure.getApiKey reads sessionStorage; set one via setApiKey.
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    Store.db.settings.provider = "gemini";
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     const replies = [
       '{"tool":"list_deadlines","args":{"limit":3}}',
@@ -221,7 +219,7 @@ describe("StudyPlanAgent", () => {
   it("handles tool execution errors without crashing", async () => {
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     const replies = [
       '{"tool":"search_library","args":{}}',
@@ -242,7 +240,7 @@ describe("StudyPlanAgent", () => {
   it("treats non-JSON replies as the final text", async () => {
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     const res = await StudyPlanAgent("plan", {
       chat: async () => ({
@@ -259,7 +257,7 @@ describe("StudyPlanAgent", () => {
   it("falls back offline when chat fails", async () => {
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     const res = await StudyPlanAgent("plan", {
       chat: async () => ({ ok: false, error: "rate limited" }),
@@ -273,7 +271,7 @@ describe("StudyPlanAgent", () => {
   it("stops at the iteration limit and requests a final", async () => {
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     let calls = 0;
     const res = await StudyPlanAgent("plan", {
@@ -532,7 +530,7 @@ describe("StudyPlanAgent", () => {
   it("accepts an injected tool runner", async () => {
     const { setApiKey } = await import("../../src/utils/secure.js");
     Store.db.settings.aiEnabled = true;
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     const replies = [
       '{"tool":"custom_tool","args":{"x":1}}',

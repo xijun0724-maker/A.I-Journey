@@ -62,8 +62,7 @@ describe("studyPlanProposal", () => {
   it("records the model, the tools and the call count it took to draft", async () => {
     seedPlanWork();
     Store.db.settings.aiEnabled = true;
-    Store.db.settings.provider = "gemini";
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
 
     const res = await studyPlanProposal({
       chat: async () => ({
@@ -95,8 +94,7 @@ describe("studyPlanProposal", () => {
   it("passes a cancel straight through with no draft attached", async () => {
     seedPlanWork();
     Store.db.settings.aiEnabled = true;
-    Store.db.settings.provider = "gemini";
-    setApiKey("test-key-0123456789abcdef", "gemini");
+    setApiKey("test-key-0123456789abcdef");
     const ctrl = new AbortController();
     ctrl.abort();
 

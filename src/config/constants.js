@@ -1,6 +1,6 @@
 /**
  * Configuration constants for Journey A.I
- * Centralizes all magic numbers, provider definitions, and app settings.
+ * Centralizes all magic numbers and app settings.
  */
 
 const MAX_CHAT_CHARS = 20000;
@@ -16,7 +16,7 @@ export const KIND_LABEL = {
 
 export const CFG = {
   storageKey: "journeyai.db.v1",
-  schemaVersion: 4,
+  schemaVersion: 5,
   maxDocChars: 300000,
   chunkSize: 900,
   chunkOverlap: 150,
@@ -26,17 +26,16 @@ export const CFG = {
   // context and conversation history cannot starve each other.
   maxContextChars: Math.floor(MAX_CHAT_CHARS * 0.4),
 
-  gemini: {
-    model: "gemini-2.5-flash",
-    baseUrl:
-      "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-    defaultKey: "",
-  },
-
   openrouter: {
     model: "openrouter/free",
     baseUrl: "https://openrouter.ai/api/v1/chat/completions",
     defaultKey: "",
+    /* The AI layer speaks to exactly one endpoint: OpenRouter. Its provider
+       metadata lives here rather than in a separate registry because there
+       is no second provider to register — one adapter is no seam. */
+    label: "OpenRouter",
+    keyHint: "sk-or-…",
+    keyUrl: "https://openrouter.ai/keys",
     freeModels: [
       {
         id: "openrouter/free",
@@ -65,19 +64,6 @@ export const CFG = {
         label: "Inkling (1M ctx, multimodal)",
       },
     ],
-  },
-
-  providers: {
-    gemini: {
-      label: "Google Gemini",
-      keyHint: "AIza…",
-      keyUrl: "https://aistudio.google.com/apikey",
-    },
-    openrouter: {
-      label: "OpenRouter (free models)",
-      keyHint: "sk-or-…",
-      keyUrl: "https://openrouter.ai/keys",
-    },
   },
 
   maxChatHistory: 20,

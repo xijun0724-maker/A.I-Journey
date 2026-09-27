@@ -15,61 +15,40 @@ import {
   hydrateKey,
 } from "../../utils/secure.js";
 
-export function applyProviderModel(provider, model) {
+/**
+ * Set the OpenRouter model — the only decision the model selector makes now
+ * that there is exactly one endpoint.
+ * @param {string} model - Model id from CFG.openrouter.freeModels (or any
+ *   other OpenRouter id); blank keeps the current one.
+ */
+export function applyModel(model) {
   const s = Store.settings.get();
-  provider = provider || "gemini";
-  let targetModel = s.model;
-  if (provider !== (s.provider || "gemini")) {
-    targetModel =
-      provider === "openrouter"
-        ? CFG.openrouter.model || "openrouter/free"
-        : CFG.gemini.model;
-  } else if (model) {
-    targetModel = model;
-  }
-  if (provider === "gemini") {
-    targetModel = AI.normalizeGeminiModel(targetModel);
-  }
-  return Store.settings.update({ provider, model: targetModel });
+  const targetModel = model || s.model || CFG.openrouter.model;
+  return Store.settings.update({ model: targetModel });
 }
 
 export function saveSettings() {
   const s = Store.settings.get();
   const keyInput = q("#setKey");
   const typedKey = keyInput && keyInput.value.trim();
-  const providerSelect = q("#setProvider");
-  const modelSelect = q("#setModel");
 
   /* The schema maps every present form control to a typed value in one pass;
-     provider/model and apiKey are pulled back out because they need the
-     special handling below (model normalisation, sessionStorage). */
+     apiKey is pulled back out because it belongs in sessionStorage, never in
+     the form value. Model comes straight from #setModel — there is no
+     provider branch left to special-case it against. */
   const patch = readSettingsForm(null, s);
-  delete patch.provider;
-  delete patch.model;
   delete patch.apiKey;
-
-  if (providerSelect) {
-    applyProviderModel(providerSelect.value || "gemini", modelSelect ? modelSelect.value : null);
-  } else if (modelSelect) {
-    patch.model = modelSelect.value;
-  }
-
-  const provider = Store.settings.get().provider || "gemini";
-
-  if (!providerSelect && provider === "gemini" && patch.model) {
-    patch.model = AI.normalizeGeminiModel(patch.model);
-  }
 
   if (typedKey) {
     patch.apiKey = typedKey;
-    setApiKey(typedKey, provider);
+    setApiKey(typedKey);
   } else {
-    const savedKey = getApiKey(provider);
+    const savedKey = getApiKey();
     if (savedKey) {
       patch.apiKey = savedKey;
     } else {
       patch.apiKey = "";
-      clearApiKey(provider);
+      clearApiKey();
     }
   }
 
@@ -107,8 +86,7 @@ export async function testAI() {
 }
 
 export function clearApiKeyFn() {
-  const provider = Store.settings.get().provider || "gemini";
-  clearApiKey(provider);
+  clearApiKey();
   Store.settings.update({ apiKey: "" });
   toast("API key cleared.", "ok");
 }
