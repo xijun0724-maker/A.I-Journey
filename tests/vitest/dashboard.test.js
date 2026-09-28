@@ -100,28 +100,6 @@ describe('Dashboard.courseGrade', () => {
   });
 });
 
-describe('Dashboard.upcoming', () => {
-  it('returns sorted upcoming events', () => {
-    const soon = new Date(Date.now() + 1 * 86400000).toISOString();
-    const later = new Date(Date.now() + 7 * 86400000).toISOString();
-    Store.db.events = [
-      { id: 'e1', status: 'open', due: later, courseId: null, type: 'assignment', subtasks: [] },
-      { id: 'e2', status: 'open', due: soon, courseId: null, type: 'quiz', subtasks: [] },
-    ];
-    const up = Dashboard.upcoming(5);
-    expect(up.length).toBe(2);
-    expect(up[0].id).toBe('e2');
-    expect(up[1].id).toBe('e1');
-  });
-
-  it('excludes done events', () => {
-    Store.db.events = [
-      { id: 'e1', status: 'done', due: new Date().toISOString(), courseId: null },
-    ];
-    expect(Dashboard.upcoming(5)).toHaveLength(0);
-  });
-});
-
 describe('Dashboard.readiness', () => {
   it('returns null when term dates missing', () => {
     Store.db.settings.termStart = '';

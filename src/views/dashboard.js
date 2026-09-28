@@ -8,7 +8,7 @@
  */
 
 import { Store } from "../core/store.js";
-import { UI, UIState } from "../core/state.js";
+import { UI, UIState } from "../core/scope.js";
 import { Dashboard } from "../domain/dashboard.js";
 import { Tasks } from "../domain/tasks.js";
 import { Planner } from "../domain/planner.js";
@@ -28,18 +28,10 @@ import {
   bar,
   statBox,
   pageHead,
-  priBadge,
-  statusBadge,
-  courseChip,
 } from "./shared.js";
 import { q } from "../utils/dom.js";
 import { renderCalendarCard, afterCalendar } from "./calendar.js";
-
-/** Format time string HH:MM from ISO string or default to 23:59 */
-function formatTime(isoStr) {
-  if (!isoStr || isoStr.length < 16) return "23:59";
-  return isoStr.slice(11, 16);
-}
+import { renderTodoRow } from "./tasks.js";
 
 /** Format date header e.g. "Friday, 11 September 2026" */
 function formatDateHeader(dateYmd) {
@@ -74,7 +66,7 @@ function renderTimelineItem(e) {
   const isDone = e.status === "done";
   const isOverdue = n !== null && n < 0 && !isDone;
   const isDueSoon = n !== null && n >= 0 && n <= 3 && !isDone;
-  const timeStr = formatTime(e.due);
+  const timeStr = fmtTime(e.due, "24h") || "23:59";
   const courseDetail = getCourseDetailString(e.courseId);
 
   const actionPrefix =
@@ -366,76 +358,7 @@ function renderDashboardTodo() {
     const displayTasks = openTasks.slice(0, 4);
 
     displayTasks.forEach((e) => {
-      const p = Tasks.priority(e);
-      const isOverdue = Tasks.isOverdue(e);
-      const days = daysUntil(e.due);
-      const isDueToday = days === 0;
-      const timeStr = fmtTime(e.due);
-
-      h +=
-        '<div class="todo-item-row' +
-        (isOverdue ? " is-overdue" : "") +
-        '">';
-
-      // 1. Square Checklist Checkbox (Synchronized with Tasks view)
-      h +=
-        '<button type="button" class="chk-square" data-act="task-toggle" data-id="' +
-        esc(e.id) +
-        '" role="checkbox" tabindex="0" aria-checked="false" aria-label="Mark ' +
-        esc(e.title) +
-        ' complete"></button>';
-
-      // 2. Title & Meta (Clickable to edit)
-      h +=
-        '<div class="todo-item-content" data-act="event-edit" data-id="' +
-        esc(e.id) +
-        '" role="button" tabindex="0" title="Click to edit to-do" aria-label="Edit to-do: ' +
-        esc(e.title) +
-        '">';
-      h += '<div class="todo-title-row">';
-      h +=
-        '<span class="todo-title">' +
-        esc(e.title) +
-        "</span>";
-      h += "</div>";
-
-      h += '<div class="todo-meta-row">';
-      h += priBadge(p.label);
-      h += statusBadge(e);
-
-      if (e.due) {
-        if (isOverdue) {
-          h +=
-            '<span class="todo-badge overdue" title="Past deadline">⚠️ Overdue (' +
-            rel(e.due) +
-            (timeStr ? " · " + timeStr : "") +
-            ")</span>";
-        } else if (isDueToday) {
-          h +=
-            '<span class="todo-badge today" title="Due today">📅 Today' +
-            (timeStr ? ", " + timeStr : "") +
-            "</span>";
-        } else {
-          h +=
-            '<span class="todo-badge due" title="Due date">📅 ' +
-            fmtDate(e.due, false) +
-            (timeStr ? ", " + timeStr : "") +
-            " (" +
-            rel(e.due) +
-            ")</span>";
-        }
-      } else {
-        h += '<span class="todo-badge nodate">No deadline</span>';
-      }
-
-      if (e.courseId) {
-        h += '<span class="todo-course-chip">' + courseChip(e.courseId) + "</span>";
-      }
-
-      h += "</div>"; // .todo-meta-row
-      h += "</div>"; // .todo-item-content
-
-      h += "</div>"; // .todo-item-row
+      h += renderTodoRow(e, { showActions: false, showNotes: false });
     });
 
     h += "</div>"; // .todo-checklist
@@ -714,7 +637,6 @@ export function afterDashboard(root) {
 }
 
 export const dashboardView = {
-  title: "Dashboard",
   fn: dashboard,
   after: afterDashboard,
 };

@@ -17,6 +17,75 @@ import { initChrome } from "./chrome.js";
 import { initFocusTrap } from "./focus-trap.js";
 import { initLifecycle } from "./lifecycle.js";
 
+/**
+ * The one error card, shared by this file's own failure path and by
+ * `main.js`, so a startup failure always paints the same surface in
+ * `#viewRoot` with the same two ways out.
+ */
+export function renderErrorCard(message, errors) {
+  const root = document.getElementById("viewRoot");
+  if (!root) return;
+  const errList =
+    errors === null || errors === undefined
+      ? []
+      : Array.isArray(errors)
+        ? errors
+        : [errors];
+  const errHtml = errList
+    .map(
+      (e) =>
+        `<div class="u-err-key">
+      ${String((e && e.message) || e).replace(/[<>&"']/g, "")}
+    </div>`,
+    )
+    .join("");
+
+  root.innerHTML = `
+    <div class="u-panel-560">
+      <div class="u-err-card">
+        <h2 class="u-err-title">⚠ Application Error</h2>
+        <p class="u-err-lead">${String(message).replace(/[<>&"']/g, "")}</p>
+        <div class="u-mb-16">
+          <strong class="u-eyebrow">Error details:</strong>
+          ${errHtml}
+        </div>
+        <div class="u-err-box">
+          <p class="u-err-label">
+            <strong>Troubleshooting steps:</strong>
+          </p>
+          <ol class="u-err-list">
+            <li>Open browser Developer Tools (F12) and check the <strong>Console</strong> tab</li>
+            <li>Check the <strong>Network</strong> tab for failed resource loads</li>
+            <li>Try disabling browser extensions temporarily</li>
+            <li>Try an incognito/private window to rule out extension interference</li>
+            <li>Clear browser cache and service workers</li>
+          </ol>
+        </div>
+        <div class="u-flex-8">
+          <button class="btn primary" id="diagReloadBtn">Reload page</button>
+          <button class="btn" id="diagClearBtn">
+            Clear all data &amp; reload
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  const reloadBtn = document.getElementById("diagReloadBtn");
+  const clearBtn = document.getElementById("diagClearBtn");
+  if (reloadBtn)
+    reloadBtn.addEventListener("click", function () {
+      location.reload();
+    });
+  if (clearBtn)
+    clearBtn.addEventListener("click", function () {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (_e) {}
+      location.reload();
+    });
+}
+
 async function boot() {
   try {
     // Sync localStorage first so a blank/corrupt mirror never blocks paint;
@@ -57,42 +126,8 @@ async function boot() {
   } catch (e) {
     // Prevent white screen on bootstrap failure
     console.error("Journey A.I: bootstrap failed:", e);
-    const root = document.getElementById("viewRoot");
-    if (root) {
-      const errText =
-        (e && e.message ? String(e.message) : "Unknown error").replace(
-          /[<>&"']/g,
-          "",
-        ) || "Unknown error";
-      root.innerHTML = `
-        <div  class="card u-panel-480">
-          <h2>Something went wrong</h2>
-          <p  class="small mono u-my-12">${errText}</p>
-          <p  class="small muted u-mb-16">
-            The app could not start. Try reloading the page.
-          </p>
-          <button class="btn primary" id="bootReloadBtn">Reload page</button>
-          <button  class="btn u-ml-8" id="bootResetBtn">
-            Reset data and reload
-          </button>
-        </div>
-      `;
-      const reloadBtn = document.getElementById("bootReloadBtn");
-      const resetBtn = document.getElementById("bootResetBtn");
-      if (reloadBtn)
-        reloadBtn.addEventListener("click", function () {
-          location.reload();
-        });
-      if (resetBtn)
-        resetBtn.addEventListener("click", function () {
-          try {
-            localStorage.clear();
-          } catch (_e) {}
-          location.reload();
-        });
-    }
+    renderErrorCard("The application failed to start.", e);
   }
 }
 
 export { boot };
-export default { boot };

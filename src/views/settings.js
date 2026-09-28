@@ -129,7 +129,7 @@ export function settings() {
   });
   h +=
     "</select></label>" +
-    '<p class="hint">Custom standards can be registered from code via <code>Standards.register()</code>.</p></div>';
+    "</div>";
 
   /* study preferences */
   h +=
@@ -142,14 +142,7 @@ export function settings() {
     s.studyWeekend +
     '"></label>' +
     "</div>" +
-    '<div class="grid g3">' +
-    '<label class="fld"><span>Default view</span><select id="setDefaultView">' +
-    '<option value="dashboard"' +
-    (s.defaultView === "dashboard" || s.defaultView === "student"
-      ? " selected"
-      : "") +
-    ">Dashboard</option>" +
-    "</select></label>" +
+    '<div class="grid g2">' +
     '<label class="fld"><span>Planner horizon (weeks)</span><input id="setWeeks" type="number" min="1" max="20" value="' +
     s.plannerWeeks +
     '"></label>' +
@@ -269,7 +262,6 @@ export function afterSettings(root) {
 }
 
 export const settingsView = {
-  title: "Settings",
   fn: settings,
   after: afterSettings,
 };

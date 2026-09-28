@@ -4,7 +4,7 @@
  */
 
 import { Store } from "./store.js";
-import { UI, Views, UIState } from "./state.js";
+import { UI, Views, UIState } from "./scope.js";
 import { q, applyDataStyles } from "../utils/dom.js";
 import { esc } from "../utils/helpers.js";
 import { renderRecents } from "../utils/format.js";
@@ -22,7 +22,10 @@ let _renderPending = false;
 function scheduleRender() {
   if (_renderPending) return;
   _renderPending = true;
-  const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : (fn) => setTimeout(fn, 0);
+  const raf =
+    typeof requestAnimationFrame === "function"
+      ? requestAnimationFrame
+      : (fn) => setTimeout(fn, 0);
   raf(function () {
     _renderPending = false;
     render();
@@ -46,10 +49,13 @@ const navGroups = [
   },
 ];
 
-/** Resolve the configured default view, falling back to dashboard. */
+/**
+ * The app opens on the assistant landing — no syllabus import first.
+ * `defaultView` was a preference with exactly one offered value (dashboard),
+ * so it never chose anything; it is gone rather than kept as a lie.
+ */
 function resolveDefaultView() {
-  const preferred = Store.db.settings.defaultView || "dashboard";
-  return viewDefs[preferred] ? preferred : "dashboard";
+  return viewDefs.assistant ? "assistant" : "dashboard";
 }
 
 /**
@@ -66,19 +72,9 @@ const icons = {
     '<rect x="3" y="4" width="10" height="9" rx="1.2"/><path d="M3 6.5h10M5.5 2.5v2.5M10.5 2.5v2.5"/>',
   calendar:
     '<rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5 2v3M11 2v3"/>',
-  assistant:
-    '<path d="M8 2.5l1.2 3.5 3.5 1.2-3.5 1.2L8 13.1l-1.2-3.5L3.3 8.4l3.5-1.2z"/>',
   library: '<path d="M4.5 3h4.5l3.5 3.2v6.8H4.5z"/><path d="M9 3v3.2H12.5"/>',
-  courses:
-    '<path d="M8 2.5l5 2.6L8 7.7 3 5.1z"/><path d="M3.5 8.2 8 10.5l4.5-2.3M3.5 10.8 8 13.1l4.5-2.3"/>',
-  import:
-    '<path d="M8 2.5v7.5M5 7.5l3 3 3-3"/><path d="M3.5 12v1.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V12"/>',
-  squarePen:
-    '<path d="M12.5 3.5l2 2L5 15H3v-2z"/><path d="M10.5 5.5l2 2"/>',
   plus: '<path d="M8 3.4v9.2M3.4 8h9.2"/>',
   search: '<circle cx="7.5" cy="7.5" r="3.5"/><path d="M11 11l3 3"/>',
-  settings:
-    '<path d="M13.4 9.8a1.1 1.1 0 0 0 .2 1.2l.05.05a1.33 1.33 0 1 1-1.88 1.88l-.05-.05a1.1 1.1 0 0 0-1.2-.2 1.1 1.1 0 0 0-.67 1v.12a1.33 1.33 0 1 1-2.66 0v-.06a1.1 1.1 0 0 0-.72-1 1.1 1.1 0 0 0-1.2.2l-.05.05a1.33 1.33 0 1 1-1.88-1.88l.05-.05a1.1 1.1 0 0 0 .2-1.2 1.1 1.1 0 0 0-1-.67h-.12a1.33 1.33 0 1 1 0-2.66h.06a1.1 1.1 0 0 0 1-.72 1.1 1.1 0 0 0-.2-1.2L4.4 3.4a1.33 1.33 0 1 1 1.88-1.88l.05.05a1.1 1.1 0 0 0 1.2.2h.06a1.1 1.1 0 0 0 .67-1V.8a1.33 1.33 0 1 1 2.66 0v.06a1.1 1.1 0 0 0 .67 1 1.1 1.1 0 0 0 1.2-.2l.05-.05a1.33 1.33 0 1 1 1.88 1.88l-.05.05a1.1 1.1 0 0 0-.2 1.2v.06a1.1 1.1 0 0 0 1 .67h.12a1.33 1.33 0 1 1 0 2.66h-.06a1.1 1.1 0 0 0-1 .67z"/>',
 };
 
 /**
@@ -114,7 +110,6 @@ function renderNav() {
     if (!host) return;
     host.innerHTML = g.items
       .map((it) => {
-        const c = it.count ? it.count() : null;
         const isAct =
           UIState.view === it.id ||
           (it.id === "roadmap" && UIState.view === "courses");
@@ -135,7 +130,6 @@ function renderNav() {
           "</span><span>" +
           esc(it.label) +
           "</span>" +
-          (c ? '<span class="cnt">' + c + "</span>" : "") +
           "</a>"
         );
       })
@@ -337,8 +331,6 @@ export const Router = {
   mark,
   registerView,
   renderNav,
-  renderSidebarActions,
-  renderRecentChats,
   render,
   scheduleRender,
   onStoreChange,

@@ -15,6 +15,7 @@ import { describe, it, expect } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve, relative } from "node:path";
+import { CLASSIC_SCRIPTS } from "../../vite.config.js";
 
 const toPosix = (p) => p.replace(/\\/g, "/");
 
@@ -91,5 +92,28 @@ describe("the load graph", () => {
     expect([...missing].sort(), "imported but does not exist").toEqual([]);
     expect(absent.sort(), "referenced but does not exist").toEqual([]);
     expect(untracked.sort(), "imported but untracked").toEqual([]);
+  });
+
+  /**
+   * The failure class above only checks the *source* tree, and `npm run dev`
+   * reads from disk — so a classic script Vite refuses to bundle still passed
+   * this file while `dist/` answered every request for it with a 404.
+   * Everything reachable from index.html that the bundler will not carry has
+   * to be named in CLASSIC_SCRIPTS, or production serves nothing.
+   */
+  it("emits every classic script index.html loads", () => {
+    const html = readFileSync(INDEX_HTML, "utf8");
+    const classic = [...html.matchAll(/<script\b([^>]*)>/g)]
+      .map((m) => m[1])
+      .filter((attrs) => !/type\s*=\s*["']module["']/.test(attrs))
+      .map((attrs) => (attrs.match(/src\s*=\s*["']([^"']+)["']/) || [])[1])
+      .filter(Boolean)
+      .map((src) => src.replace(/^src\//, ""));
+
+    expect(classic.length).toBeGreaterThan(0);
+    expect(
+      classic.filter((f) => !CLASSIC_SCRIPTS.includes(f)),
+      "classic script not emitted into dist/",
+    ).toEqual([]);
   });
 });

@@ -68,6 +68,13 @@ describe("index.html shell", () => {
     expect(() => new Function(themeInit)).not.toThrow();
   });
 
+  it("wires the sidebar brand to the assistant landing page", () => {
+    // The brand is the app's home affordance: clicking it starts a fresh
+    // conversation, so the assistant shows its landing page. A brand that is
+    // not a control is a dead affordance users click anyway.
+    expect(html).toMatch(/<button[^>]*class="sb-brand"[^>]*data-act="chat-new"/);
+  });
+
   it("registers the service worker with a relative path", () => {
     // An absolute "/sw.js" 404s on a project Pages site served from /<repo>/,
     // which silently disables the offline shell the README advertises.

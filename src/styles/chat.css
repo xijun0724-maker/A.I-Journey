@@ -3,6 +3,32 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+}/* Pane header — where this view says "where am I?". Ruled like every other
+   surface: hairline under the title, badges pushed right. */ .chat-head{
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rule-2);
+}.chat-head .spacer{
+  flex: 1 1 auto;
+}.chat-title{
+  margin: 0;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}.chat-head .chat-scope{
+  max-width: 32ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }.chat-log{
   flex: 1;
   overflow-y: auto;
@@ -101,12 +127,18 @@
 }.pill-model:hover{
   border-color: var(--ink-3);
   box-shadow: 0 1px 4px var(--navy-5);
-}.pill-model .model-dot{
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--pen);
-}.model-dropdown{
+}.pill-model{
+  max-width: 168px;
+}.pill-model-label{
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}/* `#app *{ position: relative; z-index: 1 }` (layout.css) outranks a bare
+   class, so the popup has to carry the id to stay out of flow — without it the
+   panel is laid out inside the composer and stretches the input pill to the
+   height of the whole catalogue. The height cap is here for the same reason:
+   the panel opens upward from a composer pinned to the bottom of the window. */ #app .model-dropdown{
   position: absolute;
   bottom: 100%;
   right: 0;
@@ -117,11 +149,18 @@
   box-shadow: var(--shadow-elevated);
   display: none;
   flex-direction: column;
-  min-width: 200px;
+  min-width: 236px;
+  max-width: 300px;
+  max-height: 60vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 10;
-  overflow: hidden;
-}.model-dropdown.open{
+}#app .model-dropdown.open{
   display: flex;
+}.model-choices{
+  display: flex;
+  flex-direction: column;
 }.model-option{
   display: flex;
   align-items: center;
@@ -130,8 +169,7 @@
   border: none;
   background: transparent;
   color: var(--ink);
-  font-size: 13px;
-  font-weight: 500;
+  font: inherit;
   text-align: left;
   width: 100%;
   cursor: pointer;
@@ -144,9 +182,54 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex: 0 0 auto;
   background: var(--ink-3);
 }.model-option.active .model-dot{
   background: var(--pen);
+}.model-option-text{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}.model-option-name{
+  font-size: 13px;
+  font-weight: 500;
+}.model-option-note{
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}/* The disclosure that keeps the catalogue one click away instead of on
+   screen: quieter than a model row, because it is not a choice. */ .model-more{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-top: 1px solid var(--rule-2);
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--duration-fast), background var(--duration-fast);
+}.model-more:hover{
+  background: var(--navy-5);
+  color: var(--ink);
+}.model-more-count{
+  margin-left: auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}/* No rule of its own: the toggle above already carries the hairline, and two
+   of them would fence the toggle in. */ .model-more-list{
+  display: flex;
+  flex-direction: column;
+}.model-more-list[hidden]{
+  display: none;
 }.pill-mic{
   display: flex;
   align-items: center;
@@ -186,6 +269,10 @@
   transform: scale(1.05);
 }.pill-send:active{
   transform: scale(0.95);
+}.pill-send:disabled, .elicit-send:disabled{
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }/* Messages */ .msg{
   display: flex;
   width: 100%;
@@ -210,6 +297,11 @@
   border-radius: var(--rounded-lg);
   padding: 16px;
   color: var(--ink);
+}/* A failed turn: tinted, not filled — semantic colour is signal, not surface. */ .msg-error{
+  border-color: var(--error);
+  background: var(--error-soft);
+}.msg-error p{
+  margin: 0 0 10px;
 }.msg-meta{
   font-size: 11px;
   color: var(--ink-3);
@@ -410,13 +502,17 @@
 }@media (max-width: 640px){.elicit-grid{
     grid-template-columns: repeat(2, 1fr);
   }
-}.elicit-suggestion-card{
+}/* A real <button>: font and colour reset so a card looks like a card, and the
+   grid cell is filled rather than sized to the label. */ .elicit-suggestion-card{
   display: flex;
   flex-direction: column;
+  width: 100%;
   padding: 16px;
   background: var(--sheet);
   border: 1px solid var(--rule);
   border-radius: var(--rounded-md);
+  font: inherit;
+  color: var(--ink);
   cursor: pointer;
   transition:
     border-color var(--duration-fast),
@@ -435,15 +531,17 @@
   font-weight: 500;
   margin-bottom: 12px;
   align-self: flex-start;
-}.elicit-badge-resume{
+}/* Borders read from tokens: the hard-coded greens and blues were the light
+   register leaking into dark mode (the one the detector flagged too). */ .elicit-badge-resume{
   background: var(--ok-soft);
   color: var(--ok);
-  border: 1px solid rgba(34, 197, 94, 0.15);
+  border: 1px solid var(--ok-soft);
 }.elicit-badge-suggested{
   background: var(--info-soft);
   color: var(--info);
-  border: 1px solid rgba(91, 141, 239, 0.15);
+  border: 1px solid var(--blue-15);
 }.elicit-card-text{
+  display: block;
   font-size: 14px;
   line-height: 1.5;
   color: var(--ink);

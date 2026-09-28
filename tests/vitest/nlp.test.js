@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { NLP } from "../../src/domain/nlp.js";
+import * as text from "../../src/domain/nlp/text.js";
+import { analyse } from "../../src/domain/nlp/analyse.js";
+
+const NLP = { ...text, analyse };
 
 describe("NLP.typeOf", () => {
   it("detects project type", () => {
@@ -144,7 +147,9 @@ describe("NLP PNU syllabus fields", () => {
     ).toBeGreaterThan(0);
     expect(result.pnu.outcomes.courseIntended.length).toBeGreaterThan(0);
     expect(result.pnu.themes.gedi).toContain("Gender Equality");
-    expect(result.pnu.sessions).toHaveLength(3);
+    expect(
+      result.lessons.filter((lesson) => lesson.week != null),
+    ).toHaveLength(3);
     expect(result.pnu.grading.items).toHaveLength(2);
     expect(result.pnu.policies.expectations.length).toBeGreaterThan(0);
   });

@@ -3,19 +3,11 @@
  * Handles modal creation, confirmation dialogs, and focus management.
  */
 
-import { q, qa, applyDataStyles } from "./dom.js";
+import { q, applyDataStyles } from "./dom.js";
 import { esc } from "./helpers.js";
 
-/**
- * Create and show a modal dialog
- * @param {Object} opts - Modal options
- * @param {string} opts.title - Modal title
- * @param {string} opts.body - Modal body HTML
- * @param {string} opts.footer - Modal footer HTML
- * @param {boolean} opts.wide - Use wide modal
- * @param {Function} opts.onMount - Callback when modal is mounted
- * @returns {Function} Close function
- */
+// Create and show a modal dialog; opts: { title, body, footer, wide, onMount }.
+// Returns the close function.
 export function modal(opts) {
   const root = q("#modalRoot");
   const body = typeof opts.body === "string" ? opts.body : "";
@@ -55,7 +47,6 @@ export function modal(opts) {
     root.classList.remove("open");
     root.innerHTML = "";
     document.removeEventListener("keydown", onKey);
-    root.removeEventListener("keydown", trapFocus);
     if (previousFocus && document.contains(previousFocus))
       previousFocus.focus();
   }
@@ -64,38 +55,11 @@ export function modal(opts) {
     if (e.key === "Escape") close();
   }
 
-  /** Tab focus trap — keeps keyboard focus inside the modal dialog. */
-  function trapFocus(e) {
-    if (e.key !== "Tab") return;
-    const focusable = modalEl.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    );
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (e.shiftKey) {
-      if (document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      }
-    } else {
-      if (document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-  }
-
   document.addEventListener("keydown", onKey);
-  if (modalEl) modalEl.addEventListener("keydown", trapFocus);
 
   root.onclick = function (e) {
     if (e.target.dataset && e.target.dataset.close) close();
   };
-
-  qa("[data-close]", root).forEach((b) => {
-    b.addEventListener("click", close);
-  });
 
   if (typeof opts.onMount === "function") {
     opts.onMount(q(".modal", root), close);
@@ -104,15 +68,8 @@ export function modal(opts) {
   return close;
 }
 
-/**
- * Show a confirmation dialog
- * @param {string} message - Confirmation message
- * @param {Object} opts - Options
- * @param {string} opts.title - Dialog title
- * @param {string} opts.ok - OK button text
- * @param {boolean} opts.danger - Use danger styling
- * @returns {Promise<boolean>} True if confirmed
- */
+// Show a confirmation dialog; opts: { title, ok, danger }. Resolves false when
+// dismissed via scrim / X / Escape.
 export function confirm(message, opts = {}) {
   return new Promise((resolve) => {
     let done = false;
@@ -140,7 +97,6 @@ export function confirm(message, opts = {}) {
       },
     });
 
-    // Resolve(false) when dismissed via scrim / X / Escape
     const obs = new MutationObserver(() => {
       if (!q("#modalRoot").classList.contains("open")) {
         obs.disconnect();
@@ -151,18 +107,5 @@ export function confirm(message, opts = {}) {
       attributes: true,
       attributeFilter: ["class"],
     });
-  });
-}
-
-/**
- * Show a help modal with markdown content
- * @param {string} content - Markdown content
- */
-export function helpModal(content) {
-  modal({
-    title: "How Journey A.I works",
-    wide: true,
-    body: content,
-    footer: '<button class="btn primary" data-close="1">Got it</button>',
   });
 }

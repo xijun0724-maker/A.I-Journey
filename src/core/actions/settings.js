@@ -3,7 +3,7 @@
  */
 
 import { Store } from "../store.js";
-import { UI } from "../state.js";
+import { UI } from "../scope.js";
 import { CFG } from "../../config/constants.js";
 import { readSettingsForm } from "../../config/settings.js";
 import { q, toast } from "../../utils/dom.js";
@@ -50,10 +50,6 @@ export function saveSettings() {
       patch.apiKey = "";
       clearApiKey();
     }
-  }
-
-  if (patch.defaultView !== undefined && !patch.defaultView) {
-    patch.defaultView = "dashboard";
   }
 
   const updated = Store.settings.update(patch);

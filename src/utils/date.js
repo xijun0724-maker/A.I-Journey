@@ -37,7 +37,6 @@ const MONTHS = {
 // Month name patterns for regex matching
 const MONTH_ALT =
   "jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?";
-const MONTH_RE = new RegExp(MONTH_ALT, "i");
 const MONTH_FIRST_RE = new RegExp(
   "\\b(" +
     MONTH_ALT +
@@ -53,11 +52,6 @@ const DAY_FIRST_RE = new RegExp(
 export const MONTH_FIRST_G = new RegExp(MONTH_FIRST_RE.source, "ig");
 export const DAY_FIRST_G = new RegExp(DAY_FIRST_RE.source, "ig");
 
-/**
- * Convert Date to ISO string (YYYY-MM-DDTHH:MM)
- * @param {Date|string} d - Date to convert
- * @returns {string|null} ISO string or null if invalid
- */
 export function iso(d) {
   if (!d) return null;
   const x = d instanceof Date ? d : new Date(d);
@@ -76,55 +70,29 @@ export function iso(d) {
   );
 }
 
-/**
- * Convert Date to date-only string (YYYY-MM-DD)
- * @param {Date|string} d - Date to convert
- * @returns {string|null} Date string or null if invalid
- */
 export function dateOnly(d) {
   const i = iso(d);
   return i ? i.slice(0, 10) : null;
 }
 
-/**
- * Parse ISO string to Date object
- * @param {string} s - ISO string
- * @returns {Date|null} Date object or null if invalid
- */
 export function fromIso(s) {
   if (!s) return null;
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
 
-/**
- * Get start of day (midnight)
- * @param {Date} d - Date
- * @returns {Date} Date at midnight
- */
 export function startOfDay(d) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
   return x;
 }
 
-/**
- * Add days to a date
- * @param {Date} d - Date
- * @param {number} n - Days to add
- * @returns {Date} New date
- */
 export function addDays(d, n) {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
 }
 
-/**
- * Calculate days until a date
- * @param {string} iso - ISO date string
- * @returns {number|null} Days until date, or null if invalid
- */
 export function daysUntil(isoStr) {
   if (!isoStr) return null;
   const d = fromIso(isoStr);
@@ -132,12 +100,6 @@ export function daysUntil(isoStr) {
   return Math.round((startOfDay(d) - startOfDay(new Date())) / DAY);
 }
 
-/**
- * Format date for display
- * @param {string} iso - ISO date string
- * @param {boolean} withTime - Include time
- * @returns {string} Formatted date string
- */
 export function fmtDate(isoStr, withTime = false) {
   const d = fromIso(isoStr);
   if (!d) return "No date";
@@ -156,12 +118,7 @@ export function fmtDate(isoStr, withTime = false) {
   return s;
 }
 
-/**
- * Format time from ISO string (e.g., "11:59 PM" or "23:59")
- * @param {string} isoStr - ISO date string
- * @param {string} timeFormat - "12h" or "24h"
- * @returns {string} Formatted time or empty string if no time
- */
+// timeFormat is "12h" ("11:59 PM") or "24h" ("23:59"); "" when there is no time.
 export function fmtTime(isoStr, timeFormat = "12h") {
   if (!isoStr || typeof isoStr !== "string") return "";
   const tIdx = isoStr.indexOf("T");
@@ -178,11 +135,6 @@ export function fmtTime(isoStr, timeFormat = "12h") {
   return `${h12}:${min} ${ampm}`;
 }
 
-/**
- * Format date as day of week (e.g., "Monday, Sep 15")
- * @param {string} iso - ISO date string
- * @returns {string} Formatted day string
- */
 export function fmtDay(isoStr) {
   const d = fromIso(isoStr);
   return d
@@ -194,11 +146,6 @@ export function fmtDay(isoStr) {
     : "Unscheduled";
 }
 
-/**
- * Get relative date string (e.g., "today", "in 3 days")
- * @param {string} iso - ISO date string
- * @returns {string} Relative date string
- */
 export function rel(isoStr) {
   const n = daysUntil(isoStr);
   if (n === null) return "no date";
@@ -209,31 +156,12 @@ export function rel(isoStr) {
   return "in " + n + " days";
 }
 
-/**
- * Get Monday of the week containing the given date
- * @param {Date} d - Date
- * @returns {Date} Monday of the week
- */
 export function mondayOf(d) {
   const x = startOfDay(d);
   const dow = (x.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
   return addDays(x, -dow);
 }
 
-/**
- * Get week key (YYYY-MM-DD of Monday)
- * @param {Date} d - Date
- * @returns {string} Week key
- */
-export function weekKey(d) {
-  return dateOnly(mondayOf(d || new Date()));
-}
-
-/**
- * Parse clock time (e.g., "11:59 PM")
- * @param {string} s - Time string
- * @returns {{h: number, m: number}|null} Time object or null
- */
 export function parseTime(s) {
   if (!s) return null;
   const m = /(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i.exec(String(s));
@@ -247,14 +175,9 @@ export function parseTime(s) {
   return { h, m: mi };
 }
 
-/**
- * Lenient natural-language date parser
- * Handles "Jan 15", "15 January 2026", "01/15/2026", "2026-01-15",
- * "Week of Feb 3", and "Jan 15 - Jan 20" (returns the first date).
- * @param {string} text - Text containing date
- * @param {number} yearHint - Year hint for ambiguous dates
- * @returns {Date|null} Parsed date or null
- */
+// Lenient natural-language date parser: "Jan 15", "15 January 2026",
+// "01/15/2026", "2026-01-15", "Week of Feb 3", "Jan 15 - Jan 20" (the first
+// date). A day of month is required; a bare month name is not a date.
 export function parseDate(text, yearHint) {
   if (!text) return null;
   const s = String(text)
@@ -297,13 +220,10 @@ export function parseDate(text, yearHint) {
     if (mo !== undefined) return resolve(mo, da, yr, yearHint, cur);
   }
 
-  // Bare month name anywhere in the string -> 1st of that month
-  MONTH_RE.lastIndex = 0;
-  const bare = MONTH_RE.exec(s);
-  if (bare && MONTHS[bare[0].toLowerCase()] !== undefined) {
-    return resolve(MONTHS[bare[0].toLowerCase()], 1, null, yearHint, cur);
-  }
-
+  // A date needs an explicit day of month. A bare month name is not a date:
+  // "Summary" contains "mar", "decisions" contains "dec" and "maybe"
+  // contains "may", so scanning for a month name turns ordinary prose into a
+  // confident deadline on the 1st of that month.
   return null;
 
   function resolve(mo2, da2, yr2, hint, now) {

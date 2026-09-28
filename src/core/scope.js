@@ -1,17 +1,15 @@
 /**
- * Shared scope/filtering helpers for Journey A.I
+ * Shared state and scope/filtering helpers for Journey A.I.
  *
  * Extracted from views/shared.js to break the core <-> views circular
- * dependency.  state.js and other core modules import from here instead
- * of reaching into the views layer.
- *
- * UIState is defined here to avoid a core/state <-> core/scope circular
- * dependency.  state.js re-exports it for backward compatibility.
+ * dependency: core modules import from here instead of reaching into the
+ * views layer.
  */
 
 import { Store } from "./store.js";
 import { Tasks } from "../domain/tasks.js";
 import { sortBy } from "../utils/helpers.js";
+import { toastSaved } from "../utils/dom.js";
 
 const listeners = new Map();
 
@@ -43,7 +41,6 @@ let _state = {
   /* A study plan the AI proposed and the student has not decided on yet.
      Deliberately not persisted: after a reload it is re-asked, not acted on. */
   planProposal: null,
-  chatSourcesOpen: true,
   pendingPrompt: null,
   draft: null,
 };
@@ -116,6 +113,20 @@ export function eventProgress(e) {
   return Tasks.progress(e);
 }
 
-export function remainingMinutes(e) {
-  return Tasks.remainingMinutes(e);
-}
+/** View registry, populated by view modules. */
+export const Views = {};
+
+/**
+ * Shared helper namespace reused by the app shell: one source of truth for
+ * filtering, formatting, and toast confirmation.
+ */
+export const UI = {
+  courses,
+  inScope,
+  events,
+  readings,
+  eventProgress,
+  state: UIState,
+  draft: null,
+  toastSaved,
+};

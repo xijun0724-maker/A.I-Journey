@@ -1,7 +1,7 @@
 import { CFG } from "../config/constants.js";
 import { Store } from "../core/store.js";
-import { UIState } from "../core/state.js";
-import { answer, studyPlanProposal } from "../ai/index.js";
+import { UIState } from "../core/scope.js";
+import { answer, studyPlanProposal, status } from "../ai/index.js";
 import { generateRecallQuestions } from "../ai/offline.js";
 import { Tasks } from "../domain/tasks.js";
 import { Coach } from "../domain/coach.js";
@@ -12,6 +12,7 @@ import { q, toast } from "../utils/dom.js";
 import { applyModel } from "../core/actions/settings.js";
 import Router from "../core/router.js";
 import { RAG } from "../domain/rag.js";
+import { truncate } from "./shared.js";
 
 /* ── incremental chat rendering helpers ────────────────────────────── */
 
@@ -22,15 +23,24 @@ import { RAG } from "../domain/rag.js";
  * the band is capped at "supported" unless the answer carries at least one
  * citation that was validated against the retrieved passages.
  */
+/* Provenance wording, shared by the transcript line and the screen-reader
+   summary so one answer is never described two different ways. */
+const PROV_LABELS = {
+  grounded: "Grounded in your documents",
+  supported: "Supported by your documents",
+  weak: "From your documents, but uncited — verify before relying on it",
+  ungrounded: "No matching passages — verify independently",
+};
+
+/** Say one line to assistive tech, through the shell's status region. */
+function announce(text) {
+  const sr = q("#srStatus");
+  if (sr) sr.textContent = text;
+}
+
 function renderProvenance(p) {
   if (!p || !p.band) return ""; /* pre-migration messages: no line */
-  const labels = {
-    grounded: "Grounded in your documents",
-    supported: "Supported by your documents",
-    weak: "From your documents, but uncited — verify before relying on it",
-    ungrounded: "No matching passages — verify independently",
-  };
-  const label = labels[p.band] || labels.ungrounded;
+  const label = PROV_LABELS[p.band] || PROV_LABELS.ungrounded;
   const where =
     p.docs > 0
       ? p.passages +
@@ -88,6 +98,19 @@ function msgHtml(m) {
       "<div>" +
       esc(m.content) +
       "</div></div></div>"
+    );
+  }
+  /* A turn that could not be answered. Rendered as a failure rather than an
+     answer — a raw provider string dressed as an assistant reply is
+     indistinguishable from a real one in the transcript. */
+  if (m.kind === "error") {
+    return (
+      '<div class="msg ai"><div class="msg-ai-body msg-error">' +
+      "<p>" +
+      esc(m.content) +
+      "</p>" +
+      '<button type="button" class="btn sm" data-act="chat-retry">Try again</button>' +
+      "</div></div>"
     );
   }
   /* A drill opened from the Library or a review block: the questions are the
@@ -171,6 +194,19 @@ function showTyping() {
   log.scrollTop = log.scrollHeight;
 }
 
+/*
+ * The landing page has no transcript to append into, so a send started there
+ * has nothing to render into: the bubble, the dots and every streamed token
+ * used to land nowhere while the answer ran. Paint the conversation the Store
+ * just opened instead. Returns whether the view had to be rebuilt — when it
+ * did, the fresh render already carries the bubble and the typing row.
+ */
+function ensureTranscript() {
+  if (q("#chatLog")) return false;
+  Router.render();
+  return true;
+}
+
 function hideTyping() {
   q("#typingIndicator")?.remove();
 }
@@ -202,10 +238,14 @@ function paintLive() {
     hideTyping();
     log.insertAdjacentHTML(
       "beforeend",
+      /* Only the half-written text is hidden from assistive tech: it is
+         rewritten every 90ms, and the settled answer is announced once, in
+         full, when it lands. The Stop control stays exposed, or the one way
+         to cancel a running answer would be invisible to a screen reader. */
       '<div class="msg ai" id="' +
         LIVE_ID +
         '">' +
-        '<div class="msg-ai-body"></div>' +
+        '<div class="msg-ai-body" aria-hidden="true"></div>' +
         '<div class="typing-row">' +
         '<button class="pill-stop" data-act="chat-stop" aria-label="Stop generating">Stop</button>' +
         "</div></div>",
@@ -410,35 +450,97 @@ export function practiseCourse(courseId) {
 
 /* ── Model selector ────────────────────────────────────────────────── */
 
+/**
+ * A model's display name and the detail in its parentheses. The parenthetical
+ * is reference text (context size, modality): it belongs in the list, not in
+ * a control that has to stay one line.
+ */
+function modelParts(m) {
+  const label = String((m && m.label) || (m && m.id) || "");
+  const open = label.indexOf("(");
+  if (open === -1) return { name: label, note: "" };
+  return {
+    name: label.slice(0, open).trim(),
+    note: label.slice(open + 1).replace(/\)\s*$/, "").trim(),
+  };
+}
+
+function modelOptionHtml(m, current) {
+  const parts = modelParts(m);
+  const active = m.id === current;
+  return (
+    '<button type="button" class="model-option' +
+    (active ? " active" : "") +
+    '" aria-pressed="' +
+    (active ? "true" : "false") +
+    '" data-model="' +
+    esc(m.id) +
+    '">' +
+    '<span class="model-dot"></span>' +
+    '<span class="model-option-text"><span class="model-option-name">' +
+    esc(parts.name) +
+    "</span>" +
+    (parts.note
+      ? '<span class="model-option-note">' + esc(parts.note) + "</span>"
+      : "") +
+    "</span></button>"
+  );
+}
+
+/*
+ * One primary choice, everything else behind a disclosure.
+ *
+ * The picker used to open eight equal-weight rows plus a bare "Free" label on
+ * the pill: a decision the app has no basis to hand a student, presented as if
+ * it were theirs to make. The primary row is the router's own auto-selection
+ * — the model the app already defaults to — and the rest stay one click away.
+ * When a listed model is the current one the disclosure opens itself, so the
+ * active choice is never hidden by the simplification.
+ */
 function renderModelSelector() {
   const s = Store.db.settings;
   const model = s.model || CFG.openrouter.model;
+  const models = CFG.openrouter.freeModels;
 
-  /* Short pill label: the first word of the model's friendly name when it
-     is one we list, otherwise the endpoint itself. */
-  const found = CFG.openrouter.freeModels.find(function (m) {
+  const current = models.find(function (m) {
     return m.id === model;
   });
-  const label = found ? found.label.split(" ")[0] : "OpenRouter";
+  const pillLabel = current ? modelParts(current).name : "OpenRouter";
+
+  const primary = models.find(function (m) {
+    return m.id === CFG.openrouter.model;
+  });
+  const rest = models.filter(function (m) {
+    return m !== primary;
+  });
+  const moreOpen = !!current && current !== primary;
 
   let h = '<div class="pill-model-wrap">';
   h +=
-    '<button class="pill-model" id="btnModelSelect" aria-label="Select model">' +
-    esc(label) +
-    "</button>";
+    '<button type="button" class="pill-model" id="btnModelSelect" aria-expanded="false" aria-controls="modelDropdown" aria-label="AI model: ' +
+    esc(pillLabel) +
+    ' — change">' +
+    '<span class="pill-model-label">' +
+    esc(pillLabel) +
+    "</span></button>";
   h += '<div class="model-dropdown" id="modelDropdown">';
-
-  CFG.openrouter.freeModels.forEach(function (m) {
-    h +=
-      '<button class="model-option' +
-      (model === m.id ? " active" : "") +
-      '" data-model="' +
-      esc(m.id) +
-      '">';
-    h += '<span class="model-dot"></span>' + esc(m.label) + "</button>";
+  h += '<div class="model-choices" role="group" aria-label="AI model">';
+  if (primary) h += modelOptionHtml(primary, model);
+  h +=
+    '<button type="button" class="model-more" id="btnMoreModels" aria-expanded="' +
+    (moreOpen ? "true" : "false") +
+    '" aria-controls="modelMoreList">More models' +
+    '<span class="model-more-count">' +
+    rest.length +
+    "</span></button>";
+  h +=
+    '<div class="model-more-list" id="modelMoreList"' +
+    (moreOpen ? "" : " hidden") +
+    ">";
+  rest.forEach(function (m) {
+    h += modelOptionHtml(m, model);
   });
-
-  h += "</div></div>";
+  h += "</div></div></div></div>";
   return h;
 }
 
@@ -446,11 +548,29 @@ function renderModelSelector() {
 
 let recognition = null;
 
+/* Failure wording for the codes the Web Speech API actually reports. A raw
+   code ("not-allowed") names nothing and suggests no recovery. */
+const MIC_ERRORS = {
+  "not-allowed":
+    "Microphone access is blocked. Allow it in your browser to dictate a question.",
+  "service-not-allowed":
+    "Microphone access is blocked. Allow it in your browser to dictate a question.",
+  network: "Voice input needs a network connection.",
+  "audio-capture": "No microphone was found.",
+  aborted: "Voice input stopped.",
+};
+
+function setListening(micBtn, on) {
+  micBtn.classList.toggle("listening", on);
+  micBtn.setAttribute("aria-pressed", on ? "true" : "false");
+  micBtn.setAttribute("aria-label", on ? "Stop voice input" : "Voice input");
+}
+
 function toggleSpeechRecognition(micBtn, textarea) {
   if (recognition) {
     recognition.stop();
     recognition = null;
-    micBtn.classList.remove("listening");
+    setListening(micBtn, false);
     return;
   }
   const SpeechRecognition =
@@ -464,7 +584,7 @@ function toggleSpeechRecognition(micBtn, textarea) {
   recognition.interimResults = true;
   recognition.lang = "en-US";
 
-  micBtn.classList.add("listening");
+  setListening(micBtn, true);
 
   recognition.onresult = function (e) {
     let transcript = "";
@@ -478,16 +598,15 @@ function toggleSpeechRecognition(micBtn, textarea) {
   };
 
   recognition.onend = function () {
-    micBtn.classList.remove("listening");
+    setListening(micBtn, false);
     recognition = null;
   };
 
   recognition.onerror = function (e) {
-    micBtn.classList.remove("listening");
+    setListening(micBtn, false);
     recognition = null;
-    if (e.error !== "no-speech") {
-      toast("Voice input failed: " + e.error, "warn");
-    }
+    if (e.error === "no-speech") return; /* nothing was said: not a failure */
+    toast(MIC_ERRORS[e.error] || "Voice input failed: " + e.error, "warn");
   };
 
   recognition.start();
@@ -513,7 +632,7 @@ function renderInputPill() {
   h += renderModelSelector();
 
   h +=
-    '<button class="pill-mic" id="btnMic" aria-label="Voice input">' +
+    '<button type="button" class="pill-mic" id="btnMic" aria-label="Voice input" aria-pressed="false">' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">' +
     '<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>' +
     '<path d="M19 10v2a7 7 0 0 1-14 0v-2"/>' +
@@ -523,7 +642,7 @@ function renderInputPill() {
     "</button>";
 
   h +=
-    '<button class="pill-send" data-act="chat-send" aria-label="Send message">' +
+    '<button type="button" class="pill-send" data-act="chat-send" aria-label="Send message" disabled>' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">' +
     '<line x1="12" y1="19" x2="12" y2="5"/>' +
     '<polyline points="5 12 12 5 19 12"/>' +
@@ -535,29 +654,11 @@ function renderInputPill() {
   return h;
 }
 
-/* ── Landing: first-run empty state, else search card + suggestions ──
-   With no courses the one primary action is importing a syllabus; chat and
-   provider chrome wait until there is something to reason about. */
+/* ── Landing: search card + suggestions, with or without a term ──
+   An empty term used to hide chat behind an import-only card. The landing is
+   the front door now: ask first, import whenever there is a syllabus. */
 
 function renderElicitLanding() {
-  const emptyTerm = !((Store.db.courses || []).length);
-
-  if (emptyTerm) {
-    return (
-      '<div class="elicit-landing">' +
-      '<div class="elicit-card elicit-empty">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28" aria-hidden="true">' +
-      '<path d="M8 2.5l5 2.6L8 7.7 3 5.1z"/>' +
-      '<path d="M3.5 8.2 8 10.5l4.5-2.3M3.5 10.8 8 13.1l4.5-2.3"/>' +
-      "</svg>" +
-      '<h2>Start with your syllabus</h2>' +
-      '<p>Journey A.I turns a syllabus into deadlines, lessons and a study plan — and then answers questions about your materials, with or without an AI key.</p>' +
-      '<button class="btn primary" data-act="go-import">Import a syllabus</button>' +
-      '</div>' +
-      '</div>'
-    );
-  }
-
   let h = '<div class="elicit-landing">';
 
   /* ── Main search card ── */
@@ -585,7 +686,7 @@ function renderElicitLanding() {
   /* Submit footer */
   h += '<div class="elicit-card-footer">';
   h +=
-    '<button class="elicit-send" data-act="chat-send" aria-label="Send message">' +
+    '<button type="button" class="elicit-send" data-act="chat-send" aria-label="Send message" disabled>' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">' +
     '<path d="M5 12h14"/>' +
     '<path d="m12 5 7 7-7 7"/>' +
@@ -615,15 +716,12 @@ function renderElicitCards() {
       return c.cid !== open;
     });
   if (resume && resume.title) {
-    const text =
-      resume.title.length > 60
-        ? resume.title.slice(0, 60) + "..."
-        : resume.title;
-    const ago = timeAgo(resume.ts);
     cards.push({
       badge: "resume",
-      text: text,
-      meta: ago || null,
+      text: truncate(resume.title, 60),
+      /* The card truncates the title, so the accessible name carries it whole. */
+      full: resume.title,
+      meta: timeAgo(resume.ts) || null,
       cid: resume.cid,
     });
   }
@@ -645,12 +743,16 @@ function renderElicitCards() {
   let h = '<div class="elicit-grid">';
   cards.forEach(function (c) {
     /* Resume opens the stored conversation; suggestions send a prompt into
-       whatever conversation is open. */
+       whatever conversation is open. These are real buttons: as divs they
+       were reachable only with a mouse, so the front door of the product was
+       closed to keyboard and screen-reader users. */
     h += c.cid
-      ? '<div class="elicit-suggestion-card" data-act="chat-open" data-cid="' +
+      ? '<button type="button" class="elicit-suggestion-card" data-act="chat-open" data-cid="' +
         esc(c.cid) +
+        '" aria-label="Resume: ' +
+        esc(c.full || c.text) +
         '">'
-      : '<div class="elicit-suggestion-card" data-act="chat-suggest" data-q="' +
+      : '<button type="button" class="elicit-suggestion-card" data-act="chat-suggest" data-q="' +
         esc(c.q) +
         '">';
 
@@ -675,17 +777,17 @@ function renderElicitCards() {
     }
 
     /* Card text */
-    h += '<p class="elicit-card-text">' + esc(c.text) + "</p>";
+    h += '<span class="elicit-card-text">' + esc(c.text) + "</span>";
 
     /* Metadata (only for resume cards) */
     if (c.meta) {
-      h += '<div class="elicit-card-meta">';
+      h += '<span class="elicit-card-meta">';
       h += '<span class="elicit-dot"></span>';
       h += "<span>" + esc(c.meta) + "</span>";
-      h += "</div>";
+      h += "</span>";
     }
 
-    h += "</div>";
+    h += "</button>";
   });
   h += "</div>";
   return h;
@@ -824,11 +926,75 @@ function timeAgo(ts) {
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";
-  if (mins < 60) return mins + " min ago";
+  if (mins < 60) return ago(mins, "min");
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return hours + " hours ago";
-  const days = Math.floor(hours / 24);
-  return days + " days ago";
+  if (hours < 24) return ago(hours, "hour");
+  return ago(Math.floor(hours / 24), "day");
+}
+
+function ago(n, unit) {
+  return n + " " + unit + (n === 1 ? "" : "s") + " ago";
+}
+
+/* ── Pane header ─────────────────────────────────────────────────────
+ *
+ * Every other view answers "where am I?" with a page head; the transcript
+ * answered it only in the sidebar. This is the compact ruled version of that
+ * frame: which conversation is open, whether a provider is answering, and any
+ * document scope the question is limited to.
+ *
+ * The scope chip is the only visible trace of Library → "Ask this document".
+ * Without it a student cannot tell that their next questions are limited to
+ * one file, and had no way to lift the limit.
+ */
+
+/** Names of the documents the next question is limited to. */
+function chatSourceNames() {
+  return (UIState.chatSources || [])
+    .map(function (id) {
+      const doc = Store.documents.get(id);
+      return doc ? doc.name : null;
+    })
+    .filter(Boolean);
+}
+
+function renderChatHead() {
+  const msgs = Store.chat.activeMessages();
+  const scope = chatSourceNames();
+  if (!msgs.length && !scope.length) return ""; /* nothing to report */
+
+  const open = Store.chat.activeId();
+  const convo = Store.chat.conversations().find(function (c) {
+    return c.cid === open;
+  });
+  const st = status();
+
+  let h = '<div class="chat-head">';
+  if (msgs.length) {
+    const title = (convo && convo.title) || "Conversation";
+    h +=
+      '<h1 class="chat-title" title="' +
+      esc(title) +
+      '">' +
+      esc(title) +
+      "</h1>";
+  }
+  h += '<span class="spacer"></span>';
+  if (scope.length) {
+    h +=
+      '<span class="badge info chat-scope" role="status">Asking about: ' +
+      esc(scope.join(", ")) +
+      "</span>" +
+      '<button type="button" class="btn sm ghost" data-act="chat-scope-clear" title="Ask about all your materials again">Clear</button>';
+  }
+  /* Same words as Settings, so the two surfaces cannot disagree. */
+  h +=
+    '<span class="badge ' +
+    (st.on ? "ok" : "mute") +
+    '">' +
+    esc(st.on ? "connected: " + st.label : "offline mode") +
+    "</span>";
+  return h + "</div>";
 }
 
 /* ── Main view rendering ───────────────────────────────────────────── */
@@ -840,10 +1006,14 @@ export function assistant() {
   const hasMsgs = msgs.length > 0;
 
   let h = '<div class="chat-area">';
+  h += renderChatHead();
 
   if (hasMsgs) {
-    /* ── Active chat: scrollable messages ── */
-    h += '<div class="chat-log" id="chatLog">';
+    /* ── Active chat: scrollable messages ──
+       A live log, not a silent div: an answer that arrives without being
+       announced leaves a screen-reader user waiting on nothing. */
+    h +=
+      '<div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-relevant="additions">';
     msgs.forEach(function (m) {
       h += msgHtml(m);
     });
@@ -885,13 +1055,13 @@ export function suggestions() {
   )[0];
   if (lesson)
     out.push({
-      label: "Explain this week's topic: " + lesson.topic.slice(0, 38),
+      label: "Explain this week's topic: " + truncate(lesson.topic, 38),
       q: "Explain " + lesson.topic + " in simple terms with an example.",
     });
   const doc = Store.db.documents[0];
   if (doc)
     out.push({
-      label: "Summarise " + doc.name.slice(0, 30),
+      label: "Summarise " + truncate(doc.name, 30),
       q:
         "Summarise the key ideas in " +
         doc.name +
@@ -915,9 +1085,35 @@ export function suggestions() {
 /* ── model dropdown outside-click handler (kept across renders; see afterAssistant) ── */
 let _modelDropdownCloser = null;
 
-/** Reset module-level dropdown state — only for use in tests. */
+/** Reset module-level view state (dropdown closer + composer draft) — tests only. */
 export function resetModelDropdownState() {
   _modelDropdownCloser = null;
+  composerDraft = "";
+}
+
+/* The composer's text, kept across the re-renders the view does not own —
+   picking a model repaints everything, and used to erase a half-written
+   question. Session-only, like the conversation state beside it. */
+let composerDraft = "";
+
+/**
+ * Reflect the composer's text in the controls around it: the accent on the
+ * pill or card, and whether Send is an action at all. An empty send used to
+ * be a silent no-op behind a button that looked fully live.
+ */
+function syncComposer(root) {
+  const host = root && root.querySelectorAll ? root : document;
+  const ta = q("#chatInput", host);
+  const hasText = String(ta ? ta.value : composerDraft).trim().length > 0;
+
+  const pill = q("#chatInputBox", host);
+  if (pill) pill.classList.toggle("has-text", hasText);
+  const card = q(".elicit-card", host);
+  if (card) card.classList.toggle("has-text", hasText);
+
+  host.querySelectorAll('[data-act="chat-send"]').forEach(function (btn) {
+    btn.disabled = !hasText;
+  });
 }
 
 export function afterAssistant(root) {
@@ -929,36 +1125,91 @@ export function afterAssistant(root) {
 
   const ta = q("#chatInput", root);
   if (ta) {
+    /* Restore what was typed here before this render rebuilt the DOM. */
+    if (composerDraft) ta.value = composerDraft;
     ta.focus();
     ta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && !e.shiftKey) {
+      /* isComposing: Enter commits an IME candidate, it does not send. */
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
         e.preventDefault();
         sendChat();
       }
     });
-    /* Toggle has-text on the pill (active chat) or the card (landing) */
     ta.addEventListener("input", function () {
-      const hasText = ta.value.trim().length > 0;
-      const pill = q("#chatInputBox", root);
-      if (pill) pill.classList.toggle("has-text", hasText);
-      const card = q(".elicit-card", root);
-      if (card) card.classList.toggle("has-text", hasText);
+      composerDraft = ta.value;
+      syncComposer(root);
     });
+    syncComposer(root);
   }
 
   /* Model selector dropdown */
   const modelBtn = q("#btnModelSelect", root);
   const modelDrop = q("#modelDropdown", root);
   if (modelBtn && modelDrop) {
+    const options = Array.prototype.slice.call(
+      modelDrop.querySelectorAll(".model-option"),
+    );
+    const moreBtn = q("#btnMoreModels", root);
+    const moreList = q("#modelMoreList", root);
+    /* Roving focus skips the folded-away rows: arrowing into a model the
+       student cannot see would be a focus trap with no visible position. */
+    const shown = function () {
+      return options.filter(function (o) {
+        return !o.closest("[hidden]");
+      });
+    };
+    const setOpen = function (open) {
+      modelDrop.classList.toggle("open", open);
+      modelBtn.setAttribute("aria-expanded", String(open));
+    };
+    const focusAt = function (from, step) {
+      const list = shown();
+      if (!list.length) return;
+      const base = from < 0 ? (step > 0 ? -1 : 0) : from;
+      const target = list[(base + step + list.length) % list.length];
+      if (target) target.focus();
+    };
+
     modelBtn.addEventListener("click", function (e) {
       e.stopPropagation();
-      modelDrop.classList.toggle("open");
+      setOpen(!modelDrop.classList.contains("open"));
     });
-    modelDrop.querySelectorAll(".model-option").forEach(function (opt) {
+    /* Keyboard, so the choice does not require a mouse. */
+    modelBtn.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      e.preventDefault();
+      setOpen(true);
+      focusAt(-1, e.key === "ArrowDown" ? 1 : -1);
+    });
+    modelDrop.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        modelBtn.focus();
+        return;
+      }
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      e.preventDefault();
+      focusAt(
+        shown().indexOf(document.activeElement),
+        e.key === "ArrowDown" ? 1 : -1,
+      );
+    });
+    /* The disclosure: the rest of the catalogue, opened on request. */
+    if (moreBtn && moreList) {
+      moreBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const open = !moreList.hidden;
+        moreList.hidden = open;
+        moreBtn.setAttribute("aria-expanded", String(!open));
+        /* Collapsing under the focus would strand it on a hidden control. */
+        if (open && moreList.contains(document.activeElement)) moreBtn.focus();
+      });
+    }
+    options.forEach(function (opt) {
       opt.addEventListener("click", function () {
         /* Same save logic as the Settings form. */
         applyModel(opt.dataset.model);
-        modelDrop.classList.remove("open");
+        setOpen(false);
         Router.render();
       });
     });
@@ -975,7 +1226,7 @@ export function afterAssistant(root) {
         _modelDropdownCloser = null;
         return;
       }
-      modelDrop.classList.remove("open");
+      setOpen(false);
     };
     document.addEventListener("click", outsideClickClose);
     _modelDropdownCloser = outsideClickClose;
@@ -993,14 +1244,81 @@ export function afterAssistant(root) {
       toggleSpeechRecognition(micBtn, ta);
     });
   }
+}
 
-  /* Send button click */
-  const sendBtn = q(".pill-send", root);
-  if (sendBtn) {
-    sendBtn.addEventListener("click", function () {
-      sendChat();
-    });
+function runAssistantRequest(opts) {
+  const userMsg = {
+    id: uid("msg"),
+    role: "user",
+    content: opts.text,
+    ts: Date.now(),
+  };
+  /* The conversation this exchange belongs to: replies are filed into it
+     even if the student presses New while the answer is still streaming. */
+  const cid = Store.chat.append(userMsg);
+
+  UIState.set("chatPending", true);
+
+  /* From the landing there is no transcript to append into: the view is
+     repainted with the conversation the Store just opened, which is what
+     makes the send visible — and gives the stream somewhere to land. */
+  if (!ensureTranscript()) {
+    appendMsg(userMsg);
+    showTyping();
   }
+
+  const ctrl = beginAbort();
+  /* `answered` tracks the request, not the rendering: once the model has
+     answered, a throw inside post-processing must not be reported as a failed
+     request — the answer is already on screen, and appending "I could not
+     produce an answer" beneath it would contradict the transcript. Routed
+     through Promise.resolve() so a synchronously-throwing `call` lands in the
+     same catch instead of escaping before cleanup. */
+  let answered = false;
+  Promise.resolve()
+    .then(function () {
+      return opts.call({
+        signal: ctrl ? ctrl.signal : undefined,
+        /* Tokens paint as they arrive; the settled message below replaces the
+           provisional bubble with the citation-checked text. */
+        onToken: function (_delta, total) {
+          showLive(total);
+        },
+      });
+    })
+    .then(function (res) {
+      endAbort(ctrl);
+      if (res && res.cancelled) {
+        settleCancelled();
+        return;
+      }
+      UIState.set("chatPending", false);
+      hideTyping();
+      hideLive();
+      answered = true;
+      opts.onResult(res, cid);
+    })
+    .catch(function (e) {
+      endAbort(ctrl);
+      UIState.set("chatPending", false);
+      hideTyping();
+      hideLive();
+      if (answered) {
+        console.error("Journey A.I: could not post the assistant reply:", e);
+        return;
+      }
+      if (e && e.name === "AbortError") {
+        settleCancelled();
+        return;
+      }
+      /* Nothing awaits this chain, so a throw here would surface as an
+         unhandled rejection rather than the toast onError is meant to raise. */
+      try {
+        opts.onError(e, cid);
+      } catch (err) {
+        console.error("Journey A.I: assistant error handler failed:", err);
+      }
+    });
 }
 
 export function sendChat(forced) {
@@ -1008,9 +1326,8 @@ export function sendChat(forced) {
   const text = forced || (ta ? ta.value.trim() : "");
   if (!text) return;
   if (ta) ta.value = "";
-
-  const pill = q("#chatInputBox");
-  if (pill) pill.classList.remove("has-text");
+  composerDraft = "";
+  syncComposer();
 
   if (text === "__plan__") {
     requestStudyPlan();
@@ -1025,42 +1342,18 @@ export function sendChat(forced) {
   const lastMsg = before[before.length - 1];
   if (lastMsg && lastMsg.role === "user" && lastMsg.content === text) return;
 
-  const userMsg = {
-    id: uid("msg"),
-    role: "user",
-    content: text,
-    ts: Date.now(),
-  };
-  /* The conversation this exchange belongs to: replies are filed into it
-     even if the student presses New while the answer is still streaming. */
-  const cid = Store.chat.append(userMsg);
-
-  UIState.set("chatPending", true);
-
-  appendMsg(userMsg);
-  showTyping();
-
-  /* Context for the model is the open conversation only: a question asked
-     in a new chat must not carry the previous chat's history with it. */
-  const chatHistory = Store.chat.activeMessages().slice(0, -1);
-  const ctrl = beginAbort();
-  answer(text, {
-    k: 5,
-    chatHistory,
-    docIds: UIState.chatSources || [],
-    signal: ctrl ? ctrl.signal : undefined,
-    /* Tokens paint as they arrive; the settled message below replaces the
-       provisional bubble with the citation-checked text. */
-    onToken: function (_delta, total) {
-      showLive(total);
-    },
-  })
-    .then(function (res) {
-      endAbort(ctrl);
-      if (res && res.cancelled) {
-        settleCancelled();
-        return;
-      }
+  runAssistantRequest({
+    text,
+    /* Context for the model is the open conversation only: a question asked
+       in a new chat must not carry the previous chat's history with it. */
+    call: (o) =>
+      answer(text, {
+        k: 5,
+        chatHistory: Store.chat.activeMessages().slice(0, -1),
+        docIds: UIState.chatSources || [],
+        ...o,
+      }),
+    onResult: function (res, cid) {
       const aiMsg = {
         id: uid("msg"),
         role: "assistant",
@@ -1072,10 +1365,11 @@ export function sendChat(forced) {
         model: res.model || null,
       };
       Store.chat.appendTo(cid, aiMsg);
-      UIState.set("chatPending", false);
-      hideTyping();
-      hideLive();
       appendMsg(aiMsg);
+      const band = res.provenance && res.provenance.band;
+      announce(
+        "Answer ready." + (band && PROV_LABELS[band] ? " " + PROV_LABELS[band] : ""),
+      );
 
       // Show retrieval practice widget
       const ctx = RAG.context(text, {
@@ -1100,54 +1394,51 @@ export function sendChat(forced) {
           "warn",
           "AI service busy - answered from your documents",
         );
-    })
-    .catch(function (e) {
-      endAbort(ctrl);
-      UIState.set("chatPending", false);
-      hideTyping();
-      hideLive();
-      if (e && e.name === "AbortError") {
-        settleCancelled();
-        return;
-      }
+    },
+    onError: function (e, cid) {
+      /* The provider's own words ("Failed to fetch") name nothing a student
+         can act on, so the transcript gets an honest failure line and the
+         console keeps the diagnosis. */
+      if (typeof console !== "undefined" && console.error)
+        console.error("Journey A.I: answer failed:", e);
       const errMsg = {
         id: uid("msg"),
         role: "assistant",
-        content: "Something went wrong answering that: " + (e.message || e),
+        kind: "error",
+        content:
+          "I could not produce an answer for that question. Try it again, or rephrase it.",
         ts: Date.now(),
-        mode: "offline",
       };
       Store.chat.appendTo(cid, errMsg);
       appendMsg(errMsg);
-    });
+      announce("No answer arrived. " + errMsg.content);
+    },
+  });
+}
+
+/**
+ * Ask the open conversation's last question again after a failed answer —
+ * the recovery the failure row offers, instead of leaving the student to
+ * retype a question that is already in the transcript.
+ */
+export function retryLastQuestion() {
+  const msgs = Store.chat.activeMessages();
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    if (msgs[i].role === "user" && msgs[i].content) {
+      return sendChat(msgs[i].content);
+    }
+  }
+  toast("There is no question here to ask again.", "info");
+  return false;
 }
 
 export function requestStudyPlan() {
-  const userMsg = {
-    id: uid("msg"),
-    role: "user",
-    content: "Build me a personalised study plan for the coming weeks.",
-    ts: Date.now(),
-  };
-  const cid = Store.chat.append(userMsg);
-  UIState.set("chatPending", true);
-  appendMsg(userMsg);
-  showTyping();
-  const ctrl = beginAbort();
-  studyPlanProposal({
-    signal: ctrl ? ctrl.signal : undefined,
+  runAssistantRequest({
+    text: "Build me a personalised study plan for the coming weeks.",
     /* Only the non-agent planner path streams; StudyPlanAgent builds its own
        request options, so tool turns never paint here. */
-    onToken: function (_delta, total) {
-      showLive(total);
-    },
-  })
-    .then(function (res) {
-      endAbort(ctrl);
-      if (res && res.cancelled) {
-        settleCancelled();
-        return;
-      }
+    call: studyPlanProposal,
+    onResult: function (res, cid) {
       const aiMsg = {
         id: uid("msg"),
         role: "assistant",
@@ -1156,9 +1447,6 @@ export function requestStudyPlan() {
         mode: res.mode,
       };
       Store.chat.appendTo(cid, aiMsg);
-      UIState.set("chatPending", false);
-      hideTyping();
-      hideLive();
       appendMsg(aiMsg);
       /* A proposal is offered, never applied: the card below is where the
          student accepts, edits or rejects it. */
@@ -1169,6 +1457,11 @@ export function requestStudyPlan() {
           ts: Date.now(),
         });
         showPlanProposal();
+        announce(
+          "Study plan proposed: " +
+            res.draft.planItems.length +
+            " blocks. Nothing is saved until you accept.",
+        );
       }
       if (res.aiError)
         toast(
@@ -1180,22 +1473,14 @@ export function requestStudyPlan() {
           "There was nothing to schedule, so no plan is proposed. Add tasks or study hours first.",
           "info",
         );
-    })
-    .catch(function (e) {
-      endAbort(ctrl);
-      UIState.set("chatPending", false);
-      hideTyping();
-      hideLive();
-      if (e && e.name === "AbortError") {
-        settleCancelled();
-        return;
-      }
+    },
+    onError: function () {
       toast("Study plan request failed.", "bad");
-    });
+    },
+  });
 }
 
 export const assistantView = {
-  title: "AI study assistant",
   fn: assistant,
   after: afterAssistant,
 };

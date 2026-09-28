@@ -9,7 +9,7 @@
 
 import { Store } from "../core/store.js";
 import { Coach } from "../domain/coach.js";
-import { UIState } from "../core/state.js";
+import { UIState } from "../core/scope.js";
 import { esc, sum, minutesToHM, groupBy, pct } from "../utils/helpers.js";
 import { fmtDate, fmtDay, fromIso, dateOnly } from "../utils/date.js";
 import { empty, bar, statBox, pageHead } from "./shared.js";
@@ -65,36 +65,118 @@ function practiseBtn(p, isReview) {
   );
 }
 
+function classifyPlanItem(p) {
+  const isReview = /^Review:/i.test(String(p.label || ""));
+  const isStudy = /^Study:/i.test(String(p.label || ""));
+  const isReading = /^Read:/i.test(String(p.label || ""));
+  const dueSoon = !!(
+    p.due &&
+    fromIso(p.due) &&
+    (fromIso(p.due) - new Date()) / 86400000 <= 2
+  );
+  const kind = isReview
+    ? "review"
+    : isStudy
+      ? "study"
+      : isReading
+        ? "reading"
+        : dueSoon
+          ? "urgent"
+          : "default";
+  const kindLabel = isReview
+    ? "Review"
+    : isStudy
+      ? "Study"
+      : isReading
+        ? "Reading"
+        : dueSoon
+          ? "Urgent"
+          : "Planned";
+  return { isReview, kind, kindLabel };
+}
+
+function renderPlanBlock(p, interactive) {
+  const { isReview, kind, kindLabel } = classifyPlanItem(p);
+  const courseName = Store.courseName(p.courseId);
+  const done = interactive && !!p.done;
+
+  return (
+    '<div class="sched-block' +
+    (done ? " done" : "") +
+    '" data-plan-kind="' +
+    kind +
+    '">' +
+    (interactive
+      ? '<button type="button" class="chk-square' +
+        (p.done ? " on" : "") +
+        '" data-act="plan-toggle" data-id="' +
+        esc(p.id) +
+        '" role="checkbox" tabindex="0" aria-checked="' +
+        (p.done ? "true" : "false") +
+        '" aria-label="Mark ' +
+        esc(p.label) +
+        (p.done ? " incomplete" : " done") +
+        '">' +
+        (p.done ? "&#10003;" : "") +
+        "</button>"
+      : "") +
+    '<div class="sched-block-content"' +
+    (p.eventId
+      ? ' data-act="event-edit" data-id="' +
+        esc(p.eventId) +
+        '" role="button" tabindex="0" title="' +
+        (interactive ? "Click to view or edit task: " : "Click to view task: ") +
+        esc(p.label) +
+        '"'
+      : "") +
+    ">" +
+    '<div class="sched-label-row">' +
+    '<span class="sched-badge ' +
+    kind +
+    '">' +
+    kindLabel +
+    "</span>" +
+    '<span class="sched-title' +
+    (done ? " done-text" : "") +
+    '">' +
+    esc(p.label) +
+    "</span>" +
+    "</div>" +
+    '<div class="sched-meta-row">' +
+    "<span>⏱️ " +
+    minutesToHM(p.minutes) +
+    "</span>" +
+    (courseName
+      ? ' <span class="msep">·</span> <span>📚 ' + esc(courseName) + "</span>"
+      : "") +
+    (p.due
+      ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
+      : "") +
+    practiseBtn(p, isReview) +
+    "</div>" +
+    "</div>" +
+    "</div>"
+  );
+}
+
 /**
  * Render the Top Study Schedule & Settings Bar with integrated Average Pace & Capacity
  * Allows adjusting weekday study hours, weekend hours, and horizon directly.
  */
-function renderPlannerSettingsBar(paceStats) {
+function renderPlannerSettingsBar({
+  totalMinutes: totalMin,
+  weeklyMinutes: weeklyMin,
+  dailyMinutes: dailyMin,
+}) {
   const s = Store.db.settings || {};
   const weekday = s.studyWeekday != null ? s.studyWeekday : 2;
   const weekend = s.studyWeekend != null ? s.studyWeekend : 4;
+  /* The horizon select mirrors the setting, not the running plan: Apply writes
+     this straight back (`s.plannerWeeks = wk`), so selecting the plan's horizon
+     would silently revert a setting changed without a re-plan. */
   const weeks = s.plannerWeeks != null ? s.plannerWeeks : 6;
   const weeklyCap = Math.round(weekday * 5 + weekend * 2);
   const dailyAvg = (weeklyCap / 7).toFixed(1);
-
-  const stats = paceStats || {};
-  const totalMin =
-    stats.totalMinutes != null
-      ? stats.totalMinutes
-      : sum(Store.db.plan || [], function (p) {
-          return p.minutes;
-        }) || 0;
-  const horizonWeeks = stats.weeks || weeks;
-  const weeklyMin =
-    stats.weeklyMinutes != null
-      ? stats.weeklyMinutes
-      : horizonWeeks > 0
-        ? Math.ceil(totalMin / horizonWeeks)
-        : 0;
-  const dailyMin =
-    stats.dailyMinutes != null
-      ? stats.dailyMinutes
-      : Math.ceil(weeklyMin / 7);
 
   const weekdayOpts = [1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6]
     .map(function (n) {
@@ -241,7 +323,7 @@ export function planner() {
   }).length;
   const compPct = plan.length ? Math.round((doneCount / plan.length) * 100) : 0;
   const reviewBlocks = plan.filter(function (p) {
-    return /^Review:/i.test(String(p.label || ""));
+    return classifyPlanItem(p).isReview;
   }).length;
 
   const planWeeks = (meta && meta.weeks) || Store.db.settings.plannerWeeks || 6;
@@ -263,7 +345,6 @@ export function planner() {
   // ── HIERARCHY LEVEL 2: TOP STUDY SCHEDULE, SETTINGS & AVERAGE PACE ───
   h += renderPlannerSettingsBar({
     totalMinutes: total,
-    weeks: planWeeks,
     weeklyMinutes,
     dailyMinutes,
   });
@@ -461,7 +542,7 @@ export function planner() {
     : isShowingReviews
       ? dates.filter(function (date) {
           return (byDay[date] || []).some(function (p) {
-            return /^Review:/i.test(String(p.label || ""));
+            return classifyPlanItem(p).isReview;
           });
         })
       : dates.filter(function (date) {
@@ -499,7 +580,7 @@ export function planner() {
       return p.done;
     });
     const reviewItems = allDayItems.filter(function (p) {
-      return /^Review:/i.test(String(p.label || ""));
+      return classifyPlanItem(p).isReview;
     });
     const items = isShowingCompleted
       ? doneItems
@@ -562,89 +643,7 @@ export function planner() {
       '<div class="planner-day-blocks mt">';
 
     items.forEach(function (p) {
-      const isReview = /^Review:/i.test(String(p.label || ""));
-      const isStudy = /^Study:/i.test(String(p.label || ""));
-      const isReading = /^Read:/i.test(String(p.label || ""));
-      const dueSoon = !!(
-        p.due &&
-        fromIso(p.due) &&
-        (fromIso(p.due) - new Date()) / 86400000 <= 2
-      );
-      const kind = isReview
-        ? "review"
-        : isStudy
-          ? "study"
-          : isReading
-            ? "reading"
-            : dueSoon
-              ? "urgent"
-              : "default";
-      const kindLabel = isReview
-        ? "Review"
-        : isStudy
-          ? "Study"
-          : isReading
-            ? "Reading"
-            : dueSoon
-              ? "Urgent"
-              : "Planned";
-      const courseName = Store.courseName(p.courseId);
-
-      h +=
-        '<div class="sched-block' +
-        (p.done ? " done" : "") +
-        '" data-plan-kind="' +
-        kind +
-        '">' +
-        // 1. Square Checklist Checkbox (Matching Tasks & Dashboard)
-        '<button type="button" class="chk-square' +
-        (p.done ? " on" : "") +
-        '" data-act="plan-toggle" data-id="' +
-        esc(p.id) +
-        '" role="checkbox" tabindex="0" aria-checked="' +
-        (p.done ? "true" : "false") +
-        '" aria-label="Mark ' +
-        esc(p.label) +
-        (p.done ? " incomplete" : " done") +
-        '">' +
-        (p.done ? "&#10003;" : "") +
-        "</button>" +
-        // 2. Clickable Schedule Content (non-events open as read-only)
-        '<div class="sched-block-content"' +
-        (p.eventId
-          ? ' data-act="event-edit" data-id="' +
-            esc(p.eventId) +
-            '" role="button" tabindex="0" title="Click to view or edit task: ' +
-            esc(p.label) +
-            '"'
-          : "") +
-        ">" +
-        '<div class="sched-label-row">' +
-        '<span class="sched-badge ' +
-        kind +
-        '">' +
-        kindLabel +
-        "</span>" +
-        '<span class="sched-title' +
-        (p.done ? " done-text" : "") +
-        '">' +
-        esc(p.label) +
-        "</span>" +
-        "</div>" +
-        '<div class="sched-meta-row">' +
-        "<span>⏱️ " +
-        minutesToHM(p.minutes) +
-        "</span>" +
-        (courseName
-          ? ' <span class="msep">·</span> <span>📚 ' + esc(courseName) + "</span>"
-          : "") +
-        (p.due
-          ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
-          : "") +
-        practiseBtn(p, isReview) +
-        "</div>" +
-        "</div>" +
-        "</div>"; // .sched-block
+      h += renderPlanBlock(p, true);
     });
 
     h += "</div>"; // .planner-day-blocks
@@ -673,7 +672,6 @@ function renderPlannerPreview(preview) {
   // Settings bar on top in preview mode with live pace calculations
   h += renderPlannerSettingsBar({
     totalMinutes,
-    weeks,
     weeklyMinutes: weeklyMin,
     dailyMinutes: Math.ceil(weeklyMin / 7),
   });
@@ -740,71 +738,7 @@ function renderPlannerPreview(preview) {
       '<div class="planner-day-blocks mt">';
 
     day.items.forEach(function (p) {
-      const isReview = /^Review:/i.test(String(p.label || ""));
-      const isStudy = /^Study:/i.test(String(p.label || ""));
-      const isReading = /^Read:/i.test(String(p.label || ""));
-      const dueSoon = !!(
-        p.due &&
-        fromIso(p.due) &&
-        (fromIso(p.due) - new Date()) / 86400000 <= 2
-      );
-      const kind = isReview
-        ? "review"
-        : isStudy
-          ? "study"
-          : isReading
-            ? "reading"
-            : dueSoon
-              ? "urgent"
-              : "default";
-      const kindLabel = isReview
-        ? "Review"
-        : isStudy
-          ? "Study"
-          : isReading
-            ? "Reading"
-            : dueSoon
-              ? "Urgent"
-              : "Planned";
-      const courseName = Store.courseName(p.courseId);
-
-      h +=
-        '<div class="sched-block" data-plan-kind="' +
-        kind +
-        '">' +
-        '<div class="sched-block-content"' +
-        (p.eventId
-          ? ' data-act="event-edit" data-id="' +
-            esc(p.eventId) +
-            '" role="button" tabindex="0" title="Click to view task: ' +
-            esc(p.label) +
-            '"'
-          : "") +
-        ">" +
-        '<div class="sched-label-row">' +
-        '<span class="sched-badge ' +
-        kind +
-        '">' +
-        kindLabel +
-        "</span>" +
-        '<span class="sched-title">' +
-        esc(p.label) +
-        "</span>" +
-        "</div>" +
-        '<div class="sched-meta-row">' +
-        "<span>⏱️ " +
-        minutesToHM(p.minutes) +
-        "</span>" +
-        (courseName
-          ? ' <span class="msep">·</span> <span>📚 ' + esc(courseName) + "</span>"
-          : "") +
-        (p.due
-          ? ' <span class="msep">·</span> <span>📅 Due ' + fmtDate(p.due) + "</span>"
-          : "") +
-        practiseBtn(p, isReview) +
-        "</div>" +
-        "</div>" +
-        "</div>";
+      h += renderPlanBlock(p, false);
     });
 
     h += "</div></div>";
@@ -872,7 +806,6 @@ export function afterPlanner(container) {
 }
 
 export const plannerView = {
-  title: "Study planner",
   fn: planner,
   after: afterPlanner,
 };

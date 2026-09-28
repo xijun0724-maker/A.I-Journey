@@ -3,7 +3,7 @@
  */
 
 import { Store } from "../core/store.js";
-import { UI } from "../core/state.js";
+import { UI } from "../core/scope.js";
 import { Tasks } from "./tasks.js";
 import { sum, minutesToHM, sortBy } from "../utils/helpers.js";
 import { DAY, addDays, dateOnly, fromIso, startOfDay } from "../utils/date.js";

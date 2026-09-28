@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { Router } from "../../src/core/router.js";
 import { Store } from "../../src/core/store.js";
-import { UIState } from "../../src/core/state.js";
+import { UIState } from "../../src/core/scope.js";
 
 function viewRoot() {
   const el = document.getElementById("viewRoot");

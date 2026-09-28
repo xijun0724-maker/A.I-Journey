@@ -11,7 +11,7 @@ function svgUri(xml) {
 /**
  * Escape XML special characters to guarantee 100% valid SVG documents
  */
-export function xmlEsc(str) {
+function xmlEsc(str) {
   return String(str || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -23,7 +23,7 @@ export function xmlEsc(str) {
 /**
  * Subject classifier based on course title keywords
  */
-export function detectSubject(text = "") {
+function detectSubject(text = "") {
   const s = text.toLowerCase();
   if (/entrep|busin|market|financ|econ|manage|leader|trade|ventur|commerc|account/.test(s)) return "business";
   if (/anim|art|design|illustrat|media|film|music|draw|graphic|creativ|paint|visual/.test(s)) return "arts";
@@ -91,16 +91,6 @@ const PALETTES = {
   }
 };
 
-/**
- * Generate a complete, high-resolution SVG course banner data URI based on course title
- * @param {Object} options
- * @param {string} options.title - Course title
- * @param {string} options.code - Course code
- * @param {string} [options.style] - 'modern' | 'gradient' | 'blueprint' | 'editorial'
- * @param {string} [options.palette] - 'auto' | 'ocean' | 'sunset' | 'emerald' | 'cyber' | 'slate'
- * @param {number} [options.seed] - Seed for pseudorandom variation
- * @returns {string} Data URI (data:image/svg+xml;charset=utf-8,...)
- */
 /**
  * Smart wrap course titles into 1 to 3 balanced lines that fit safely in SVG canvas
  * @param {string} text

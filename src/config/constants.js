@@ -29,7 +29,6 @@ export const CFG = {
   openrouter: {
     model: "openrouter/free",
     baseUrl: "https://openrouter.ai/api/v1/chat/completions",
-    defaultKey: "",
     /* The AI layer speaks to exactly one endpoint: OpenRouter. Its provider
        metadata lives here rather than in a separate registry because there
        is no second provider to register — one adapter is no seam. */
@@ -80,19 +79,14 @@ export const CFG = {
   ],
 
   taskTypes: {
-    exam: { label: "Exam", icon: "", base: 300, color: "#a8331f" },
-    quiz: { label: "Quiz", icon: "", base: 90, color: "#8a6410" },
-    assignment: { label: "Assignment", icon: "", base: 180, color: "#2a6280" },
-    project: { label: "Project", icon: "", base: 600, color: "#5b4a7a" },
-    presentation: {
-      label: "Presentation",
-      icon: "",
-      base: 240,
-      color: "#2c6e4c",
-    },
-    lab: { label: "Lab", icon: "", base: 180, color: "#6b5a3e" },
-    reading: { label: "Reading", icon: "", base: 60, color: "#545f6a" },
-    other: { label: "Other", icon: "", base: 120, color: "#67717a" },
+    exam: { label: "Exam", base: 300, color: "#a8331f" },
+    quiz: { label: "Quiz", base: 90, color: "#8a6410" },
+    assignment: { label: "Assignment", base: 180, color: "#2a6280" },
+    project: { label: "Project", base: 600, color: "#5b4a7a" },
+    presentation: { label: "Presentation", base: 240, color: "#2c6e4c" },
+    lab: { label: "Lab", base: 180, color: "#6b5a3e" },
+    reading: { label: "Reading", base: 60, color: "#545f6a" },
+    other: { label: "Other", base: 120, color: "#67717a" },
   },
 
   subtaskTemplates: {
@@ -154,7 +148,6 @@ export const CFG = {
   // Timeouts (in milliseconds)
   timeouts: {
     apiDefault: 75000,
-    apiRetryDelay: 1200,
     apiRefine: 110000,
     apiAnswer: 90000,
     apiTest: 30000,
@@ -162,10 +155,6 @@ export const CFG = {
     maxRetryAfterMs: 5000,
     pdfParse: 30000,
     fileParse: 20000,
-    toastDefault: 4200,
-    toastError: 6500,
-    debounceDefault: 200,
-    debounceSave: 250,
   },
 
   // Storage
@@ -207,7 +196,6 @@ export const CFG = {
       blend: 0.35, // weight of cosine vs BM25 after normalisation (0 = pure BM25)
       candidateFactor: 3, // BM25 candidates to re-rank = k * factor
       maxCache: 256, // content-hash LRU size for embedding vectors
-      dim: 384, // expected embedding dimension (all-MiniLM-L6-v2)
       model: "Xenova/all-MiniLM-L6-v2",
       cdn: "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2/dist/transformers.min.js",
     },

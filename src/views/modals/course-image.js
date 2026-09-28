@@ -5,11 +5,10 @@
  */
 
 import { Store } from "../../core/store.js";
-import { UI } from "../../core/state.js";
-import { Router } from "../../core/router.js";
 import { esc, safeCssUrl } from "../../utils/helpers.js";
 import { q, toast } from "../../utils/dom.js";
 import { modal } from "../../utils/feedback.js";
+import { commit } from "../shared.js";
 import { generateCourseCover, getCourseBanner } from "../../config/templates.js";
 
 export function courseImageModal(courseId) {
@@ -294,10 +293,7 @@ export function courseImageModal(courseId) {
       // Save Cover
       btnSaveCover.addEventListener("click", () => {
         c.image = selectedValue || null;
-        Store.saveNow();
-        closeFn();
-        Router.scheduleRender();
-        UI.toastSaved("Course cover updated.");
+        commit(closeFn, "Course cover updated.");
       });
     },
   });

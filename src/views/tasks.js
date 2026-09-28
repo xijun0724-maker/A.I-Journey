@@ -6,7 +6,7 @@
  */
 
 import { Store } from "../core/store.js";
-import { UIState } from "../core/state.js";
+import { UIState } from "../core/scope.js";
 import { Router } from "../core/router.js";
 import { Tasks } from "../domain/tasks.js";
 import { esc, sortBy } from "../utils/helpers.js";
@@ -60,7 +60,9 @@ function sortTasks(list, sort) {
   return list;
 }
 
-function renderTodoRow(e) {
+export function renderTodoRow(e, opts) {
+  const showActions = !opts || opts.showActions !== false;
+  const showNotes = !opts || opts.showNotes !== false;
   const p = Tasks.priority(e);
   const isDone = e.status === "done";
   const isOverdue = !isDone && Tasks.isOverdue(e);
@@ -130,7 +132,7 @@ function renderTodoRow(e) {
     h += '<span class="todo-course-chip">' + courseChip(e.courseId) + "</span>";
   }
 
-  if (e.notes) {
+  if (showNotes && e.notes) {
     h += '<span class="todo-notes-preview" title="' + esc(e.notes) + '">📝 ' + esc(e.notes) + "</span>";
   }
 
@@ -138,14 +140,16 @@ function renderTodoRow(e) {
   h += "</div>"; // .todo-item-content
 
   // 4. Quick Row Actions: Delete (Edit button removed, row is clickable to edit)
-  h += '<div class="todo-item-actions">';
-  h +=
-    '<button type="button" class="btn xs danger-ghost" data-act="task-delete" data-id="' +
-    esc(e.id) +
-    '" title="Delete to-do" aria-label="Delete to-do: ' +
-    esc(e.title) +
-    '">✕</button>';
-  h += "</div>";
+  if (showActions) {
+    h += '<div class="todo-item-actions">';
+    h +=
+      '<button type="button" class="btn xs danger-ghost" data-act="task-delete" data-id="' +
+      esc(e.id) +
+      '" title="Delete to-do" aria-label="Delete to-do: ' +
+      esc(e.title) +
+      '">✕</button>';
+    h += "</div>";
+  }
 
   h += "</div>"; // .todo-item-row
   return h;
@@ -317,7 +321,6 @@ export function afterTasks(root) {
 }
 
 export const tasksView = {
-  title: "Tasks",
   fn: tasks,
   after: afterTasks,
 };

@@ -235,7 +235,12 @@ describe("the loaded term renders as a visible 12-week roadmap", () => {
       Store.db.events,
       Store.db.readings,
     );
-    expect(ethicsHtml).toContain("Capstone Project: Preparation and Execution");
+    /* The Ethics syllabus prepares the capstone in session 11 and executes it
+       in session 12, alongside the synthesis and final exam. */
+    expect(ethicsHtml).toContain("Capstone Project: Preparation");
+    expect(ethicsHtml).toContain(
+      "Implementation of the Capstone Project, Course Synthesis and Final Examination",
+    );
     expect(ethicsHtml).toContain("Capstone Project (submission and presentation)");
     expect(lempHtml).toContain("Midterm Examination / Wellness Break");
     expect(lempHtml).toContain(

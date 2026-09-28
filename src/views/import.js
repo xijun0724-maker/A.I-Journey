@@ -1,13 +1,14 @@
 import { CFG, KIND_LABEL } from "../config/constants.js";
+import { PNU_REQUIREMENT_ROW } from "../config/standards/pnu.js";
 import { Store } from "../core/store.js";
-import { UI, UIState } from "../core/state.js";
+import { UI, UIState } from "../core/scope.js";
 import { Router } from "../core/router.js";
 import { Pipeline } from "../domain/pipeline.js";
 import { NLP } from "../domain/nlp.js";
 import { esc } from "../utils/helpers.js";
 import { fmtDate } from "../utils/date.js";
 import { q, qa, toast } from "../utils/dom.js";
-import { statBox, courseSelectOptions, pageHead } from "./shared.js";
+import { statBox, courseSelectOptions, pageHead, tableHtml } from "./shared.js";
 
 export function importView() {
   if (!UI.draft) return importPick();
@@ -416,8 +417,6 @@ export function importReview() {
     h += "</div></details>";
 
     if (r.tables.length) {
-      const requirementPattern =
-        /course requirements|formative assessment|summative assessment|accomplished worksheets|topic facilitation|discussion responses|final examinations?|presentation\s*\/\s*critique|learning environment management plan|e-?portfolio|total\s+100%/i;
       h +=
         '<details class="acc mt"><summary>Tables extracted (' +
         r.tables.length +
@@ -428,33 +427,16 @@ export function importReview() {
           (ti + 1) +
           (t.page ? " (page " + t.page + ")" : "") +
           "</div>";
-        h +=
-          '<div class="tbl-wrap mb scroll-sm"><table aria-label="Extracted table data"><tbody>';
-        if (t.header)
-          h +=
-            "<tr>" +
-            t.header
-              .map(function (c) {
-                return "<th>" + esc(c) + "</th>";
-              })
-              .join("") +
-            "</tr>";
-        t.rows
-          .filter(function (row) {
-            return requirementPattern.test(row.join(" "));
-          })
-          .slice(0, 40)
-          .forEach(function (row) {
-            h +=
-              "<tr>" +
-              row
-                .map(function (c) {
-                  return "<td>" + esc(c) + "</td>";
-                })
-                .join("") +
-              "</tr>";
-          });
-        h += "</tbody></table></div>";
+        h += tableHtml({
+          label: "Extracted table data",
+          cls: "mb scroll-sm",
+          header: t.header,
+          rows: t.rows
+            .filter(function (row) {
+              return PNU_REQUIREMENT_ROW.test(row.join(" "));
+            })
+            .slice(0, 40),
+        });
         if (t.rows.length > 40)
           h +=
             '<div class="table-note">…and ' +
@@ -631,8 +613,10 @@ function pnuFeatureReview(pnu) {
     "</div>";
   h +=
     '<div class="pnu-data-block"><h4>Grading breakdown (' +
-    grading.total +
-    "% detected)</h4>" +
+    (grading.total == null
+      ? "not read reliably"
+      : grading.total + "% detected") +
+    ")</h4>" +
     (grading.items.length
       ? "<ul>" +
         grading.items
@@ -648,6 +632,9 @@ function pnuFeatureReview(pnu) {
           .join("") +
         "</ul>"
       : '<p class="small muted">No grading items detected.</p>') +
+    (grading.valid === false
+      ? '<div class="notice warn mt-s"><div>The grading table could not be read reliably, so no total is shown. Check the weights against the syllabus before relying on them.</div></div>'
+      : "") +
     "</div>";
   h +=
     '<div class="pnu-data-block pnu-requirements"><h4>Course requirements</h4>' +
@@ -720,6 +707,5 @@ export function importReviewBind(root) {
 }
 
 export const importViewDef = {
-  title: "Import",
   fn: importView,
 };

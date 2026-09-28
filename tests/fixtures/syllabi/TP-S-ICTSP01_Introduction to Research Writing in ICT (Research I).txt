@@ -1,0 +1,727 @@
+UCM PNU Philosophy PNU Vision PNU Mission PNU Quality Policy
+SIKM Goals
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 1 / 10
+CC01052021-1226
+
+Introduction to Research Writing in ICT (Research I)
+
+Education for personal renewal and social transformation.
+A leading future –ready teacher Education University responsive to national and global development goals and directions.
+Philippine Normal University is committed to lead innovative, responsive and sustainable teacher education programs that set the standards of future- ready teachers and education leaders.
+As the National Center for Teacher Education, the Philippine Normal University commits to provide inclusive, innovative, impactful, and sustainable teacher education programs that produce futureready teachers and education leaders imbued with the values of truth, excellence, and service. Furthermore, PNU shall ensure the continual improvement of its Quality Management System through compliance with International Quality Standards and statutory and regulatory requirements. PNU shall achieve these commitments through its core functions of instruction, research, extension and production. The School of Information and Knowledge Management promotes the University’s mission of nurturing innovative teachers and educational leaders. It is committed to: 1. Production of highly competent, skilled, innovative, and effective knowledge managers, Information
+Technology (IT) and Library and Information Science (LIS) educators. 2. Adaptation to the demands of current trends and issues pertaining to the use of information systems
+management applied to teacher education. 3. Provision of quality instruction for pre-service and in-service clients of the department in terms of the areas
+covered on the licensure examination and/or national certifications as prescribed by authorized governing body. 4. Continuance of the advocacy for sharing and serving through relevant research, scholarly works, and professional development such as publications, materials development, professional presentations, and among others, within the parameters of LIS and IT Education. 5. Involvement in social transformation in through sustainable extension program and international/local linkages which strengthen the academic role of IT and LIS in the information world.
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+1
+
+Course Number Course Title Course Pre-requisite Course Description
+Program Outcomes
+GAD Themes
+
+TP-S-ICTSP01
+Introduction to Research Writing in ICT (Research I)
+None
+This course discusses the processes, methods, techniques, and tools that organizations use to determine how they should conduct business, with a particular focus on how computer-based technologies can most effectively contribute to business organizations. It covers a systematic methodology for analyzing a business problem or opportunity, determining what role, if any, computer-based technologies can play in addressing the business need, articulating business requirements for the technology solution, specifying alternative approaches to acquiring the technology capabilities needed to address the business requirements, and specifying the requirements for the information systems solution in particular, in-house development, development from third-party providers, or purchased commercial-off-the-shelf (COTS) packages. The students should be able to (a) use systems thinking to analyze business processes and identify problems and opportunities that can be solved and supported by technology solutions, (b) apply appropriate tools, methods, models/techniques in systems analysis and design, and (c) develop and defend a project design proposal to different audiences. After finishing this course, the students are expected to:
+1. LO1. Use systems thinking to analyze business processes and identify problems and opportunities that can be solved and supported by technology.
+2. LO2. Apply appropriate tools, methods, models/techniques in systems analysis and design. 3. LO3. Develop and defend a project design proposal to different audiences.
+Gender-Fair Education
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+1
+
+UCM
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 2 / 10
+CC01052021-1226
+
+Session No. /
+Duration
+
+Course Learning Outcomes
+
+Content (preferably with
+focusing / essential questions)
+
+Face-to-Face Activities
+
+Instructional Delivery Design
+
+Independent Study/ Flexible
+Learning Activities
+
+Flexible Learning Activities
+
+Synchronous
+
+Asynchronous
+
+Assessment
+
+1
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+✔
+
+UCM
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 4 / 10
+CC01052021-1226
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+✔ measure
+
+ofspread is
+
+appropriate
+
+✔ compare
+
+two or
+
+more data
+
+sets
+
+✔ using the
+
+appropriate
+
+measure of
+
+center and
+
+shape.
+
+✔ distinguis h
+
+Measures of variation
+
+between
+
+measure
+
+5
+
+s of
+
+center
+
+and
+
+measure
+
+s of
+
+variation
+
+and
+
+userange
+
+as a
+
+measure
+
+of
+
+variation
+
+to
+
+✔ describe
+
+data
+
+distributi
+
+ons
+
+6
+
+Mid term
+
+✔ Seat works
+✔ Problem analysis
+✔ Discussio nand illustratio n
+✔ Boardworks
+
+✔ Exercises
+✔ Assignmen ts
+
+✔ Online Exercises
+✔ Problem analysis
+✔ Discussio n and illustratio n
+
+✔ Online Exercises
+✔ Assignments
+
+✔ Online Particip ation
+✔ Written Quiz ✔ Problem
+Solving
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+✔ draw line Testing the
+
+✔ Seat works ✔ Exercises ✔ Online
+
+of best fit relationship of
+
+✔ Problem
+
+✔ Assignmen Exercises
+
+and make variables using a
+
+analysis
+
+ts
+
+✔ Problem
+
+prediction setof data
+
+7
+
+s
+
+✔ Discussio
+
+analysis
+
+nand
+
+✔ Discussio
+
+usingthat
+
+illustratio
+
+n and
+
+line.
+
+n
+
+illustratio
+
+✔ calculat
+
+✔ Boardworks
+
+n
+
+e the
+
+correlati
+
+on
+
+coefficie
+
+nt by
+
+calculat
+
+or
+
+and/or
+
+computer.
+
+✔ Online Exercises
+✔ Assignments
+
+✔ Online Participation
+✔ Written Quiz ✔ Problem
+Solving
+
+UCM
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 5 / 10
+CC01052021-1226
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+✔ define correlation
+✔ determine the
+✔ value of a correlation
+✔ use plots and summar y statistics to describe the relations hip between the respons e variable
+✔ and the predictor variable
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+✔ compare
+
+Comparison
+
+✔ Seat works ✔ Exercises ✔ Online
+
+two-
+
+ofsample means ✔ Probl
+
+✔ Assignmen Exercises
+
+populati on proportio ns.
+8 ✔ distinguish between independe nt data and
+
+em
+
+ts
+
+analy
+
+sis
+
+✔ Discussio
+
+nand
+
+illustration
+
+✔ Boardworks
+
+✔ Problem analysis
+✔ Discussio n and illustratio n
+
+paired data
+
+for when
+
+analyzing
+
+means.
+
+✔ determine
+
+when to
+
+use a 2-
+
+sample t-
+
+test versus
+
+a paired t-
+
+test.
+
+✔ determine
+
+when
+
+✔ Online Exercises
+✔ Assignments
+
+✔ Online Participation
+✔ Written Quiz ✔ Problem
+Solving
+
+UCM
+to use the separate variances test ✔ versus the
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 6 / 10
+CC01052021-1226
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+pooled variances test.
+
+Use
+
+Statistics Software ✓ Seat Works ✓ Exercises ✓ Seat works
+
+MicrosoftExcel 9 in computing
+for t- test and
+
+✓ Problemanaly ✓ Assignment ✓ Problem
+
+sis
+
+s
+
+analysis
+
+correlation
+
+✓ Discussio
+
+✓ Discussio
+
+coefficient
+
+nand
+
+n and
+
+illustratio n
+✓ Hands On
+
+Illustratio n ✓ Hands On
+
+Familiarize
+
+Statistics
+
+✓ Seat works ✓ Exerci
+
+data
+
+Software
+
+✓ Probl
+
+10 interpretationin
+
+em
+
+SPSS
+
+Use IBM SPSS in
+
+analy
+
+ses Assignme nts
+
+computing for t-
+
+sis
+
+testand correlation ✓ Discussio
+
+co- efficient
+
+nand
+
+illustratio
+
+n
+
+✓ Seat works ✓ Problem
+analysis
+✓ Discussio n and illustratio n
+✓ Hands On
+
+✓ Hands On
+
+11
+
+Final Exam
+
+12
+
+Finals
+
+Presentat
+
+ion of
+
+Project –
+
+Data
+
+Analysis
+
+Research Topic Presentation
+
+✓ Online Exercises
+✓ Assignments
+
+✓ Online Participation
+✓ Written Quiz ✓ Problem
+Solving ✓ Hands on
+
+✓ Online Exercises Assignments
+
+✓ Onlin e Particip ation
+✓ Written Quiz
+✓ Problem Solving Hands on
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+Course References UCM
+
+PRINT Demidenko, E. (2019). Advanced Statistics with Applications in R. Wiley (D). Field, A. P. Discovering statistics using SPSS (3rd ed.). Thousand Oaks, CA: Sage Publications. Hinkle, D. E., Wiersma, W., & Jurs, S. G. (2003). Applied statistics for the behavioral sciences (5th ed.). New York: Longman. Timbers, T., Campbell, T., & Lee, M. (2022). Data Science: A First Introduction. Chapman and Hall/CRC (D).
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 7 / 10
+CC01052021-1226
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+Learning Resources
+
+EBOOKS Koschtial, C., Köhler, T. & Felden, C. (2021). e-Science: Open, Social and Virtual Technology Research Collaboration. Springer Nature. Li, T., Yan, J., Cao, Y. & Bajo, J. (2021). Intelligent Sensors for Positioning, Tracking, Monitoring, Navigation and Smart Sensing in
+Smart Cities. MDPI. Pintelas, P.E. & Liveris, I. (2020). Ensemble Algorithms and Their Applications. MDPI. Pernici, B. (2020). Special Topics in Information Technology. Springer. Wörndl, W., Koo, C. & Stienmetz, J. (2021). Information and Communication Technologies in Tourism 2021:
+Proceedings of the ENTER 2021 eTourism Conference, January 19-22, 2021. Springer Nature.
+ONLINE RESOURCES Creswell, J. W. (2014). Research Design. Qualitative, Quantitative, & Mixed Methods Approaches. Fourth Ed.
+International Student Edition. Sage Publication, Inc. Hostettler, S., Najih B., Samira & Bolay, J. (2018). Technologies for Development: from Innovation to Social Impact. Springer. Visvizi, A. & Lytras, M. (2020). Sustainable Smart Cities and Smart Villages Research: Rethinking. MDPI.
+OTHER RESOURCES Field, A. (2013). Discovering Statistics Using IBM SPSS Statistics. SAGE Publications Limited. Lynes, J. R. H. (2008). The effects of social class, social capital, parenting style, and Ogbu’s oppositional
+identity on Black college placement scores. Unpublished doctoral dissertation, University of Louisville. (Available from Instructor electronically) Osherson, D. Lane, D. (n.d.). Levels of Measurement. OnlineStatBook. http://onlinestatbook.com/2/introduction/levels_of_measurement.html Berg, R.G. (n.d.). Measurement Levels – What and Why?. SPSS Tutorials. https://www.spsstutorials.com/measurement-levels/ Worksheets Lesson Presentations Video Presentations Cases to analyze
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+UCM
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 8 / 10
+CC01052021-1226
+
+Performance Indicator and Evidence of Performance
+Grading System
+
+Course Performance Indicator
+
+Evidence of Performance
+
+Performance Standard
+
+Topic Presentation/Formulati onSeat works and Exercises Quizzes Final Exam Project: Reports on data analysis
+
+Topic Presented Seat works and Exercises Scores Quiz Scores Final Exam ScoresAnalysis of data
+
+Created Topics Presentation/FormulationRubric: (10%)
+● Well-written topic 2 pts each ● A Quantitative topic 1 pt each ● No topic presented 0 pt ● Total of 10 points
+
+✔ 10 % Topic presentation
+
+✔ 15% Seat works/Exercises
+
+✔ 25% Quizzes
+
+✔ 25% Final Exam
+
+✔ 25% Analysis of Data (Project)
+
+Based on BOR Resolution No. U-3007 dated June 24, 2019, the following is the PNU Grading System of the University.
+
+UNDERGRADUATE LEVEL
+
+Grade in %
+
+Grade Point Scale
+
+98-100
+
+1.00
+
+Adjectival Description Excellent
+
+95-97.99
+
+1.25
+
+Very good
+
+92-94.99
+
+1.50
+
+Very good
+
+89-91.99
+
+1.75
+
+Good
+
+86-88.99
+
+2.00
+
+Good
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+UCM
+
+83-85.99
+
+2.25
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS
+
+80-82.99
+
+2.50
+
+77-79.99
+
+2.75
+
+75-76.99
+
+3.00
+
+Below 75
+
+5.00
+
+6.00
+
+7.00
+
+Satisfactory
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+Fairly Satisfactory Fairly Satisfactory Acceptable Failed Incomplete (INC) Authorized Withdrawal
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 9 / 10
+CC01052021-1226
+
+Course Requirements
+Course Policies
+
+Topic Presentation/Formulation Seat works and Exercises Quizzes Final Exam Project: Reports on data analysis
+
+Face to Face Delivery
+
+1.Attendance is required and expected for Face-to-Face sessions. 2.Students are encouraged to actively participate during Online Forum. 3.Students are obliged to observe proper online decorum and courtesy all the time. 4. Students must submit all the needed assignments, research works, projects and requirement at
+the prescribed time given by the professor. Students should inform the professor in advance if he/she will not make it during the examination/oral presentations for rescheduling purposes.
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+Consultation Period
+
+Flexible Delivery
+
+6. Online participation is essential to your satisfactory completion of this course. Viewing weekly materials, presentations, and e-readings as well as participating in online activities such as quizzes, forum posts, and discussions is required.
+7. Response time should be within 24 hours for any post made by the professor which requires replies/answers/reactions.
+8. Plagiarism/cheating, if proven, will mean a final grade of 5.0 for the subject.
+9. ePNU and edmodo.com are the platform that will be used primarily for communication, submission of assignments and projects.
+10. It is suggested that students visit ePNU and Edmodo group page every day for any updates and response accordingly within 24 hours.
+
+SIKM Office, 4th Floor Library Building
+
+UCM Prepared by Reviewed by Approved by
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-317-1768 ▲ www.pnu.edu.ph
+OBE COURSE SYLLABUS Time: Fridays 9:00 – 10:00 AM
+MALVIN R. TABAJEN Signature above Printed Name
+NIÑO D. NALDOZA, Ph. D. Signature above Printed Name
+NIÑO D. NALDOZA, Ph. D. Signature above Printed Name
+
+Reference No.
+Issue No. Rev. No. Date: Page
+DC No.
+
+PNU-MN-2016-UCM-FM-002
+01 05 01/05/2021 10 / 10
+CC01052021-1226
+
+Date February 6, 2023 Date February 20, 2023 Date February 20, 2023
+
+(All documents without the PNU QM Stamp or Control Identifier are uncontrolled)
+
+10
+
+

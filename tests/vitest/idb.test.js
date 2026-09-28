@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
-import { idbAvailable, idbGet, idbSet, idbDel } from "../../src/core/idb.js";
+import { idbAvailable, idbGet, idbSet } from "../../src/core/idb.js";
 import { installFakeIDB } from "./helpers/fake-idb.js";
 
 describe("idb availability", () => {
@@ -11,7 +11,6 @@ describe("idb availability", () => {
       expect(idbAvailable()).toBe(false);
       expect(await idbGet("k")).toBeNull();
       expect(await idbSet("k", { a: 1 })).toBe(false);
-      expect(await idbDel("k")).toBe(false);
     } finally {
       restore();
     }
@@ -44,11 +43,5 @@ describe("idb read/write", () => {
     await idbSet("k", { n: 1 });
     await idbSet("k", { n: 2 });
     expect(await idbGet("k")).toEqual({ n: 2 });
-  });
-
-  it("deletes a key", async () => {
-    await idbSet("k", { n: 1 });
-    expect(await idbDel("k")).toBe(true);
-    expect(await idbGet("k")).toBeNull();
   });
 });

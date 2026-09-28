@@ -175,13 +175,13 @@ describe("assistant landing voice", () => {
     Store.resetAll();
   });
 
-  it("shows one primary action — import — when the term is empty", () => {
+  it("opens the landing even when the term is empty — import is not a gate", () => {
     const html = assistant();
-    expect(html).toContain("Import a syllabus");
-    expect(html).toContain('data-act="go-import"');
-    /* No chat chrome before there is something to reason about. */
-    expect(html).not.toContain("chatInput");
-    expect(html).not.toContain("btnModelSelect");
+    expect(html).toContain("elicit-landing");
+    expect(html).toContain("chatInput");
+    expect(html).toContain("elicit-card");
+    /* Import stays reachable from the sidebar, not as the only button here. */
+    expect(html).not.toContain('data-act="go-import"');
   });
 
   it("does not promise paper search or call itself a research agent", () => {

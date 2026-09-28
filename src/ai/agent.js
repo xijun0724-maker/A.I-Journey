@@ -19,11 +19,10 @@
 
 import { CFG } from "../config/constants.js";
 import { Store } from "../core/store.js";
-import { UI } from "../core/state.js";
+import { UI } from "../core/scope.js";
 import { RAG } from "../domain/rag.js";
 import { Tasks } from "../domain/tasks.js";
 import { Coach } from "../domain/coach.js";
-import { Dashboard } from "../domain/dashboard.js";
 import { chat, usable, parseJson, TOOL_RESULT_PREFIX } from "./client.js";
 import { fenceUntrusted } from "./prompts.js";
 import { offlineStudyPlan } from "./offline.js";
@@ -123,7 +122,7 @@ export function runTool(name, args) {
   args = args || {};
   switch (name) {
     case "get_snapshot":
-      return snapshot(Tasks, Coach, Dashboard);
+      return snapshot();
 
     case "list_deadlines": {
       const limit = Math.max(1, Math.min(50, Number(args.limit) || 12));
@@ -244,7 +243,7 @@ export function parseAgentAction(text) {
 }
 
 function offlineResult(steps, toolsUsed, aiError, usage) {
-  const snap = snapshot(Tasks, Coach, Dashboard);
+  const snap = snapshot();
   return {
     text: offlineStudyPlan(snap),
     mode: "offline",
@@ -277,6 +276,7 @@ export async function StudyPlanAgent(goal, opts) {
   const runToolFn = opts.tools || runTool;
   const allowOffline = opts.allowOffline !== false;
   const signal = opts.signal || null;
+  const onStep = opts.onStep || null;
   const steps = [];
   const toolsUsed = [];
   const calls = [];
@@ -421,6 +421,16 @@ export async function StudyPlanAgent(goal, opts) {
         error: failed ? run.result.error : null,
         cached: run.cached,
       });
+      if (onStep) {
+        onStep({
+          tool: action.tool,
+          args: action.args,
+          ok: !failed,
+          error: failed ? run.result.error : null,
+          cached: run.cached,
+          stepIndex: steps.length - 1,
+        });
+      }
       if (!failed && toolsUsed.indexOf(action.tool) === -1)
         toolsUsed.push(action.tool);
       messages.push({ role: "assistant", content: r.text });

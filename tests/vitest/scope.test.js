@@ -14,7 +14,6 @@ import {
   readings,
   docs,
   eventProgress,
-  remainingMinutes,
 } from "../../src/core/scope.js";
 
 beforeEach(() => {
@@ -171,14 +170,5 @@ describe("eventProgress()", () => {
       ],
     };
     expect(eventProgress(e)).toBe(50);
-  });
-});
-
-describe("remainingMinutes()", () => {
-  it("delegates to Tasks.remainingMinutes()", () => {
-    const e = { type: "assignment", weight: 15, subtasks: [] };
-    const result = remainingMinutes(e);
-    expect(typeof result).toBe("number");
-    expect(result).toBeGreaterThanOrEqual(0);
   });
 });

@@ -14,6 +14,12 @@
  *   - Ethics sessions 2-4 ("Living Ethically"), 7-8 ("Media Integrity") and
  *     9-10 ("Diversity, Pluralism and Ethics") are split into single weeks,
  *     which is what turns the source's 8 session blocks into 12 weeks.
+ *     Session 11 is capstone *preparation*; the implementation/execution of
+ *     the capstone belongs to session 12 with the course synthesis and final
+ *     exam. The source also carries a "Wellness Break" cell inside its 9-10
+ *     block, but the university-wide break (February 16-21, 2026) is week 6,
+ *     which this syllabus spends on "Ethics and Society" — so the Ethics map
+ *     claims no break of its own.
  *   - TPROFED05 session 0 (course overview) is folded into week 1, and the
  *     content-management rows numbered 3-5 become weeks 3-5, so its sessions
  *     1-12 land on weeks 1-12 with session 6 (midterm / wellness break) on
@@ -26,8 +32,15 @@
  * tasks need concrete dates. Re-running the loader re-anchors them.
  *
  * Assessment weights are transcribed from each syllabus's grading system and
- * sum to 100% per course. Reading titles are taken from the course reference
- * lists; nothing here invents a source the syllabus does not name.
+ * sum to 100% per course. Reading titles are taken from each syllabus's own
+ * session assignments and reference lists; nothing here invents a source the
+ * syllabus does not name.
+ *
+ * Known ceiling: TPROFED05 puts Final Examinations on April 13-17, 2026,
+ * term week 14 of the official calendar, while the session map covers weeks
+ * 1-12. Deadlines stay inside the week their session names — the invariant
+ * `buildTermData`, the Roadmap and the Planner all rely on — rather than
+ * borrowing a date that would not hold for any other term start.
  */
 
 import { addDays, dateOnly, fromIso } from "../utils/date.js";
@@ -66,6 +79,11 @@ const ETHICS = {
         },
         {
           title: "Kant's Moral Philosophy (Johnson & Cureton, 2018)",
+          source: "Stanford Encyclopedia of Philosophy",
+          status: "required",
+        },
+        {
+          title: "Confucius (Riegel, 2013)",
           source: "Stanford Encyclopedia of Philosophy",
           status: "required",
         },
@@ -153,6 +171,11 @@ const ETHICS = {
           status: "optional",
         },
         {
+          title: "Are You a Giver or a Taker? (Grant)",
+          source: "TED",
+          status: "optional",
+        },
+        {
           title: "Everyday Leadership (Dudley)",
           source: "TED",
           status: "optional",
@@ -180,6 +203,17 @@ const ETHICS = {
           title:
             "Hobbes's Moral and Political Philosophy (Lloyd & Sreedhar, 2014)",
           source: "Stanford Encyclopedia of Philosophy",
+          status: "optional",
+        },
+        {
+          title: "Max Weber (Kim, 2017)",
+          source: "Stanford Encyclopedia of Philosophy",
+          status: "optional",
+        },
+        {
+          title:
+            "The Significance of Ethics and Ethics Education in Daily Life (Burroughs)",
+          source: "YouTube (course playlist)",
           status: "optional",
         },
         {
@@ -243,6 +277,22 @@ const ETHICS = {
           source: "Bielefeld University Press",
           status: "optional",
         },
+        {
+          title: "The DNA Journey (video)",
+          source: "YouTube (course playlist)",
+          status: "optional",
+        },
+        {
+          title: "The Long Walk to Freedom (book summary)",
+          source: "Medium",
+          status: "optional",
+        },
+        {
+          title:
+            "Malala Yousafzai at the Transforming Education Summit (video)",
+          source: "United Nations",
+          status: "optional",
+        },
       ],
     },
     {
@@ -262,13 +312,18 @@ const ETHICS = {
           source: "United Nations",
           status: "optional",
         },
+        {
+          title: "The Strange Life and Death of Dr. Alan Turing (video)",
+          source: "YouTube (course playlist)",
+          status: "optional",
+        },
       ],
     },
     {
       week: 11,
-      topic: "Capstone Project: Preparation and Execution",
+      topic: "Capstone Project: Preparation",
       notes:
-        "Implementation and execution of the capstone project, with the class. Preparation of a technical, narrative or performance output showcasing the intersection of history, communication, ethics and cultural studies.",
+        "Class preparation for the capstone project: communication with the course professor and classmates, and preparation of a technical, narrative or performance report of the capstone project showcasing the intersection of history, communication, ethics and cultural studies.",
       readings: [
         {
           title: "Integrity (Cox et al., 2017)",
@@ -279,16 +334,18 @@ const ETHICS = {
     },
     {
       week: 12,
-      topic: "Course Synthesis and Final Examination",
+      topic:
+        "Implementation of the Capstone Project, Course Synthesis and Final Examination",
       notes:
-        "Course synthesis and integration across the units; final examination; self-assessment, peer assessment and teacher evaluation rubrics.",
+        "Independent study / flexible learning activity; implementation and execution of the capstone project; course synthesis and integration across the units; final examination; self-assessment, peer assessment and teacher evaluation rubrics.",
       readings: [],
     },
   ],
   assessments: [
     {
       id: "ev-eth-outputs",
-      title: "Individual Outputs: Reflection Paper and Ethics Case Studies",
+      title:
+        "Individual Outputs: Reflection Paper and Analyzing Ethics Case Studies",
       type: "assignment",
       week: 10,
       weight: 10,
@@ -361,6 +418,12 @@ const LEMP = {
           status: "required",
         },
         {
+          title:
+            "Strategies for Building a Productive and Positive Learning Environment (Loveless, 2020)",
+          source: "Education Corner",
+          status: "optional",
+        },
+        {
           title: "Course syllabus and preliminary course files",
           source: "ePNU course materials",
           status: "required",
@@ -400,8 +463,19 @@ const LEMP = {
           status: "required",
         },
         {
+          title: "DepEd Educational Facilities Manual",
+          source: "Department of Education",
+          status: "required",
+        },
+        {
           title:
-            "The Impact of Learning Space Design on Learner Experience (Penrod, 2021)",
+            "Basic Strategies for Providing Structure in the Classroom (Meador, 2020)",
+          source: "ThoughtCo",
+          status: "optional",
+        },
+        {
+          title:
+            "The Impact of Learning Space Design on Learner Experience and Collaboration (Penrod, 2021)",
           source: "EDUCAUSE Review",
           status: "optional",
         },
@@ -506,6 +580,12 @@ const LEMP = {
           source: "Journal of Positive Behavior Interventions",
           status: "required",
         },
+        {
+          title:
+            "Effective Classroom Management: Teacher Preparation and Professional Development (Oliver & Reschly, 2020)",
+          source: "TQ Research & Policy Brief",
+          status: "optional",
+        },
       ],
     },
     {
@@ -547,6 +627,18 @@ const LEMP = {
           title:
             "Improving School Climate (Bear, 2020)",
           source: "Routledge",
+          status: "optional",
+        },
+        {
+          title:
+            "Creating Positive Classroom Climate: 30 Practical Strategies for All School Contexts (Connolly & Davis, 2022)",
+          source: "Course reference list",
+          status: "optional",
+        },
+        {
+          title:
+            "PPST Resource Package Module 15: Establish Safe and Secure Learning Environments",
+          source: "Department of Education",
           status: "optional",
         },
       ],

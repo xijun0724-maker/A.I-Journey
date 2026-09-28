@@ -51,10 +51,6 @@
     const app = document.getElementById("app");
     if (!loader || !app || app.classList.contains("loaded")) return;
 
-    const mainScript = document.querySelector('script[src="src/main.js"]');
-    const errorMsg =
-      mainScript && mainScript.error ? " (Script failed to load)" : "";
-
     loader.innerHTML =
       '<div class="u-panel-400">' +
       '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" class="u-mx-auto-mb-12">' +
@@ -64,7 +60,6 @@
       "</svg>" +
       '<p class="u-fb-error">' +
       "App failed to load" +
-      errorMsg +
       "</p>" +
       '<p class="u-fb-hint">' +
       "Try these steps in order:" +

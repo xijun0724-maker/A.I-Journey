@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from "vitest";
 import { Store } from "../../src/core/store.js";
-import { UIState } from "../../src/core/state.js";
+import { UIState } from "../../src/core/scope.js";
 import { KNOWN_ACTIONS } from "../../src/core/actions/index.js";
 import {
   getCalendarConfig,

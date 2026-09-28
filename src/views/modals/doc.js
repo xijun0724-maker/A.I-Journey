@@ -8,6 +8,7 @@ import { esc } from "../../utils/helpers.js";
 import { fmtDate } from "../../utils/date.js";
 import { q } from "../../utils/dom.js";
 import { modal } from "../../utils/feedback.js";
+import { tableHtml } from "../shared.js";
 
 export function docModal(docId) {
   const d = Store.doc(docId);
@@ -45,30 +46,12 @@ export function docModal(docId) {
               (i + 1) +
               (t.page ? ' <i class="msep"></i> page ' + t.page : "") +
               "</div>" +
-              '<div class="tbl-wrap mb scroll-sm"><table aria-label="Document table data"><tbody>' +
-              (t.header
-                ? "<tr>" +
-                  t.header
-                    .map(function (c) {
-                      return "<th>" + esc(c) + "</th>";
-                    })
-                    .join("") +
-                  "</tr>"
-                : "") +
-              t.rows
-                .map(function (r) {
-                  return (
-                    "<tr>" +
-                    r
-                      .map(function (c) {
-                        return "<td>" + esc(c) + "</td>";
-                      })
-                      .join("") +
-                    "</tr>"
-                  );
-                })
-                .join("") +
-              "</tbody></table></div>"
+              tableHtml({
+                label: "Document table data",
+                cls: "mb scroll-sm",
+                header: t.header,
+                rows: t.rows,
+              })
             );
           })
           .join("")

@@ -1,0 +1,71 @@
+Course Outline Course Number Course Title Course Pre-requisite Course Description
+Course Content
+
+TGED 09
+Math in the Modern World
+None
+This 3-unit course deals with the nature of mathematics in the modern world. In this course, students will develop mathematical reasoning and problem-solving skills needed in data-driven, sustainable, and equitable decision-making to understand global issues. In math as a language, students will use elementary logic to examine real-world statements and formulate assumptions. In math as a study of patterns, students will use math to represent relationships between variables in interdisciplinary contexts. In math as a mental discipline, students will be engaged in problem-solving and reasoning exercises leading to data management. In math as a tool, students will apply statistical treatments and software to actual data sets from different countries. At the end of this course, students will be capacitated in using math in multi-faceted and cross-cultural contexts enabling them to make meaningful collaborations and contributions to the global community. Attainment of competencies will be measured through traditional and authentic assessments.
+Unit 1: Introduction to Mathematics in the Modern Worlds
+
+1. Nature of Mathematics
+
+1.1 Mathematics as a Language 1.2 Mathematics as a Study of Patterns 1.3 Mathematics as a Mental Discipline 1.4 Mathematics as a Tool
+
+UNIT 2: Mathematics as a Language
+
+2.1. Mathematical Language and Symbols
+
+2.1.1 Introduction to Mathematical Language and Symbols (Characteristics, Expression vs. Sentence, Conventions) 2.1.2 Sets
+
+2.1.3 Relations (mapping between two sets) 2.1.4 Binary Operations
+2.2 Elementary Logic
+2.2.1 Introduction to Logic
+2.2.2 Simple and Compound Propositions a. Proposition (Simple and Compound) and its truth value b. Negation c. Conjunction d. Disjunction e. Implication
+2.2.3. Order of Punctuation
+2.2.4. Argument a. Nature, Structure, and Argument Forms b. Validity of Arguments using Truth Table
+UNIT 3: Mathematics as Study of Patterns
+3.1 Number Sequence
+3.1.1 Finding the next term 3.1.2 Generating Number Sequences 3.1.3 Formula for General Terms
+3.2 Functions
+UNIT 4: Mathematics as a Tool
+4.1 Measures of Central Tendency, Dispersion, and Position 4.1.1 Measure of Central Tendency a. Mean b. Median c. Mode
+4.1.2 Measure of Dispersion a. Range b. Variance c. Standard Deviation
+
+Course Requirements
+
+4.1.3 Measures of Position a. Quartile, Deciles, Percentiles b. Box-and-Whisker Plot and Five Number Summary
+4.2 Normal Distribution 4.2.1 Properties of Theoretical and Standard Normal Distribution 4.2.2 Standard Score (z-score) 4.2.3 Finding Areas under the Standard Normal Distribution 4.2.4 Applications of the Normal Distributions
+4.3 Linear Relationships 4.3.1. Correlation: Pearson R and Spearman Rho 4.3.2. Linear Regression
+UNIT 5: Mathematics as a Mental Discipline
+5.1 Problem Solving
+
+Problem Sets
+Preliminary Examination Midterm Examination Finals (Capstone Project)
+Term Paper
+Sustainability Forum
+
+Suggested Weights 20% 20% 30%
+15% 15%
+
+Agreed Weights 30% 20% 25%
+15% 10%
+
+Term Paper - A term paper presenting the sustainability issue, and understanding of the problem using data analysis.
+
+Sustainability Forum - Thematic presentations of term and project papers in either oral or poster presentations including sector representatives and keynote speakers.
+
+Grading System
+
+Course Policies
+
+Students are expected to adhere to the academic policies on attendance and on student conduct and discipline based on the University Student Handbook.
+Cell Phones Receiving or sending cell phone calls or text messages in classrooms, computer labs, or library is inappropriate and impolite. Except in emergency cases and with the instructor’s permission.
+Class Attendance & Participation Regular attendance, as specified by the instructor, is expected of all students. Extended absence/non-participation (due to illness or injury) should be reported to your instructor (and/or to the University Clinic) immediately. A student who has incurred three (3) consecutive unexcused absences or 20% accumulated absences shall be automatically dropped from the subject. Arrival fifteen (15) minutes after a 3-hour class or thirty (30) minutes after a 5-hour class has commenced is considered tardiness and three (3) tardiness are equivalent to one-day absence. Students should make good use of their time if the faculty member does not come within 30 minutes. They shall stay in the classroom or library and observe proper decorum.
+Classroom Behavior & Civility The student requires appropriate behavior and respect for others. Instructors can set classroom rules of conduct, require adherence to standards of civility appropriate to learning, and have the right to remove anyone for disruption or obstruction of those standards, or for violation of any law or existing University policies.
+Plagiarism & Cheating Cheating is obtaining or intentionally giving unauthorized information to create an unfair advantage in an examination, assignment, or classroom situation. Plagiarism is the act of presenting and claiming words, ideas, data, programming code or creations of others as one's own. Plagiarism
+
+may be intentional - as in a false claim of authorship - or unintentional as in a failure to document information sources using APA (American Psychological Association) or other style sheets or manuals adopted by instructors at the University. Presenting ideas in the exact or near exact wording as found in source material constitutes plagiarism, as does patching together paraphrased statements without in-text citation. Disciplinary action may include a failing grade on an assignment or test, a failing grade for the course, suspension or expulsion from the college, as described in the existing University policies.
+Student with Special Needs Students who have special needs in hearing, reading, visual and the like should approach and inform the professor ahead (e.g. present medical certificate) so that appropriate arrangements can be made.
+Smoking All buildings are designated smoke-free.
+
+

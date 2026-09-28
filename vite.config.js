@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { readFileSync } from 'node:fs';
 
 /**
  * Dev-only escape hatch for `style-src`.
@@ -33,8 +34,34 @@ export function devStyleCspRelaxation() {
   };
 }
 
+/**
+ * Ship the two classic scripts `index.html` loads.
+ *
+ * Vite refuses to bundle them (no `type="module"`), leaves their URLs verbatim
+ * and copies nothing, so `dist/` used to answer `src/theme-init.js` and
+ * `src/boot-fallback.js` with a 404 — the pre-paint theme and the boot
+ * diagnostic were dead in production while `npm run dev`, which reads from
+ * disk, looked fine. Emitting them at the URL index.html already names keeps
+ * that path valid in both.
+ */
+export const CLASSIC_SCRIPTS = ['theme-init.js', 'boot-fallback.js'];
+function emitClassicScripts() {
+  return {
+    name: 'emit-classic-scripts',
+    generateBundle() {
+      for (const f of CLASSIC_SCRIPTS) {
+        this.emitFile({
+          type: 'asset',
+          fileName: `src/${f}`,
+          source: readFileSync(new URL(`./src/${f}`, import.meta.url), 'utf8'),
+        });
+      }
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [devStyleCspRelaxation()],
+  plugins: [devStyleCspRelaxation(), emitClassicScripts()],
   test: {
     include: ['tests/vitest/**/*.test.js'],
     // Browser smoke scripts were deleted (never wired to CI); vitest owns all automated tests.

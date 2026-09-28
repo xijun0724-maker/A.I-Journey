@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-27T00:00:00.000Z",
+  "title": "Design System: Journey A.I",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Instrument Cyan",
+        "canonical": "#38bdf8",
+        "tonalRamp": ["#072c39", "#104456", "#195c74", "#227493", "#38bdf8", "#6ecdfa", "#a3e1fc", "#d8f2fe"]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Deep Sky",
+        "canonical": "#0ea5e9",
+        "tonalRamp": ["#052634", "#093f57", "#0d5a7d", "#0d7ba8", "#0ea5e9", "#4bbef3", "#8ad7f8", "#cdf0fd"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Deep Navy Canvas",
+        "canonical": "#0a0f1c",
+        "tonalRamp": ["#04070d", "#0a0f1c", "#131b2e", "#1c2742", "#2a3757", "#44506e", "#7b8399", "#d8dbe3"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Console Slate",
+        "canonical": "#111827",
+        "tonalRamp": ["#080d17", "#111827", "#1a2436", "#233046", "#33415c", "#4c5b78", "#8792a8", "#dcdfe6"]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Bento Plate",
+        "canonical": "#151c28",
+        "tonalRamp": ["#0a0e16", "#151c28", "#1e2738", "#283244", "#39445a", "#525d75", "#8b93a6", "#d9dce4"]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Well Ink",
+        "canonical": "#070b14",
+        "tonalRamp": ["#030509", "#070b14", "#0e1524", "#161e31", "#222b42", "#39425c", "#737c93", "#d5d8e0"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Notebook White",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["#1c2130", "#3d4557", "#5f6779", "#838b9d", "#a8b0c0", "#c9cfdb", "#e4e8ef", "#f8fafc"]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Cool Graphite",
+        "canonical": "#94a3b8",
+        "tonalRamp": ["#151b27", "#2c3543", "#454f60", "#5e6879", "#7a8496", "#94a3b8", "#b6bfce", "#dde2e9"]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Faint Pencil",
+        "canonical": "#7d8399",
+        "tonalRamp": ["#12171f", "#262d3a", "#3c4351", "#545b6a", "#6a7182", "#7d8399", "#9ba1b1", "#d7dae2"]
+      },
+      "ok": {
+        "role": "status",
+        "displayName": "Verified Green",
+        "canonical": "#34d399",
+        "tonalRamp": ["#062018", "#0b3d2e", "#105c45", "#178063", "#34d399", "#6ee7bb", "#a7f3d7", "#d9faee"]
+      },
+      "error": {
+        "role": "status",
+        "displayName": "Flagged Red",
+        "canonical": "#f87171",
+        "tonalRamp": ["#2b0a0a", "#571414", "#851f1f", "#b53030", "#f87171", "#faa1a1", "#fcc6c6", "#fee5e5"]
+      },
+      "warn": {
+        "role": "status",
+        "displayName": "Marginalia Amber",
+        "canonical": "#fbbf24",
+        "tonalRamp": ["#2b1c02", "#573a05", "#855a09", "#bd8310", "#fbbf24", "#fcc955", "#fdd889", "#feefc7"]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Ruled Line",
+        "canonical": "rgba(30, 41, 59, 0.65)",
+        "tonalRamp": []
+      },
+      "light-canvas": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f8f9fa",
+        "tonalRamp": ["#18181b", "#3c3c41", "#616167", "#86868c", "#ababaf", "#cfcfd2", "#e8e8ea", "#f8f9fa"]
+      },
+      "light-ink": {
+        "role": "neutral",
+        "displayName": "Graphite Ink",
+        "canonical": "#18181b",
+        "tonalRamp": ["#050506", "#18181b", "#2f2f33", "#4a4a4f", "#67676d", "#88888e", "#b3b3b8", "#e6e6e8"]
+      },
+      "light-pen": {
+        "role": "primary",
+        "displayName": "Ballpoint Blue",
+        "canonical": "#5b8def",
+        "tonalRamp": ["#0c1730", "#17294f", "#233c73", "#3759a5", "#5b8def", "#85aaf3", "#aec6f8", "#dbe6fd"]
+      },
+      "light-primary": {
+        "role": "primary",
+        "displayName": "Graphite Button",
+        "canonical": "#18181b",
+        "tonalRamp": ["#050506", "#18181b", "#2f2f33", "#4a4a4f", "#67676d", "#88888e", "#b3b3b8", "#e6e6e8"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Section-defining headings (32px) and the 22px page title on every view; hero moments reach 44px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text at 15px/1.5 on a 68ch measure; carries the warm, supportive voice."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, section eyebrows and badges — 11–11.5px, weight 600, 0.04em tracking."
+      },
+      "mono": {
+        "displayName": "Geist Mono",
+        "purpose": "Identifiers, code and technical readouts where character-level distinction matters."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-card",
+        "value": "0 1px 2px rgba(24,24,27,0.03), 0 2px 8px rgba(24,24,27,0.04)",
+        "purpose": "Card at rest in the light register — separation without lift."
+      },
+      {
+        "name": "shadow-card-dark",
+        "value": "0 4px 20px -2px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)",
+        "purpose": "Bento Plate at rest in the dark register; the 1px white ring reads as a machined edge."
+      },
+      {
+        "name": "shadow-product",
+        "value": "0 4px 16px rgba(0,0,0,0.45)",
+        "purpose": "Persistent app chrome — toasts and sticky bars (dark register)."
+      },
+      {
+        "name": "shadow-elevated",
+        "value": "0 12px 30px -4px rgba(0,0,0,0.65), 0 0 20px rgba(56,189,248,0.12)",
+        "purpose": "Modals, popovers and any card in its hovered state (dark register)."
+      },
+      {
+        "name": "glow-accent",
+        "value": "0 0 24px rgba(56,189,248,0.2)",
+        "purpose": "Cyan halo paired with a shadow — never used alone. Signals a live, interactive surface."
+      },
+      {
+        "name": "inset-highlight",
+        "value": "inset 0 1px 0 0 rgba(255,255,255,0.35)",
+        "purpose": "Top-edge specular catch on primary buttons; strengthens to 0.45 on hover."
+      }
+    ],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Shadow and glow transitions — decelerates into place." },
+      { "name": "ease-out-quart", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Colour, border and background state changes." },
+      { "name": "ease-spring", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Transform — lift, press-scale, card hover." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover colour and transform feedback." },
+      { "name": "duration-normal", "value": "250ms", "purpose": "Shadow, glow and focus-halo changes." },
+      { "name": "duration-slow", "value": "400ms", "purpose": "Panel and overlay entrances." },
+      { "name": "duration-reveal", "value": "600ms", "purpose": "Staggered content reveals." }
+    ],
+    "breakpoints": [
+      { "name": "4-then-2", "value": "1150px" },
+      { "name": "sidebar-drawer", "value": "980px" },
+      { "name": "dense-grid-collapse", "value": "960px" },
+      { "name": "single-column", "value": "768px" },
+      { "name": "compact-chrome", "value": "640px" },
+      { "name": "tight-card", "value": "480px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one Instrument Cyan fill — reserved for the single primary action in a view.",
+      "html": "<button class=\"ds-btn-primary\">Generate plan</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border: 1px solid var(--primary, #38bdf8); border-radius: 9999px; background: var(--primary, #38bdf8); color: var(--on-primary, #0a0f1c); font: 600 13px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; letter-spacing: -0.01em; cursor: pointer; position: relative; overflow: hidden; box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.35), 0 2px 10px rgba(56,189,248,0.25); transition: background 150ms cubic-bezier(0.25,1,0.5,1), box-shadow 250ms cubic-bezier(0.16,1,0.3,1), transform 150ms cubic-bezier(0.32,0.72,0,1); } .ds-btn-primary::after { content: \"\"; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%); opacity: 0; transition: opacity 150ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-primary:hover { background: var(--primary-deep, #0ea5e9); border-color: var(--primary-deep, #0ea5e9); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.45), 0 4px 20px rgba(56,189,248,0.45); transform: translateY(-1px); } .ds-btn-primary:hover::after { opacity: 1; } .ds-btn-primary:active { transform: translateY(0) scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid var(--primary-deep, #0ea5e9); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The quiet default: Bento Plate fill, hairline border, accent-tinted hover.",
+      "html": "<button class=\"ds-btn-secondary\">Import syllabus</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border: 1px solid var(--rule, rgba(30,41,59,0.65)); border-radius: 9999px; background: var(--sheet-solid, #151c28); color: var(--ink, #f8fafc); font: 500 13px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; letter-spacing: -0.01em; cursor: pointer; transition: background 150ms cubic-bezier(0.25,1,0.5,1), border-color 150ms cubic-bezier(0.25,1,0.5,1), transform 150ms cubic-bezier(0.32,0.72,0,1), box-shadow 250ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-secondary:hover { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.35); box-shadow: 0 0 12px rgba(56,189,248,0.12); } .ds-btn-secondary:active { transform: scale(0.98); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--primary-deep, #0ea5e9); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "No fill and no border at rest; gains a 4% wash and a hairline only on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Dismiss</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border: 1px solid transparent; border-radius: 9999px; background: transparent; color: var(--ink, #f8fafc); font: 500 13px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; cursor: pointer; transition: background 150ms cubic-bezier(0.25,1,0.5,1), border-color 150ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-ghost:hover { background: rgba(30,41,59,0.3); border-color: var(--rule, rgba(30,41,59,0.65)); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--primary-deep, #0ea5e9); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Console Slate field with a two-layer accent halo and a background lift on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Weekly study hours</span><input class=\"ds-input\" type=\"text\" placeholder=\"12\" /></label>",
+      "css": ".ds-field { display: block; } .ds-field-label { display: block; font: 600 11.5px/1.4 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; letter-spacing: 0.04em; color: var(--ink-2, #94a3b8); margin-bottom: 5px; } .ds-input { box-sizing: border-box; width: 100%; padding: 12px 16px; border: 1px solid var(--rule, rgba(30,41,59,0.65)); border-radius: 12px; background-color: var(--surface, #111827); color: var(--ink, #f8fafc); font: 400 15px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; letter-spacing: -0.01em; transition: border-color 150ms cubic-bezier(0.25,1,0.5,1), box-shadow 250ms cubic-bezier(0.16,1,0.3,1), background-color 150ms cubic-bezier(0.25,1,0.5,1); } .ds-input:focus { outline: 2px solid var(--primary-deep, #0ea5e9); outline-offset: 1px; border-color: var(--primary-deep, #0ea5e9); box-shadow: 0 0 0 3px rgba(56,189,248,0.18), 0 0 16px rgba(56,189,248,0.12); background-color: var(--sheet-solid, #151c28); } .ds-input::placeholder { color: var(--ink-3, #7d8399); }"
+    },
+    {
+      "name": "Bento Plate Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The signature double-bezel plate: masked gradient ring, reactive lift and glow.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-head\">Week 7 workload <span class=\"ds-card-spacer\"></span></div><p class=\"ds-card-body\">Four deadlines in the next nine days. Two are weighted above 20%.</p></div>",
+      "css": ".ds-card { position: relative; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border: 1px solid var(--rule, rgba(30,41,59,0.65)); border-radius: 16px; background: rgba(21,28,40,0.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04); transition: transform 150ms cubic-bezier(0.32,0.72,0,1), box-shadow 250ms cubic-bezier(0.16,1,0.3,1), border-color 250ms cubic-bezier(0.16,1,0.3,1); } .ds-card::before { content: \"\"; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, rgba(56,189,248,0.28) 0%, rgba(255,255,255,0.06) 20%, transparent 50%, transparent 70%, rgba(56,189,248,0.1) 100%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; opacity: 0.6; transition: opacity 250ms cubic-bezier(0.16,1,0.3,1); } .ds-card:hover { transform: translateY(-2px); border-color: rgba(56,189,248,0.35); box-shadow: 0 12px 30px -4px rgba(0,0,0,0.65), 0 0 20px rgba(56,189,248,0.12), 0 0 24px rgba(56,189,248,0.2); } .ds-card:hover::before { opacity: 1; } .ds-card-head { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(30,41,59,0.4); font: 600 15px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; letter-spacing: -0.02em; color: var(--ink, #f8fafc); } .ds-card-spacer { flex: 1 1 auto; } .ds-card-body { margin: 0; font: 400 13px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; color: var(--ink-2, #94a3b8); max-width: 68ch; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Tinted pill with tabular figures — priority and status read at a glance.",
+      "html": "<span class=\"ds-badge-row\"><span class=\"ds-badge ds-badge-crit\">Critical</span><span class=\"ds-badge ds-badge-high\">High</span><span class=\"ds-badge ds-badge-med\">Medium</span><span class=\"ds-badge ds-badge-ok\">Done</span></span>",
+      "css": ".ds-badge-row { display: inline-flex; gap: 6px; align-items: center; } .ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid transparent; border-radius: 9999px; font: 500 11px/1.4 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0.01em; white-space: nowrap; } .ds-badge-crit { background: rgba(248,113,113,0.14); color: #f87171; border-color: rgba(232,93,74,0.15); } .ds-badge-high { background: rgba(251,191,36,0.14); color: #fbbf24; border-color: rgba(234,179,8,0.15); } .ds-badge-med { background: rgba(56,189,248,0.14); color: #38bdf8; border-color: rgba(56,189,248,0.15); } .ds-badge-ok { background: rgba(52,211,153,0.14); color: #34d399; border-color: rgba(34,197,94,0.15); }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Margin-rule navigation: wash on hover, accent plus a left marker bar when active.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"9\" rx=\"1.5\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"5\" rx=\"1.5\"/><rect x=\"14\" y=\"12\" width=\"7\" height=\"9\" rx=\"1.5\"/><rect x=\"3\" y=\"16\" width=\"7\" height=\"5\" rx=\"1.5\"/></svg>Dashboard</a><a class=\"ds-nav-item is-active\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"17\" height=\"17\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 6h16M4 12h16M4 18h10\"/></svg>Planner</a></nav>",
+      "css": ".ds-nav { box-sizing: border-box; width: 248px; padding: 12px 10px; background: var(--sidebar, #070b14); border-right: 1px solid rgba(30,41,59,0.65); display: flex; flex-direction: column; gap: 2px; } .ds-nav-item { position: relative; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; text-decoration: none; color: var(--ink-2, #94a3b8); font: 500 13px/1.5 'Plus Jakarta Sans', -apple-system, 'Segoe UI', sans-serif; letter-spacing: -0.01em; transition: background 150ms cubic-bezier(0.25,1,0.5,1), color 150ms cubic-bezier(0.25,1,0.5,1); } .ds-nav-item svg { display: block; flex: 0 0 auto; } .ds-nav-item:hover { background: rgba(30,41,59,0.4); color: var(--ink, #f8fafc); } .ds-nav-item.is-active { background: rgba(56,189,248,0.1); color: var(--ink, #f8fafc); font-weight: 600; } .ds-nav-item.is-active::before { content: \"\"; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 9999px; background: var(--primary, #38bdf8); box-shadow: 0 0 8px rgba(56,189,248,0.5); } .ds-nav-item.is-active svg { color: var(--primary, #38bdf8); } .ds-nav-item:focus-visible { outline: 2px solid var(--primary-deep, #0ea5e9); outline-offset: -2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lab Notebook",
+    "overview": "Journey A.I is a well-kept lab notebook rendered on a dark console. It is structured, evidential and tabular: everything is ruled, aligned and legible, and the interface earns trust by looking like a record rather than a dashboard trying to impress. The personality is warm and supportive — this tool is on the student's side about a heavy term, so it reports pressure calmly and never lectures, shouts, or celebrates at them. Density is high because the user is an expert at their own coursework and time-poor; whitespace is spent on alignment and rhythm rather than on making screens look empty.\n\nThe aesthetic philosophy is precision with a pulse. Structure does the work — ruled lines, tabular figures, consistent plate geometry — and the glowing sky-cyan accent supplies the life, appearing as instrument light rather than brand wash. Dark is the default experience and carries that glow; light mode is a deliberately plain paper register for people who need it, not a second personality.",
+    "keyCharacteristics": [
+      "Ruled and tabular: hairline rules, aligned numerals, structured card headers",
+      "Warm and supportive in voice — calm reporting, no motivational framing",
+      "Flat at rest; depth and glow are earned by state, not applied permanently",
+      "Pill controls against rectangular plates — approachable geometry, precise execution",
+      "Instrument-glow accent used as signal, so its rarity keeps it meaningful",
+      "High information density with disciplined 8px-grid rhythm"
+    ],
+    "rules": [
+      { "name": "The Two-Register Rule", "body": "Dark is the default experience and light is a plain paper register. Never mix values across registers — a component reads its colour from the token, never from a hard-coded hex, so it is correct in both.", "section": "colors" },
+      { "name": "The Signal Rule", "body": "Instrument Cyan marks what is active, focused, or actionable. It is not a background wash: when accent coverage spreads across large fills or whole panels, it stops meaning \"here\" and the system loses its only attention mechanism.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Any number the user compares vertically — grades, percentages, counts, deadlines, KPIs — renders with `font-variant-numeric: tabular-nums`. Columns of figures must align without the reader doing the alignment.", "section": "typography" },
+      { "name": "The Reactive Glow Rule", "body": "Nothing glows at rest. Glow is a response to hover, focus, or selection and must be reversible — if a surface is still glowing when nothing is pointing at it, the state has leaked.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do read every colour from a token so a component is correct in both registers — dark values come from `[data-theme=\"dark\"]`, light from `:root`.",
+      "Do apply `font-variant-numeric: tabular-nums` to any figure the user scans or compares in a column.",
+      "Do keep the 8px spacing grid (`4 / 8 / 12 / 16 / 24 / 32 / 48 / 80`) and cap reading text at the 68ch measure.",
+      "Do reserve glow and shadow for hover, focus, and selection, and retract them when the state ends.",
+      "Do use pills for controls and 8–16px plates for containers, and inherit radius with `border-radius: inherit` on pseudo-elements.",
+      "Do lead headings with tight tracking (`-0.02em`) and keep card headers on a hairline rule with a flexible spacer.",
+      "Do report workload pressure in calm, factual language — status colours and short labels, not exclamation."
+    ],
+    "donts": [
+      "Don't drift toward flat generic SaaS dashboard styling — the ruled structure and the instrument glow are the identity, confirmed as the anti-reference.",
+      "Don't hard-code a hex where a token exists; that breaks the Two-Register Rule and splits the source of truth.",
+      "Don't let Instrument Cyan become a background wash or cover large fills — the Signal Rule depends on its rarity.",
+      "Don't add permanent resting shadow to a surface that isn't elevated, or leave a glow on after hover/focus clears.",
+      "Don't thicken borders past 1px hairlines, double them, or round a control with a plate radius (or vice versa).",
+      "Don't introduce motivational, gamified, or celebratory treatment — no streaks, confetti, or trophy framing in colour, copy, or motion."
+    ]
+  }
+}

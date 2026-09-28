@@ -9,12 +9,6 @@ import { Store } from "../core/store.js";
 import { esc, clamp, safeColor } from "./helpers.js";
 import { daysUntil, fmtDate, rel } from "./date.js";
 
-/**
- * Generate a progress bar HTML
- * @param {number} pct - Percentage (0-100)
- * @param {string} cls - CSS class (ok, warn, bad)
- * @returns {string} HTML string
- */
 export function bar(pct, cls) {
   const v = clamp(pct, 0, 100);
   return (
@@ -30,11 +24,6 @@ export function bar(pct, cls) {
   );
 }
 
-/**
- * Generate a circular progress ring HTML
- * @param {number} pct - Percentage (0-100)
- * @returns {string} HTML string
- */
 export function ring(pct) {
   pct = Math.round(pct);
   return (
@@ -50,14 +39,6 @@ export function ring(pct) {
   );
 }
 
-/**
- * Generate an empty state placeholder
- * @param {string} icon - Icon character
- * @param {string} title - Title text
- * @param {string} msg - Message text
- * @param {string} actionHtml - Action button HTML
- * @returns {string} HTML string
- */
 export function empty(icon, title, msg, actionHtml) {
   return (
     '<div class="empty">' +
@@ -71,11 +52,6 @@ export function empty(icon, title, msg, actionHtml) {
   );
 }
 
-/**
- * Generate a priority badge HTML
- * @param {string} label - Priority label (Critical, High, Medium, Low)
- * @returns {string} HTML string
- */
 export function priBadge(label) {
   const cls =
     { Critical: "crit", High: "high", Medium: "med", Low: "low" }[label] ||
@@ -83,11 +59,6 @@ export function priBadge(label) {
   return '<span class="badge ' + cls + '">' + esc(label) + "</span>";
 }
 
-/**
- * Generate a to-do progress status badge HTML
- * @param {Object} e - Event / task object
- * @returns {string} HTML string
- */
 export function statusBadge(e) {
   if (!e) return "";
   const isDone = e.status === "done";
@@ -98,7 +69,8 @@ export function statusBadge(e) {
     const s = e.subtasks || [];
     const done = s.filter((x) => x.done).length;
     const pct = s.length ? Math.round((done / s.length) * 100) : 0;
-    const label = pct > 0 && pct < 100 ? "In progress · " + pct + "%" : "In progress";
+    const label =
+      pct > 0 && pct < 100 ? "In progress · " + pct + "%" : "In progress";
     return (
       '<span class="todo-badge status-doing" title="Status: In progress">' +
       esc(label) +
@@ -108,11 +80,6 @@ export function statusBadge(e) {
   return '<span class="todo-badge status-todo" title="Status: Not started">Not started</span>';
 }
 
-/**
- * Generate an event status badge HTML
- * @param {Object} e - Event object
- * @returns {string} HTML string
- */
 export function eventBadge(e) {
   const m = CFG.taskTypes[e.type] || { label: e.type || "Task" };
   const n = daysUntil(e.due);
@@ -141,11 +108,6 @@ export function eventBadge(e) {
   return '<span class="badge ' + cls + '">' + esc(txt) + "</span>";
 }
 
-/**
- * Generate a course chip with color dot
- * @param {string} courseId - Course ID
- * @returns {string} HTML string
- */
 export function courseChip(courseId) {
   const c = Store.course(courseId);
   if (!c) return "";
@@ -158,11 +120,6 @@ export function courseChip(courseId) {
   );
 }
 
-/**
- * Generate a due date label with relative time
- * @param {string} iso - ISO date string
- * @returns {string} HTML string
- */
 export function dueLabel(iso) {
   const d = new Date(iso);
   if (!d || isNaN(d.getTime())) return '<span class="muted">No date set</span>';
@@ -186,19 +143,9 @@ export function dueLabel(iso) {
   );
 }
 
-/**
- * Generate a stat box card
- * @param {string|number} value - Stat value
- * @param {string} label - Stat label
- * @returns {string} HTML string
- */
-/**
- * One-line provenance for a plan: who drafted it, from what, at what cost.
- * Honest by construction - an offline draft never claims an AI wrote it.
- *
- * @param {object} [prov] - meta.provenance written by AI.studyPlanProposal
- * @returns {string} Plain sentence ("") when there is no provenance to show
- */
+// One-line provenance for a plan: who drafted it, from what, at what cost.
+// Honest by construction — an offline draft never claims an AI wrote it.
+// Returns "" when there is no provenance to show.
 export function planProvenance(prov) {
   if (!prov) return "";
   const ai = prov.mode === "ai";
@@ -239,14 +186,6 @@ export function statBox(value, label, detail, tone) {
   );
 }
 
-/**
- * Generate a tab button with ARIA attributes
- * @param {string} id - Tab ID
- * @param {string} label - Tab label
- * @param {boolean} active - Whether this tab is active
- * @param {string} viewName - View name for data-view attribute
- * @returns {string} HTML string
- */
 export function tabBtn(id, label, active, viewName) {
   return (
     '<button data-act="tab" data-view="' +
@@ -273,13 +212,8 @@ export function tabBtn(id, label, active, viewName) {
 const RECENT_MAX = 5;
 const RECENT_LABEL_CHARS = 28;
 
-/**
- * Build Recents row markup. Each row opens its conversation; the open
- * conversation carries the active pill.
- * @param {Array} conversations - Result of Store.chat.conversations()
- * @param {Object} opts - { activeCid }
- * @returns {string} HTML string
- */
+// Recents row markup; each row opens its conversation, the open one carries
+// the active pill.
 export function recentsHTML(conversations, opts) {
   const o = opts || {};
   return (conversations || [])
@@ -310,18 +244,12 @@ export function recentsHTML(conversations, opts) {
     .join("");
 }
 
-/**
- * Render the Recents list into a container.
- * @param {Element} list - Container element
- * @param {Array} conversations - Conversations, newest first
- * @param {Object} opts - { limit, activeCid, emptyLabel }
- * @returns {number} Rows rendered
- */
+// Render the Recents list into `list`; opts: { limit, activeCid, emptyLabel },
+// where limit 0 means no limit (the sidebar search shows every hit).
 export function renderRecents(list, conversations, opts) {
   if (!list) return 0;
   const o = opts || {};
   const all = conversations || [];
-  /* limit 0 means no limit (the sidebar search shows every hit). */
   const rows =
     o.limit == null
       ? all.slice(0, RECENT_MAX)

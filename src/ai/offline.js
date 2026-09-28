@@ -1,21 +1,22 @@
 /**
  * Offline fallback responses when AI API is unavailable.
  */
+import { Store } from "../core/store.js";
 import { RAG } from "../domain/rag.js";
 
-export function offlineAnswer(question, ctx, StoreRef, RAGRef) {
+export function offlineAnswer(question, ctx) {
   if (!ctx.chunks.length) {
     return (
       "I could not find anything about that in your uploaded materials.\n\n**What I checked:** " +
-      (StoreRef.db.documents.length
-        ? StoreRef.db.documents.length +
+      (Store.db.documents.length
+        ? Store.db.documents.length +
           " document(s) in your Library, using keyword retrieval."
         : "your Library is empty — nothing has been uploaded yet.") +
       "\n\n**To get a grounded answer, you can:**\n- Upload the relevant textbook chapter, lecture notes or handout in the Library\n- Add an API key in Settings so I can reason beyond your documents\n- Ask a narrower question about material you have already uploaded"
     );
   }
-  const picks = RAGRef.extract(question, ctx.chunks, 5);
-  const terms = RAGRef.glossary(ctx.chunks, 7);
+  const picks = RAG.extract(question, ctx.chunks, 5);
+  const terms = RAG.glossary(ctx.chunks, 7);
   const out = [];
   if (picks.length) {
     out.push(

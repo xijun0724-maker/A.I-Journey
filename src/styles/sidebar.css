@@ -22,13 +22,20 @@
   justify-content: space-between;
   padding: 14px 14px 10px;
   flex: 0 0 auto;
-}.sb-brand{
+}/* Brand is a button: it returns to the assistant landing page. */ .sb-brand{
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
-  padding-left: 2px;
-}.sb-logo{
+  padding: 2px 4px 2px 2px;
+  border: 0;
+  border-radius: var(--rounded-sm);
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}/* --pen is the accent in both registers, so the hover needs no dark override. */ .sb-brand:hover .sb-title{ color: var(--pen); }.sb-logo{
   width: 26px;
   height: 26px;
   border-radius: 7px;
@@ -449,7 +456,6 @@
   opacity: 1;
 }/* Theme toggle icons */ .icon-sun{ display: none; }.icon-moon{ display: block; }[data-theme="dark"] .icon-sun{ display: block; }[data-theme="dark"] .icon-moon{ display: none; }/* Rail utilities (hidden when expanded) */ .sb-rail-utils{ display: none; }/* ================================================================ SIDEBAR COLLAPSED STATE — Minimal Icon Rail ================================================================ */ @media (min-width: 981px){
   #app.sidebar-collapsed .sb-title,
-  #app.sidebar-collapsed .sb-brand,
   #app.sidebar-collapsed .sb-nav a > span:not(.ic),
   #app.sidebar-collapsed .sb-recents,
   #app.sidebar-collapsed .sb-username,
@@ -485,6 +491,87 @@
     padding: 0 0 10px;
     margin: 0;
     gap: 0;
+  }
+
+  /* The rail keeps the mark: the brand is the app's home button, so it stays
+     reachable (and keeps its label) once the sidebar collapses to icons. It
+     wears the accent tint — the one tile in the rail that is not a
+     grey-on-grey nav icon — so it reads as the app mark. The accent tokens
+     are theme-aware, so no dark override is needed here. */
+  #app.sidebar-collapsed .sb-brand {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: 0 auto 6px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--rule-accent);
+    border-radius: var(--rounded-md);
+    background: var(--pen-soft);
+    color: var(--pen);
+    cursor: pointer;
+    position: relative;
+    transition: background 150ms var(--ease-out-expo),
+                color 150ms var(--ease-out-expo),
+                border-color 150ms var(--ease-out-expo),
+                box-shadow 150ms var(--ease-out-expo),
+                transform 150ms var(--ease-out-expo);
+  }
+
+  #app.sidebar-collapsed .sb-brand:active {
+    transform: scale(0.94);
+  }
+
+  #app.sidebar-collapsed .sb-brand:hover,
+  #app.sidebar-collapsed .sb-brand:focus-visible {
+    background: var(--blue-15);
+    border-color: var(--blue-40);
+    box-shadow: var(--rule-accent-glow);
+  }
+
+  #app.sidebar-collapsed .sb-brand .sb-logo,
+  #app.sidebar-collapsed .sb-brand .sb-logo svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Icon-only in the rail, so the mark borrows the toggle's floating tooltip. */
+  #app.sidebar-collapsed .sb-brand::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 8px);
+    transform: translateY(-50%) translateX(-4px);
+    background: #1e293b;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--duration-fast) var(--ease-out-quart),
+                transform var(--duration-fast) var(--ease-out-quart);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 100;
+  }
+
+  [data-theme="dark"] #app.sidebar-collapsed .sb-brand::after {
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  #app.sidebar-collapsed .sb-brand:hover::after,
+  #app.sidebar-collapsed .sb-brand:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
   }
 
   #app.sidebar-collapsed .sb-toggle {

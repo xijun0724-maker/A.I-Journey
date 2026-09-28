@@ -3,7 +3,7 @@
  */
 
 import { Store } from "../store.js";
-import { UI, UIState } from "../state.js";
+import { UI, UIState } from "../scope.js";
 import { Router } from "../router.js";
 import { toast } from "../../utils/dom.js";
 import { confirm } from "../../utils/feedback.js";
@@ -97,7 +97,7 @@ export function commitPlanPreview() {
    take the exact same persist path. */
 
 /** @returns {object|null} The live proposal, if there is one */
-export function currentPlanProposal() {
+function currentPlanProposal() {
   const proposal = UIState.planProposal;
   return proposal && proposal.draft ? proposal : null;
 }

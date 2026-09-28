@@ -3,20 +3,23 @@
  */
 
 import { Store } from "../core/store.js";
-import { UI } from "../core/state.js";
+import { UI } from "../core/scope.js";
+import { Tasks } from "../domain/tasks.js";
+import { Coach } from "../domain/coach.js";
+import { Dashboard } from "../domain/dashboard.js";
 import { sum } from "../utils/helpers.js";
 import { dateOnly, daysUntil } from "../utils/date.js";
 
-export function snapshot(TasksRef, CoachRef, DashboardRef) {
-  const open = TasksRef.ranked(
-    Store.db.events.filter((e) => TasksRef.isOpen(e) && UI.inScope(e)),
+export function snapshot() {
+  const open = Tasks.ranked(
+    Store.db.events.filter((e) => Tasks.isOpen(e) && UI.inScope(e)),
   );
-  const week = CoachRef.currentWeek();
+  const week = Coach.currentWeek();
   const lessons = (Store.db.lessons || [])
     .filter((l) => UI.inScope(l))
     .sort((a, b) => (a.week || 99) - (b.week || 99));
   const soon = Store.db.events
-    .filter((e) => TasksRef.isOpen(e) && e.due && UI.inScope(e))
+    .filter((e) => Tasks.isOpen(e) && e.due && UI.inScope(e))
     .sort((a, b) => (a.due < b.due ? -1 : 1))
     .slice(0, 12);
   return {
@@ -29,7 +32,7 @@ export function snapshot(TasksRef, CoachRef, DashboardRef) {
     ),
     courses: Store.db.courses.map((c) => {
       const evs = Store.db.events.filter((e) => e.courseId === c.id);
-      const g = DashboardRef.courseGrade(c.id);
+      const g = Dashboard.courseGrade(c.id);
       return {
         code: c.code,
         title: c.title,
@@ -51,8 +54,8 @@ export function snapshot(TasksRef, CoachRef, DashboardRef) {
       due: e.due,
       daysLeft: daysUntil(e.due),
       weight: e.weight,
-      progress: TasksRef.progress(e),
-      minutesLeft: TasksRef.remainingMinutes(e),
+      progress: Tasks.progress(e),
+      minutesLeft: Tasks.remainingMinutes(e),
       nextSubtask:
         ((e.subtasks || []).find((s) => !s.done) || {}).title || null,
     })),
@@ -61,7 +64,7 @@ export function snapshot(TasksRef, CoachRef, DashboardRef) {
         const n = daysUntil(e.due);
         return n !== null && n <= 7;
       }),
-      TasksRef.remainingMinutes,
+      Tasks.remainingMinutes,
     ),
     studiedLast7DaysMinutes: sum(
       Store.db.activity.filter((a) => daysUntil(a.date + "T00:00") >= -6),

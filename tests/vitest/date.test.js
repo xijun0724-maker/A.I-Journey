@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DAY, iso, dateOnly, fromIso, startOfDay, addDays, daysUntil, fmtDate, fmtTime, rel, mondayOf, weekKey, parseDate, parseTime, fmtDay } from '../../src/utils/date.js';
+import { DAY, iso, dateOnly, fromIso, startOfDay, addDays, daysUntil, fmtDate, fmtTime, rel, mondayOf, parseDate, parseTime, fmtDay } from '../../src/utils/date.js';
 
 describe('DAY constant', () => {
   it('equals 86400000 (ms in a day)', () => {
@@ -160,15 +160,6 @@ describe('mondayOf', () => {
     const d = new Date(2026, 8, 17); // Thursday
     const monday = mondayOf(d);
     expect(monday.getDay()).toBe(1);
-  });
-});
-
-describe('weekKey', () => {
-  it('returns YYYY-MM-DD of Monday', () => {
-    const d = new Date(2026, 8, 17); // Thursday Sep 17
-    const key = weekKey(d);
-    expect(typeof key).toBe('string');
-    expect(key).toBe('2026-09-14'); // Monday of that week
   });
 });
 

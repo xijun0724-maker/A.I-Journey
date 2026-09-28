@@ -51,6 +51,15 @@ function docIdFor(e) {
 }
 Planner.docIdFor = docIdFor;
 
+/* Term start + week number → the first day of that week (null when unknown). */
+function weekDue(week) {
+  if (!week) return null;
+  const settings = (Store.db && Store.db.settings) || {};
+  const termStart = fromIso(settings.termStart);
+  if (!termStart) return null;
+  return dateOnly(addDays(termStart, (Number(week) - 1) * 7));
+}
+
 /**
  * Work units to schedule, highest priority first.
  *
@@ -157,15 +166,7 @@ Planner.units = function (courseId, exclude) {
     });
   lessons.forEach(function (l) {
     // Derive a due date: the START of the lesson's week, or null.
-    let due = l.start || null;
-    if (!due && l.week) {
-      const settings = (Store.db && Store.db.settings) || {};
-      const termStart = fromIso(settings.termStart);
-      if (termStart) {
-        const d = addDays(termStart, (Number(l.week) - 1) * 7);
-        due = dateOnly(d);
-      }
-    }
+    const due = l.start || weekDue(l.week);
     const minutes = 45; // default topic study block
     const key = [l.courseId || "", slug(l.topic || ""), due || "none"].join("|");
     if (seenUnits[key]) return;
@@ -196,15 +197,7 @@ Planner.units = function (courseId, exclude) {
     const pages = parseInt(r.pages, 10) || 0;
     // ~2 min/page, min 20 min, max 90 min
     const minutes = Math.min(90, Math.max(20, pages ? pages * 2 : 30));
-    let due = null;
-    if (r.week) {
-      const settings = (Store.db && Store.db.settings) || {};
-      const termStart = fromIso(settings.termStart);
-      if (termStart) {
-        const d = addDays(termStart, (Number(r.week) - 1) * 7);
-        due = dateOnly(d);
-      }
-    }
+    const due = weekDue(r.week);
     const key = [r.courseId || "", slug(r.title || ""), due || "none"].join("|");
     if (seenUnits[key]) return;
     seenUnits[key] = true;
@@ -253,9 +246,8 @@ Planner.units = function (courseId, exclude) {
 
 /**
  * Build a study schedule. The single source of truth for scheduling:
- * Planner.generateInteractive and Planner.generate are thin wrappers over
- * this, so the preview path and the auto-generate path cannot drift apart.
- * Does not touch the database.
+ * Planner.generateInteractive is a thin wrapper over this, and
+ * Planner.commit writes its result. Does not touch the database.
  *
  * @param {object} [opts]
  * @param {number} [opts.weeks] - Horizon in weeks (default settings.plannerWeeks)
@@ -432,20 +424,6 @@ Planner.commit = function (result) {
     (result && result.meta) || null,
   );
   return Store.db.planMeta;
-};
-
-/**
- * Schedule and persist in one step.
- *
- * @param {object} [opts] - Same options as Planner.generateInteractive
- * @returns {object} The stored planMeta
- */
-Planner.generate = function (opts) {
-  return Planner.commit(schedule(opts));
-};
-
-Planner.clear = function () {
-  Store.plan.clear();
 };
 
 Planner.toggle = function (planId) {

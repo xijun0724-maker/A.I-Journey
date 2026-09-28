@@ -7,6 +7,8 @@
  *  3. "New" starts a *second* conversation; both stay listed.
  *  4. Clicking a Recents row resumes that conversation instead of re-sending.
  *  5. The model only sees the conversation that is open.
+ *  6. The message cap is a per-conversation budget: a long chat evicts its
+ *     own oldest messages and nobody else's.
  */
 
 import {
@@ -32,7 +34,8 @@ vi.mock("../../src/core/router.js", () => {
 });
 
 import { Store } from "../../src/core/store.js";
-import { UIState } from "../../src/core/state.js";
+import { CFG } from "../../src/config/constants.js";
+import { UIState } from "../../src/core/scope.js";
 import { Router } from "../../src/core/router.js";
 import { setApiKey, clearApiKey } from "../../src/utils/secure.js";
 import { RAG } from "../../src/domain/rag.js";
@@ -203,5 +206,72 @@ describe("Recents list", () => {
     const body = requests[requests.length - 1];
     expect(body).toContain("brand new topic");
     expect(body).not.toContain("first question");
+  });
+});
+
+/* The cap was `list.slice(-max)` over the flat log, so the budget was spent by
+   whichever conversation was being written to: a long-lived chat silently
+   deleted older conversations, including the Recents row that named them. */
+describe("the message cap", () => {
+  const MAX = CFG.maxChatMessages || 100;
+
+  function fill(cid, prefix, n, start) {
+    for (let i = 0; i < n; i++) {
+      Store.chat.appendTo(cid, {
+        id: prefix + i,
+        role: "assistant",
+        content: prefix + i,
+        ts: (start || 0) + i,
+      });
+    }
+  }
+
+  it("evicts the growing conversation's own oldest messages, not another's", () => {
+    /* An older conversation, already at the cap. */
+    const older = Store.chat.append({
+      id: "o0",
+      role: "user",
+      content: "older opener",
+      ts: 1,
+    });
+    fill(older, "old ", MAX - 1, 2);
+    expect(Store.chat.all().length).toBe(MAX);
+
+    /* A newer conversation that then grows past the cap. */
+    Store.chat.newConversation();
+    const newer = Store.chat.append({
+      id: "n0",
+      role: "user",
+      content: "newer opener",
+      ts: 10000,
+    });
+    fill(newer, "new ", MAX, 10001);
+
+    const contents = Store.chat.all().map((m) => m.content);
+    /* The older conversation is untouched — every message still there. */
+    expect(contents).toContain("older opener");
+    expect(contents.filter((c) => c.startsWith("old "))).toHaveLength(MAX - 1);
+    /* …and it is still a named row in Recents. */
+    const rows = Store.chat.conversations();
+    const kept = rows.find((c) => c.cid === older);
+    expect(kept).toBeTruthy();
+    expect(kept.title).toBe("older opener");
+
+    /* The conversation that grew pays for its own growth: it holds MAX
+       messages again, and the message it dropped is its own first one. */
+    expect(contents.filter((c) => c.startsWith("new "))).toHaveLength(MAX);
+    expect(contents).not.toContain("newer opener");
+  });
+
+  it("keeps the flat log in order after a trim", () => {
+    const cid = Store.chat.append({ id: "a", role: "user", content: "one", ts: 1 });
+    fill(cid, "m", MAX + 1, 2);
+
+    const log = Store.chat.all();
+    expect(log).toHaveLength(MAX);
+    /* The opener and the first fill message are gone; order is otherwise
+       exactly as written. */
+    expect(log[0].content).toBe("m1");
+    expect(log[log.length - 1].content).toBe("m" + MAX);
   });
 });

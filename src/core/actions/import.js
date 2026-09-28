@@ -3,7 +3,7 @@
  */
 
 import { Store } from "../store.js";
-import { UI, UIState } from "../state.js";
+import { UI, UIState } from "../scope.js";
 import { Router } from "../router.js";
 import { CFG } from "../../config/constants.js";
 import { migrateSchema } from "../../config/settings.js";

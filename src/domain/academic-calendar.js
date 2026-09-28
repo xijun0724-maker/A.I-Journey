@@ -4,8 +4,11 @@
  */
 
 import { Store } from "../core/store.js";
+import { defaultSettings } from "../config/settings.js";
 import { dateOnly, fromIso, addDays, DAY } from "../utils/date.js";
 import { uid } from "../utils/helpers.js";
+
+const DEFAULTS = defaultSettings();
 
 /**
  * Get active academic calendar settings
@@ -14,8 +17,8 @@ import { uid } from "../utils/helpers.js";
 export function getActiveAcademicCalendar() {
   const s = Store.db.settings || {};
   return {
-    academicYear: s.academicYear || "2026–2027",
-    termName: s.termName || "1st Term",
+    academicYear: s.academicYear || DEFAULTS.academicYear,
+    termName: s.termName || DEFAULTS.termName,
     termStart: s.termStart || "",
     termEnd: s.termEnd || "",
   };
@@ -98,8 +101,8 @@ export function saveAcademicCalendar({
   generateMilestones = false,
   id,
 }) {
-  if (!academicYear) academicYear = "2026–2027";
-  if (!termName) termName = "1st Term";
+  if (!academicYear) academicYear = DEFAULTS.academicYear;
+  if (!termName) termName = DEFAULTS.termName;
   if (!termStart) termStart = dateOnly(new Date());
   if (!termEnd) termEnd = dateOnly(addDays(fromIso(termStart) || new Date(), 120));
 

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 /**
- * Tests for src/core/state.js — the UI namespace shared with core actions.
+ * Tests for src/core/scope.js — the UI namespace shared with core actions.
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
@@ -11,12 +11,12 @@ let UIState;
 beforeEach(async () => {
   document.body.innerHTML = '<div id="toasts"></div>';
   vi.resetModules();
-  ({ UI, UIState } = await import("../../src/core/state.js"));
+  ({ UI, UIState } = await import("../../src/core/scope.js"));
 });
 
 describe("UI namespace", () => {
   it("exposes the helpers core actions call", () => {
-    ["toastSaved", "courses", "inScope", "events", "lessons", "docs"].forEach(
+    ["toastSaved", "courses", "inScope", "events", "readings"].forEach(
       (name) => expect(typeof UI[name]).toBe("function"),
     );
     expect(UI.state).toBeTruthy();

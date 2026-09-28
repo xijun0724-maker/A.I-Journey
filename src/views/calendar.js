@@ -3,23 +3,18 @@
  */
 
 import { Store } from "../core/store.js";
-import { UIState } from "../core/state.js";
+import { UIState } from "../core/scope.js";
 import { Router } from "../core/router.js";
 import { esc } from "../utils/helpers.js";
-import { dateOnly } from "../utils/date.js";
-import { q, qa } from "../utils/dom.js";
+import { dateOnly, fmtTime } from "../utils/date.js";
+import { q } from "../utils/dom.js";
 import { modal } from "../utils/feedback.js";
-import { eventModal } from "./modals/event.js";
+import { truncate } from "./shared.js";
 import { academicCalendarModal } from "./modals/academic-calendar.js";
 import {
   getActiveAcademicCalendar,
   saveAcademicCalendar,
 } from "../domain/academic-calendar.js";
-
-function truncate(str, maxLen = 20) {
-  if (!str) return "";
-  return str.length > maxLen ? str.slice(0, maxLen - 1) + "\u2026" : str;
-}
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -105,20 +100,6 @@ export function configureCalendar(settings) {
   }
 
   return academicCalendarModal();
-}
-
-/** Format event time according to 12h or 24h preference */
-function formatEventTime(isoDue, timeFormat = "12h") {
-  if (!isoDue || isoDue.length < 16) return "All day";
-  const rawTime = isoDue.slice(11, 16);
-  if (timeFormat === "24h") return rawTime;
-  const parts = rawTime.split(":");
-  const hour = parseInt(parts[0], 10);
-  const min = parts[1];
-  if (isNaN(hour)) return rawTime;
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const h12 = hour % 12 || 12;
-  return `${h12}:${min} ${ampm}`;
 }
 
 /** Get active calendar month and year */
@@ -374,7 +355,7 @@ export function showDayEventsModal(dateStr) {
     events.forEach((e) => {
       const course = Store.course(e.courseId);
       const courseName = course ? (course.code || course.title) : "General";
-      const timePart = formatEventTime(e.due, cfg.timeFormat);
+      const timePart = fmtTime(e.due, cfg.timeFormat) || "All day";
       body += `
         <div  class="card u-row-between-12">
           <div class="u-minw-0">
@@ -413,66 +394,6 @@ export function afterCalendar(root) {
       Router.scheduleRender();
     });
   }
-
-  // Add academic calendar button
-  const btnAcademicCal = q("#btnAcademicCal", container);
-  if (btnAcademicCal) {
-    btnAcademicCal.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      academicCalendarModal();
-    });
-  }
-
-  // Month navigation (◄ Previous / Next ► / Today)
-  qa('[data-act="cal-prev"]', container).forEach((btn) => {
-    btn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      stepCalendarMonth(-1);
-    });
-  });
-
-  qa('[data-act="cal-next"]', container).forEach((btn) => {
-    btn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      stepCalendarMonth(1);
-    });
-  });
-
-  qa('[data-act="cal-today"]', container).forEach((btn) => {
-    btn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      jumpToToday();
-    });
-  });
-
-  // Day number click or "+X more" click to view all events on that day
-  qa('[data-act="cal-day-view"]', container).forEach((btn) => {
-    btn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      const dateStr = btn.getAttribute("data-date");
-      if (dateStr) showDayEventsModal(dateStr);
-    });
-  });
-
-  // Empty day click to quickly create an event on that date
-  qa('[data-act="cal-day-new"]', container).forEach((btn) => {
-    btn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      const dateStr = btn.getAttribute("data-date");
-      eventModal(null, dateStr ? { due: dateStr } : {});
-    });
-  });
-
-  // New event button
-  const btnNew = q("#btnCalNewEvent", container);
-  if (btnNew) {
-    btnNew.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      const { month, year } = getActiveCalendarMonthYear();
-      const defaultDate = formatYmd(year, month, 15);
-      eventModal(null, { due: defaultDate });
-    });
-  }
 }
 
 /** Full-page Calendar view function */
@@ -483,7 +404,6 @@ export function calendarView() {
 export { academicCalendarModal };
 
 export const calendarViewDef = {
-  title: "Calendar",
   fn: calendarView,
   after: afterCalendar,
 };

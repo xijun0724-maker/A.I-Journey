@@ -3,12 +3,10 @@
  */
 
 import { Store } from "../../core/store.js";
-import { UI, UIState } from "../../core/state.js";
-import { Router } from "../../core/router.js";
 import { esc, uid } from "../../utils/helpers.js";
 import { q, toast } from "../../utils/dom.js";
 import { modal } from "../../utils/feedback.js";
-import { courseSelectOptions } from "../shared.js";
+import { courseSelectOptions, commit, defaultCourseId } from "../shared.js";
 
 export function readingModal(readingId) {
   const r = readingId
@@ -20,14 +18,7 @@ export function readingModal(readingId) {
     '" placeholder="Ch. 6 - Hash Tables"></label>' +
     '<div class="grid g2">' +
     '<label class="fld"><span>Course</span><select id="rdCourse">' +
-    courseSelectOptions(
-      r
-        ? r.courseId
-        : UIState.courseId !== "all"
-          ? UIState.courseId
-          : Store.db.courses[0] && Store.db.courses[0].id,
-      false,
-    ) +
+    courseSelectOptions(defaultCourseId(r), false) +
     "</select></label>" +
     '<label class="fld"><span>Week</span><input id="rdWeek" type="number" min="1" max="30" value="' +
     esc(r && r.week ? r.week : "") +
@@ -102,10 +93,7 @@ export function readingModal(readingId) {
         };
         if (r) Object.assign(r, payload);
         else Store.db.readings.push(Object.assign({ id: uid("rdg") }, payload));
-        Store.saveNow();
-        closeFn();
-        Router.scheduleRender();
-        UI.toastSaved();
+        commit(closeFn);
       });
       const d = q("#rdDel", m);
       if (d)
@@ -114,10 +102,7 @@ export function readingModal(readingId) {
           Store.db.events.forEach(function (e) {
             e.readingIds = (e.readingIds || []).filter((id) => id !== r.id);
           });
-          Store.saveNow();
-          closeFn();
-          Router.scheduleRender();
-          toast("Reading removed.", "ok");
+          commit(closeFn, "Reading removed.", "ok");
         });
     },
   });

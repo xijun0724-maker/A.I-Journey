@@ -53,17 +53,7 @@ describe("Store empty state", () => {
   });
 });
 
-describe("Planner.clear", () => {
-  it("clears plan and planMeta", () => {
-    Store.db.plan = [{ id: "p1" }];
-    Store.db.planMeta = { generatedAt: "2026-01-01" };
-    Planner.clear();
-    expect(Store.db.plan).toEqual([]);
-    expect(Store.db.planMeta).toBeNull();
-  });
-});
-
-describe("Planner.generate", () => {
+describe("Planner commit of a generated schedule", () => {
   it("reports work that cannot fit configured study capacity", () => {
     Store.db.settings.studyWeekday = 0;
     Store.db.settings.studyWeekend = 0;
@@ -81,7 +71,7 @@ describe("Planner.generate", () => {
       },
     ];
 
-    const meta = Planner.generate();
+    const meta = Planner.commit(Planner.generateInteractive());
 
     expect(meta.totalMinutes).toBe(0);
     expect(meta.unscheduled).toContain("Large assignment — Work");
@@ -105,7 +95,7 @@ describe("Planner.generate", () => {
       },
     ];
 
-    const meta = Planner.generate({ weeks: 2 });
+    const meta = Planner.commit(Planner.generateInteractive({ weeks: 2 }));
 
     expect(meta.totalMinutes).toBeGreaterThan(0);
     expect(
@@ -386,7 +376,7 @@ describe("Planner scheduler contract", () => {
     expect(meta.totalMinutes).toBe(preview.meta.totalMinutes);
   });
 
-  it("generate produces the same schedule as the preview it wraps", () => {
+  it("commit produces the same schedule as the preview it wraps", () => {
     seedWork();
     const preview = Planner.generateInteractive({ weeks: 2 });
     const previewShape = {
@@ -395,7 +385,7 @@ describe("Planner scheduler contract", () => {
       labels: preview.planItems.map((b) => b.label),
     };
 
-    const meta = Planner.generate({ weeks: 2 });
+    const meta = Planner.commit(Planner.generateInteractive({ weeks: 2 }));
 
     expect(meta).toBe(Store.db.planMeta);
     expect(Store.db.plan).toHaveLength(previewShape.blocks);

@@ -216,6 +216,70 @@ describe("WCAG AA contrast", () => {
   });
 });
 
+describe("collapsed rail brand", () => {
+  const sidebar = CSS_FILES.find((f) => f.name === "sidebar.css").css;
+
+  /** Text of the first rule whose selector list starts with `selector`. */
+  function ruleBody(selector) {
+    const at = sidebar.indexOf(selector);
+    if (at === -1) throw new Error("selector not found: " + selector);
+    const open = sidebar.indexOf("{", at);
+    return sidebar.slice(open + 1, sidebar.indexOf("}", open));
+  }
+
+  /* The brand is the app's home button. In the icon rail it is the one tile
+     that must not join the grey-on-grey nav icons — and must not be hidden,
+     which is where it started. */
+  it("stays visible in the rail", () => {
+    const hideList = ruleBody("#app.sidebar-collapsed .sb-title");
+    expect(hideList).toContain("display: none !important");
+    expect(hideList).not.toContain(".sb-brand");
+  });
+
+  it("wears the accent tint, not the nav grey", () => {
+    const base = ruleBody("#app.sidebar-collapsed .sb-brand {");
+    expect(base).toContain("color: var(--pen)");
+    expect(base).toContain("background: var(--pen-soft)");
+
+    const hover = ruleBody("#app.sidebar-collapsed .sb-brand:hover");
+    expect(hover).toContain("var(--blue-15)");
+    expect(hover).not.toContain("rgba(24, 24, 27");
+  });
+});
+
+describe("model picker popup", () => {
+  /* layout.css ships `#app *{ position: relative; z-index: 1 }`, which outranks
+     any bare class — so a panel styled as `.model-dropdown{ position: absolute }`
+     was laid out in flow instead and lived *inside* the composer: it stretched
+     the input pill to the height of the whole catalogue and parked the pill at
+     the top of that column. The escape hatch is the `#app ` prefix, and the
+     open state needs it too, or `display: flex` loses to the id-scoped
+     `display: none` that keeps the panel collapsed. */
+  const chat = CSS_FILES.find((f) => f.name === "chat.css").css.replace(
+    /\r\n/g,
+    "\n",
+  );
+
+  it("anchors the panel out of flow above the composer", () => {
+    const rule = /([^{}]+)\{([^{}]*bottom:\s*100%[^{}]*)\}/.exec(chat);
+    expect(rule, "no rule sits the panel above the pill").toBeTruthy();
+    expect(rule[1]).toContain("#app");
+    expect(rule[2]).toContain("position: absolute");
+    // It opens upward from the bottom of the window, so it needs its own cap.
+    expect(rule[2]).toContain("max-height");
+  });
+
+  it("opens with a selector that outranks the closed state", () => {
+    const at = chat.indexOf(".model-dropdown.open");
+    expect(at).toBeGreaterThan(-1);
+    const selector = chat
+      .slice(chat.lastIndexOf("}", at) + 1, chat.indexOf("{", at))
+      .trim();
+    expect(selector).toContain("#app");
+    expect(selector).toContain(".model-dropdown.open");
+  });
+});
+
 describe("canonical width breakpoints", () => {
   /* Scale documented in src/styles/index.css. 980/981 are the sidebar
      drawer pair and must stay (chrome.js DRAWER_QUERY depends on 980). */

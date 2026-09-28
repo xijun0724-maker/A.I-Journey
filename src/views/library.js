@@ -273,7 +273,6 @@ export function afterLibrary(root) {
 }
 
 export const libraryView = {
-  title: "Library",
   fn: library,
   after: afterLibrary,
 };

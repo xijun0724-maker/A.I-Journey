@@ -4,7 +4,7 @@
  */
 
 import { Store } from "../core/store.js";
-import { UI, UIState } from "../core/state.js";
+import { UI, UIState } from "../core/scope.js";
 import { Dashboard } from "../domain/dashboard.js";
 import { esc, sortBy, safeCssUrl } from "../utils/helpers.js";
 import { empty, pageHead } from "./shared.js";
@@ -193,21 +193,6 @@ export function courses() {
 
     out +=
       "</div>" + // closes #coursesFilterDropdown
-      // Hidden select for accessibility & automated tests
-      '<select id="coursesFilterSelect" class="sr-only" aria-hidden="true" tabindex="-1">' +
-      FILTER_OPTIONS.filter((o) => o.value)
-        .map(
-          (o) =>
-            '<option value="' +
-            o.value +
-            '"' +
-            (viewFilterState.filter === o.value ? " selected" : "") +
-            ">" +
-            esc(o.label) +
-            "</option>",
-        )
-        .join("") +
-      "</select>" +
       "</div>" + // closes .moodle-filter-wrap
       '<div class="course-search-wrap">' +
       '<input type="search" id="coursesSearchInput" class="course-search-input" placeholder="Search" aria-label="Search courses" value="' +
@@ -362,7 +347,6 @@ export function bindCoursesView(root) {
   const filterBtn = q("#coursesFilterBtn", root);
   const filterDropdown = q("#coursesFilterDropdown", root);
   const filterBtnLabel = q("#coursesFilterBtnLabel", root);
-  const filterSelect = q("#coursesFilterSelect", root);
   const searchInput = q("#coursesSearchInput", root);
   const sortSelect = q("#coursesSortSelect", root);
   const viewSelect = q("#coursesViewSelect", root);
@@ -378,6 +362,18 @@ export function bindCoursesView(root) {
   qa(".lms-kebab-popover", root).forEach((el) => {
     el.style.display = "none";
   });
+
+  function closeMenus() {
+    qa(".lms-kebab-popover", root).forEach((el) => {
+      el.style.display = "none";
+    });
+    qa(".lms-kebab-btn", root).forEach((b) => {
+      b.classList.remove("active");
+    });
+    qa(".lms-course-card", root).forEach((c) => {
+      c.classList.remove("menu-open");
+    });
+  }
 
   function applyFilter() {
     if (!grid) return;
@@ -455,7 +451,6 @@ export function bindCoursesView(root) {
         const val = item.getAttribute("data-filter-val");
         if (!val) return;
         viewFilterState.filter = val;
-        if (filterSelect) filterSelect.value = val;
 
         const textSpan = q(".dropdown-text", item);
         if (filterBtnLabel && textSpan) {
@@ -479,15 +474,6 @@ export function bindCoursesView(root) {
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
       viewFilterState.search = e.target.value;
-      applyFilter();
-    });
-  }
-
-  if (filterSelect) {
-    filterSelect.addEventListener("change", (e) => {
-      viewFilterState.filter = e.target.value;
-      const cur = FILTER_OPTIONS.find((o) => o.value === e.target.value);
-      if (cur && filterBtnLabel) filterBtnLabel.textContent = cur.label;
       applyFilter();
     });
   }
@@ -536,7 +522,6 @@ export function bindCoursesView(root) {
       viewFilterState.search = "";
       viewFilterState.filter = "all";
       if (searchInput) searchInput.value = "";
-      if (filterSelect) filterSelect.value = "all";
       if (filterBtnLabel) filterBtnLabel.textContent = "All";
       if (filterDropdown) {
         qa(".moodle-dropdown-item", filterDropdown).forEach((it) => {
@@ -561,15 +546,7 @@ export function bindCoursesView(root) {
 
       const isHidden = menu.style.display === "none";
       // Close other menus and remove active states first
-      qa(".lms-kebab-popover", root).forEach((el) => {
-        el.style.display = "none";
-      });
-      qa(".lms-kebab-btn", root).forEach((b) => {
-        b.classList.remove("active");
-      });
-      qa(".lms-course-card", root).forEach((c) => {
-        c.classList.remove("menu-open");
-      });
+      closeMenus();
 
       if (isHidden) {
         menu.style.display = "block";
@@ -593,10 +570,7 @@ export function bindCoursesView(root) {
   qa(".lms-menu-item", root).forEach((item) => {
     item.addEventListener("click", (e) => {
       e.stopPropagation();
-      const popover = item.closest(".lms-kebab-popover");
-      if (popover) popover.style.display = "none";
-      qa(".lms-kebab-btn", root).forEach((b) => b.classList.remove("active"));
-      qa(".lms-course-card", root).forEach((c) => c.classList.remove("menu-open"));
+      closeMenus();
       const action = item.getAttribute("data-act");
       const id = item.getAttribute("data-id");
       if (action === "toggle-star-course") {
@@ -609,9 +583,8 @@ export function bindCoursesView(root) {
 
   // Global click & Escape listener closes open dropdowns
   if (_docListenerCtl) _docListenerCtl.abort();
-  _docListenerCtl =
-    typeof AbortController !== "undefined" ? new AbortController() : null;
-  const docSignal = _docListenerCtl ? { signal: _docListenerCtl.signal } : {};
+  _docListenerCtl = new AbortController();
+  const docSignal = { signal: _docListenerCtl.signal };
 
   document.addEventListener(
     "click",
@@ -621,15 +594,7 @@ export function bindCoursesView(root) {
         if (filterBtn) filterBtn.setAttribute("aria-expanded", "false");
       }
       if (!e.target.closest(".lms-kebab-wrap")) {
-        qa(".lms-kebab-popover", root).forEach((el) => {
-          el.style.display = "none";
-        });
-        qa(".lms-kebab-btn", root).forEach((b) => {
-          b.classList.remove("active");
-        });
-        qa(".lms-course-card", root).forEach((c) => {
-          c.classList.remove("menu-open");
-        });
+        closeMenus();
       }
     },
     docSignal,
@@ -643,15 +608,7 @@ export function bindCoursesView(root) {
           filterDropdown.style.display = "none";
           if (filterBtn) filterBtn.setAttribute("aria-expanded", "false");
         }
-        qa(".lms-kebab-popover", root).forEach((el) => {
-          el.style.display = "none";
-        });
-        qa(".lms-kebab-btn", root).forEach((b) => {
-          b.classList.remove("active");
-        });
-        qa(".lms-course-card", root).forEach((c) => {
-          c.classList.remove("menu-open");
-        });
+        closeMenus();
       }
     },
     docSignal,
@@ -662,7 +619,6 @@ export function bindCoursesView(root) {
 }
 
 export const coursesView = {
-  title: "Roadmap",
   fn: courses,
   after: bindCoursesView,
 };

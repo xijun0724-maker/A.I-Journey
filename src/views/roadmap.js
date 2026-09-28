@@ -1,4 +1,5 @@
-import { UIState } from "../core/state.js";
+import { PNU_REQUIREMENT_ROW } from "../config/standards/pnu.js";
+import { UIState } from "../core/scope.js";
 import { Coach } from "../domain/coach.js";
 import { Tasks } from "../domain/tasks.js";
 import { esc, sortBy, groupBy } from "../utils/helpers.js";
@@ -13,6 +14,7 @@ import {
   eventProgress,
   priBadge,
   docs,
+  tableHtml,
 } from "./shared.js";
 import { courses, bindCoursesView } from "./courses.js";
 
@@ -179,12 +181,10 @@ function renderTables() {
     );
   }
   docsWithTables.forEach(function (d) {
-    const requirementPattern =
-      /course requirements|formative assessment|summative assessment|accomplished worksheets|topic facilitation|discussion responses|final examinations?|presentation\s*\/\s*critique|learning environment management plan|e-?portfolio|total\s+100%/i;
     h += '<h3 class="mt">' + esc(d.name) + "</h3>";
     d.tables.forEach(function (t, i) {
       const rows = (t.rows || []).filter(function (row) {
-        return requirementPattern.test(row.join(" "));
+        return PNU_REQUIREMENT_ROW.test(row.join(" "));
       });
       if (!rows.length) return;
       h +=
@@ -194,53 +194,22 @@ function renderTables() {
         ' <i class="msep"></i> ' +
         Math.round((t.confidence || 0.5) * 100) +
         "% confidence</div>";
-      h +=
-        '<div class="tbl-wrap mb scroll-md"><table aria-label="Extracted tables"><tbody>';
-      if (t.header)
-        h +=
-          "<tr>" +
-          t.header
-            .map(function (c) {
-              return "<th>" + esc(c) + "</th>";
-            })
-            .join("") +
-          "</tr>";
-      rows.forEach(function (row) {
-        h +=
-          "<tr>" +
-          row
-            .map(function (c) {
-              return "<td>" + esc(c) + "</td>";
-            })
-            .join("") +
-          "</tr>";
+      h += tableHtml({
+        label: "Extracted tables",
+        cls: "mb scroll-md",
+        header: t.header,
+        rows: rows,
       });
-      h += "</tbody></table></div>";
     });
   });
   h += "</div>";
   return h;
 }
 
-/**
- * Render PNU Curriculum Matrix table — Week × ILOs × Content × TLA × Assessment.
- * Mirrors the session-plan table structure used in PNU TEDPATH syllabi.
- * @param {Object} course - Active course
- * @param {Array} allLessons - Lessons/topics from syllabus
- * @param {Array} allEvents - Course events/assessments
- * @param {Array} _allReadings - Course readings (unused: the matrix shows ILOs, content, TLA and assessments)
- * @returns {string} HTML markup
- */
-function renderCurriculumMatrix(course, allLessons, allEvents, _allReadings) {
-  if (!course) return "";
+function groupLessonsByWeek(course, allLessons) {
   const courseLessons = (allLessons || []).filter(
     (l) => l.courseId === course.id,
   );
-  const courseEvents = (allEvents || []).filter(
-    (e) => e.courseId === course.id,
-  );
-  if (!courseLessons.length) return "";
-
   const byWeek = groupBy(courseLessons, (l) => {
     const w = Number(l.week);
     return Number.isFinite(w) && w > 0 ? w : 1;
@@ -249,6 +218,27 @@ function renderCurriculumMatrix(course, allLessons, allEvents, _allReadings) {
     .map(Number)
     .filter((w) => Number.isFinite(w) && byWeek[w] && byWeek[w].length)
     .sort((a, b) => a - b);
+  return { courseLessons, byWeek, weeks };
+}
+
+/**
+ * Render PNU Curriculum Matrix table — Week × ILOs × Content × TLA × Assessment.
+ * Mirrors the session-plan table structure used in PNU TEDPATH syllabi.
+ * @param {Object} course - Active course
+ * @param {Array} allLessons - Lessons/topics from syllabus
+ * @param {Array} allEvents - Course events/assessments
+ * @returns {string} HTML markup
+ */
+function renderCurriculumMatrix(course, allLessons, allEvents) {
+  if (!course) return "";
+  const { courseLessons, byWeek, weeks } = groupLessonsByWeek(
+    course,
+    allLessons,
+  );
+  const courseEvents = (allEvents || []).filter(
+    (e) => e.courseId === course.id,
+  );
+  if (!courseLessons.length) return "";
 
   let h =
     '<div class="tbl-wrap scroll-md"><table class="curriculum-matrix-table" aria-label="Curriculum matrix">' +
@@ -356,8 +346,9 @@ function renderVisualRoadmapTree(
     );
   }
 
-  const courseLessons = (allLessons || []).filter(
-    (l) => l.courseId === course.id,
+  const { courseLessons, byWeek, weeks } = groupLessonsByWeek(
+    course,
+    allLessons,
   );
   const courseEvents = (allEvents || []).filter(
     (e) => e.courseId === course.id,
@@ -365,16 +356,6 @@ function renderVisualRoadmapTree(
   const courseReadings = (allReadings || []).filter(
     (r) => r.courseId === course.id,
   );
-
-  // Group lessons by week
-  const byWeek = groupBy(courseLessons, (l) => {
-    const w = Number(l.week);
-    return Number.isFinite(w) && w > 0 ? w : 1;
-  });
-  const weeks = Object.keys(byWeek)
-    .map(Number)
-    .filter((w) => Number.isFinite(w) && byWeek[w] && byWeek[w].length)
-    .sort((a, b) => a - b);
 
   if (!courseLessons.length) {
     return (
@@ -631,12 +612,7 @@ function renderVisualRoadmapTree(
 
   // ── Dual-view wrapper: Visual Tree | Curriculum Matrix ─────────────────
   const view = (UIState && UIState.roadmapView) || "tree";
-  const matrixHtml = renderCurriculumMatrix(
-    course,
-    allLessons,
-    allEvents,
-    allReadings,
-  );
+  const matrixHtml = renderCurriculumMatrix(course, allLessons, allEvents);
   const showMatrix = view === "matrix" && matrixHtml;
 
   const tabBar =
@@ -672,7 +648,6 @@ export {
   renderDeadlines,
   renderReadings,
   renderTables,
-  renderCurriculumMatrix,
 };
 
 export function roadmap() {
@@ -684,7 +659,6 @@ export function roadmap() {
 }
 
 export const roadmapView = {
-  title: "Courses & Roadmap",
   fn: roadmap,
   after: bindCoursesView,
 };

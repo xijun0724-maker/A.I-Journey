@@ -8,7 +8,7 @@
  */
 
 import { CFG } from "../config/constants.js";
-import { debounce, fmtBytes, slug, uid } from "../utils/helpers.js";
+import { fmtBytes, slug, uid } from "../utils/helpers.js";
 import { toast } from "../utils/dom.js";
 import { createBlankDB, migrateSchema } from "../config/settings.js";
 import { stripKey } from "../utils/secure.js";
@@ -124,26 +124,6 @@ function evictIfNeeded() {
     }
   } catch (_e) {
     console.warn("Store: eviction failed", _e);
-  }
-}
-
-/**
- * Validate that an object is a plain, non-circular object safe for JSON serialization.
- */
-function isValidData(value) {
-  if (!value || typeof value !== "object") return false;
-  try {
-    const seen = new WeakSet();
-    JSON.stringify(value, function (_key, val) {
-      if (typeof val === "object" && val !== null) {
-        if (seen.has(val)) return false;
-        seen.add(val);
-      }
-      return val;
-    });
-    return true;
-  } catch (_e) {
-    return false;
   }
 }
 
@@ -435,33 +415,11 @@ function persist() {
 }
 
 /**
- * Debounced save (250ms)
- */
-const save = debounce(function () {
-  persist();
-}, 250);
-
-/**
  * Immediate save
  * @returns {boolean} False when quarantined or the write failed
  */
 function saveNow() {
   return persist();
-}
-
-/**
- * Replace the entire database with a new object (seed, migration, reset).
- * Validates the new object before accepting it.
- * @param {Object} newDb - The new database object
- */
-function update(newDb) {
-  if (!isValidData(newDb)) {
-    console.error("Store.update: rejected invalid data");
-    return;
-  }
-  db = maybeSeal(newDb);
-  saveNow();
-  emit("update", db);
 }
 
 /**
@@ -779,6 +737,38 @@ function cidOf(msg) {
 let _activeCid;
 
 /**
+ * Trim one conversation's own tail, and only its own.
+ *
+ * This was `list.slice(-max)` over the flat log, so the budget was spent by
+ * whichever conversation was being written to: once a new chat passed the cap
+ * every older conversation was gone — every message, and with it the Recents
+ * row that named it. A student who kept one long chat lost the others without
+ * a word. The cap is a per-conversation budget now: writing evicts the oldest
+ * messages of *that* conversation, and nothing else moves.
+ *
+ * Messages stored before cids existed form the legacy conversation and are
+ * only ever evicted by a write into that same group.
+ */
+function trimConversation(list, cid, max) {
+  let total = 0;
+  for (let i = 0; i < list.length; i++) {
+    if (cidOf(list[i]) === cid) total++;
+  }
+  if (total <= max) return list;
+
+  let drop = total - max;
+  const kept = [];
+  for (let i = 0; i < list.length; i++) {
+    if (drop > 0 && cidOf(list[i]) === cid) {
+      drop--;
+      continue;
+    }
+    kept.push(list[i]);
+  }
+  return kept;
+}
+
+/**
  * The one write path both appends share — an *internal* seam, not part of
  * the interface: cid adoption, trimming and persistence live here so
  * `append`/`appendTo` differ in exactly one fact a caller can see (does the
@@ -793,8 +783,7 @@ function writeMessage(msg, cid, opens) {
   if (opens) _activeCid = cid;
   const list = db.chat || [];
   list.push(msg);
-  const max = CFG.maxChatMessages || 100;
-  db.chat = list.length > max ? list.slice(list.length - max) : list;
+  db.chat = trimConversation(list, cid, CFG.maxChatMessages || 100);
   notifyChange("chat", "append", cid);
   return cid;
 }
@@ -980,12 +969,9 @@ export const Store = {
   blank,
   load,
   hydrateFromIDB,
-  persist,
   isQuarantined,
   deduplicateData,
-  save,
   saveNow,
-  update,
   on,
   emit,
   usage,
@@ -1001,7 +987,6 @@ export const Store = {
   // Deep entity namespaces
   courses: coursesNamespace,
   events: eventsNamespace,
-  tasks: eventsNamespace,
   lessons: lessonsNamespace,
   readings: readingsNamespace,
   documents: documentsNamespace,
@@ -1009,5 +994,3 @@ export const Store = {
   plan: planNamespace,
   settings: settingsNamespace,
 };
-
-export default Store;

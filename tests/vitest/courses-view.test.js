@@ -11,7 +11,7 @@ vi.mock("../../src/core/router.js", () => {
 });
 
 import { Store } from "../../src/core/store.js";
-import { UIState } from "../../src/core/state.js";
+import { UIState } from "../../src/core/scope.js";
 import { courses, bindCoursesView, resetCoursesViewState } from "../../src/views/courses.js";
 import { initActionDelegation } from "../../src/app/actions-delegation.js";
 

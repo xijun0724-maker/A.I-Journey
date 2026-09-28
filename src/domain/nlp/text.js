@@ -13,7 +13,9 @@ export const TYPE_RULES = [
   },
   {
     type: "exam",
-    re: /\b(midterm|mid-?term exam|final exam|finals|examination|exam)\b/i,
+    // Plural forms matter: "Final Examinations - April 13-17, 2026" is how
+    // the reference syllabi announce the one deadline they actually date.
+    re: /\b(midterm|mid-?term exams?|final exams?|finals|examinations?|exams?)\b/i,
   },
   { type: "quiz", re: /\b(quiz|quizzes)\b/i },
   {
@@ -52,7 +54,12 @@ export function weekOf(line) {
     !/[:\-–—]/.test(line.slice(idx + m[0].length, idx + m[0].length + 2))
   )
     return null;
-  return parseInt(m[1], 10);
+  const n = parseInt(m[1], 10);
+  // A term-length syllabus has no week past 20. "Week 35" in a source
+  // document is a typo or a misread, and a lesson filed under it would put
+  // the roadmap months past the end of term. sessionOf() caps at 20 too.
+  if (n < 1 || n > 20) return null;
+  return n;
 }
 
 export function sessionOf(line) {
@@ -151,6 +158,38 @@ export function isSyllabusAssessmentLine(line) {
   return /\b(?:midterm|mid-?term|final exam(?:ination)?|exam(?:ination)?|quiz(?:zes)?|assignment|presentation|portfolio|worksheet|discussion question|lemp|learning environment management plan|submission|project|rubric|reflection|journal|report)\b/i.test(
     value,
   );
+}
+
+/**
+ * Content that must never become a task or a topic.
+ *
+ * Three shapes, all of them present in the reference syllabi:
+ *   - a bibliography entry. Every citation carries a parenthesised year, and
+ *     nothing else in a syllabus parenthesises a bare year, so `(2012)` is a
+ *     reliable marker; the initials form catches the rest.
+ *   - a running header or cover stamp, repeated on every page.
+ *   - a paragraph of prose, which describes the course rather than asking for
+ *     anything.
+ *
+ * Applied only where tasks and topics are harvested, never to the document
+ * text itself: the tutor still indexes and quotes every line.
+ */
+const CITATION_RE =
+  /\(\d{4}[a-z]?\)|\bet\s+al\.,?|\b[A-Z][A-Za-z'\u2019.-]+,\s+(?:[A-Z]\.\s*){1,3}(?:,|&|\band\b)/;
+const RUNNING_HEADER_RE =
+  /^(?:teacher\s+education\s+pathways|obe\s+course|ucm\s+obe\s+course|pnu\s+philosophy|course\s+syllabus)\b/i;
+const PROSE_LIMIT = 200;
+
+export function isJunkLine(line) {
+  // Test the cleaned form, not the raw line: a bullet or a stray space in
+  // front of "Course syllabus" would otherwise slip past an anchored match,
+  // while `clean()` — which is what the title is built from — strips it.
+  const s = clean(line);
+  if (!s) return true;
+  if (CITATION_RE.test(s)) return true;
+  if (RUNNING_HEADER_RE.test(s)) return true;
+  if (s.length > PROSE_LIMIT) return true;
+  return false;
 }
 
 export function uniqueCleanLines(lines, limit) {

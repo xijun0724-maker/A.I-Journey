@@ -11,10 +11,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   act,
   KNOWN_ACTIONS,
-  buildDispatch,
+  ACTIONS,
 } from "../../src/core/actions/index.js";
 import { Router } from "../../src/core/router.js";
-import { UIState } from "../../src/core/state.js";
+import { UIState } from "../../src/core/scope.js";
 
 const DIRECT_ACTIONS = [
   "nav",
@@ -50,8 +50,7 @@ afterEach(() => {
 
 describe("the registry is a single source of truth", () => {
   it("has no dispatch-table handler that KNOWN_ACTIONS does not know", () => {
-    const table = buildDispatch(null, null, null);
-    const unknown = Object.keys(table).filter((n) => !KNOWN_ACTIONS.has(n));
+    const unknown = Object.keys(ACTIONS).filter((n) => !KNOWN_ACTIONS.has(n));
     expect(unknown).toEqual([]);
   });
 

@@ -1,26 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-  effort, estimateSubtask, subtasksFor, retimeSubtasks,
-  recompute, reason, ranked, remainingMinutes,
+  subtasksFor, recompute, reason, ranked,
 } from '../../src/domain/tasks.js';
-
-describe('estimateSubtask', () => {
-  it('returns at least 15 minutes', () => {
-    expect(estimateSubtask('assignment', 'write intro', 50, 6)).toBeGreaterThanOrEqual(15);
-  });
-
-  it('scales up for write/draft tasks', () => {
-    const write = estimateSubtask('assignment', 'write essay', 50, 6);
-    const read = estimateSubtask('assignment', 'read chapter', 50, 6);
-    expect(write).toBeGreaterThanOrEqual(read);
-  });
-
-  it('scales down for read/skim tasks', () => {
-    const base = estimateSubtask('assignment', 'something', 50, 6);
-    const skim = estimateSubtask('assignment', 'skim article', 50, 6);
-    expect(skim).toBeLessThanOrEqual(base);
-  });
-});
 
 describe('subtasksFor', () => {
   it('returns array of subtask objects', () => {
@@ -45,28 +26,6 @@ describe('subtasksFor', () => {
     const subs = subtasksFor('project', 80, null, due);
     const dates = subs.filter(s => s.due).map(s => s.due);
     expect(dates.length).toBeGreaterThan(0);
-  });
-});
-
-describe('retimeSubtasks', () => {
-  it('returns event unchanged if no due date', () => {
-    const e = { subtasks: [{ done: false, due: null }] };
-    const result = retimeSubtasks(e, null);
-    expect(result).toBe(e);
-  });
-
-  it('respreads open subtask dates', () => {
-    const e = {
-      subtasks: [
-        { done: false, due: null },
-        { done: true, due: '2026-01-01' },
-        { done: false, due: null },
-      ],
-    };
-    const newDue = new Date(Date.now() + 10 * 86400000);
-    retimeSubtasks(e, newDue);
-    const open = e.subtasks.filter(s => !s.done);
-    open.forEach(s => expect(s.due).not.toBeNull());
   });
 });
 

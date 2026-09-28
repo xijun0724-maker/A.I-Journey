@@ -4,11 +4,10 @@
 
 import { CFG } from "../../config/constants.js";
 import { Store } from "../../core/store.js";
-import { UI } from "../../core/state.js";
-import { Router } from "../../core/router.js";
 import { esc, uid } from "../../utils/helpers.js";
 import { q, toast } from "../../utils/dom.js";
 import { modal } from "../../utils/feedback.js";
+import { commit } from "../shared.js";
 
 export function courseModal(courseId) {
   const c = courseId ? Store.course(courseId) : null;
@@ -115,10 +114,7 @@ export function courseModal(courseId) {
               payload,
             ),
           );
-        Store.saveNow();
-        closeFn();
-        Router.scheduleRender();
-        UI.toastSaved(c ? "Course updated." : "Course created.");
+        commit(closeFn, c ? "Course updated." : "Course created.");
       });
     },
   });

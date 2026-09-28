@@ -206,13 +206,6 @@ RAG.chunkRanges = function (text) {
   return out;
 };
 
-RAG.chunkText = function (text) {
-  const src = String(text || "");
-  return RAG.chunkRanges(src).map(function (r) {
-    return src.substr(r.start, r.len);
-  });
-};
-
 RAG.chunkTextOf = function (c) {
   if (typeof c.len !== "number") return c.text || "";
   const doc = Store.doc(c.docId);

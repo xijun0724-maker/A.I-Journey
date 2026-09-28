@@ -5,6 +5,7 @@
 
 import { loadPdf, loadMammoth } from "./cdn.js";
 import { KIND_LABEL } from "../config/constants.js";
+import { PNU_REQUIREMENT_ROW } from "../config/standards/pnu.js";
 
 function kindFromName(name) {
   const lower = (name || "").toLowerCase();
@@ -171,18 +172,9 @@ async function extractPdf(file, onProgress) {
         return row.length >= 2;
       });
     if (rows.length < 2) return null;
-    const requirementPattern =
-      /course requirements|formative assessment|summative assessment|accomplished worksheets|topic facilitation|discussion responses|final examinations?|presentation\s*\/\s*critique|learning environment management plan|e-?portfolio|total\s+100%/i;
-    const hasHeading = rows.some(function (row) {
-      return /course requirements/i.test(row.join(" "));
+    const relevantRows = rows.filter(function (row) {
+      return PNU_REQUIREMENT_ROW.test(row.join(" "));
     });
-    const relevantRows = hasHeading
-      ? rows.filter(function (row) {
-          return requirementPattern.test(row.join(" "));
-        })
-      : rows.filter(function (row) {
-          return requirementPattern.test(row.join(" "));
-        });
     if (relevantRows.length < 1) return null;
     return {
       page: pageNumber,

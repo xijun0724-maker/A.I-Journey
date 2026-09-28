@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Router } from "../../src/core/router.js";
 import { Store } from "../../src/core/store.js";
-import { UIState } from "../../src/core/state.js";
+import { UIState } from "../../src/core/scope.js";
 import { esc } from "../../src/utils/helpers.js";
 
 describe("Router.mark() SVG generation", () => {
@@ -135,6 +135,31 @@ describe("Router navigation", () => {
     expect(typeof Router.onStoreChange).toBe("function");
     expect(typeof Router.navigate).toBe("function");
     expect(typeof Router.init).toBe("function");
+  });
+});
+
+/** The app's front door: a blank session opens on the assistant landing, so
+ *  no syllabus import is needed before the first question. */
+describe("start view", () => {
+  afterEach(() => {
+    delete Router.viewDefs["assistant"];
+    UIState.view = "dashboard";
+  });
+
+  it("opens the assistant landing when the view is unset", () => {
+    Router.registerView("assistant", {
+      title: "Journey A.I",
+      fn: () => "<div>landing</div>",
+    });
+    document.body.innerHTML = '<div id="viewRoot"></div><div id="navMain"></div>';
+    /* An unrecognised (i.e. first-visit) view resolves through the same
+       default the router uses on boot. */
+    UIState.view = "not-a-real-view";
+
+    Router.render();
+
+    expect(UIState.view).toBe("assistant");
+    expect(document.getElementById("viewRoot").textContent).toContain("landing");
   });
 });
 

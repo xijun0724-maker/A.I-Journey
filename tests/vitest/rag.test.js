@@ -97,22 +97,22 @@ describe("RAG.view", () => {
   });
 });
 
-describe("RAG.chunkText", () => {
-  it("returns array of text chunks for long text", () => {
+describe("RAG.chunkRanges", () => {
+  it("returns chunk ranges for long text", () => {
     const text =
       "First paragraph.\n\nSecond paragraph.\n\nThird paragraph.\n\nFourth paragraph with enough content to exceed the minimum chunk size threshold.";
-    const chunks = RAG.chunkText(text);
+    const chunks = RAG.chunkRanges(text);
     expect(Array.isArray(chunks)).toBe(true);
     expect(chunks.length).toBeGreaterThan(0);
   });
 
   it("returns empty array for empty text", () => {
-    expect(RAG.chunkText("")).toEqual([]);
-    expect(RAG.chunkText(null)).toEqual([]);
+    expect(RAG.chunkRanges("")).toEqual([]);
+    expect(RAG.chunkRanges(null)).toEqual([]);
   });
 
   it("returns empty for very short text (below 30 chars)", () => {
-    const chunks = RAG.chunkText("Short.");
+    const chunks = RAG.chunkRanges("Short.");
     expect(chunks.length).toBe(0);
   });
 });
@@ -335,7 +335,7 @@ describe("chunk overlap at paragraph boundaries", () => {
       { id: "ov", courseId: "c1", name: "Notes", text: paras.join("\n\n") },
     ];
     RAG.reindexAll();
-    return RAG.chunkText(Store.db.documents[0].text);
+    return Store.db.chunks.map((c) => RAG.chunkTextOf(c));
   }
 
   it("resumes the next chunk inside the previous one, so boundary sentences are shared", () => {
@@ -377,7 +377,7 @@ describe("chunk overlap at paragraph boundaries", () => {
       ).join(" ") + " Tail close.";
     Store.db.documents = [{ id: "big", courseId: "c1", name: "Big", text: big }];
     RAG.reindexAll();
-    const chunks = RAG.chunkText(big);
+    const chunks = Store.db.chunks.map((c) => RAG.chunkTextOf(c));
     expect(chunks.length).toBeGreaterThan(1);
     /* Consecutive sweep pieces still overlap. */
     for (let i = 1; i < chunks.length; i++) {

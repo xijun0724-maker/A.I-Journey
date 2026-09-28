@@ -110,16 +110,3 @@ export async function idbSet(key, value) {
     return false;
   }
 }
-
-/** Delete a key. Resolves `true` on success, `false` otherwise. */
-export async function idbDel(key) {
-  if (!idbAvailable()) return false;
-  try {
-    await runTx("readwrite", function (store) {
-      return store.delete(key);
-    });
-    return true;
-  } catch (_e) {
-    return false;
-  }
-}

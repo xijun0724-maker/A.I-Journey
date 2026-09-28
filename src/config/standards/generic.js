@@ -94,58 +94,6 @@ export const genericStandard = {
   ],
   gradingTarget: 100,
   minimumSessionCount: 1,
-  competencies: [
-    {
-      id: "learning-outcomes",
-      label: "Learning outcomes",
-      types: [
-        "exam",
-        "quiz",
-        "assignment",
-        "project",
-        "presentation",
-        "reading",
-        "other",
-      ],
-      keywords: ["objective", "outcome"],
-    },
-    {
-      id: "assessment",
-      label: "Assessment",
-      types: ["exam", "quiz", "assignment", "project", "presentation"],
-      keywords: ["grade", "rubric", "mark"],
-    },
-    {
-      id: "application",
-      label: "Applied practice",
-      types: ["lab", "project"],
-      keywords: ["practice", "workshop", "studio"],
-    },
-    {
-      id: "research",
-      label: "Research and inquiry",
-      types: ["assignment", "project"],
-      keywords: ["research", "investigation", "inquiry"],
-    },
-    {
-      id: "communication",
-      label: "Communication",
-      types: ["presentation", "assignment"],
-      keywords: ["presentation", "report", "essay", "group", "collaborative"],
-    },
-    {
-      id: "professionalism",
-      label: "Professional practice",
-      types: [],
-      keywords: [
-        "ethics",
-        "integrity",
-        "professional",
-        "reflection",
-        "portfolio",
-      ],
-    },
-  ],
 };
 
 export default genericStandard;

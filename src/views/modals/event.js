@@ -6,13 +6,12 @@
 
 import { CFG } from "../../config/constants.js";
 import { Store } from "../../core/store.js";
-import { UI, UIState } from "../../core/state.js";
-import { Router } from "../../core/router.js";
+import { UIState } from "../../core/scope.js";
 import { Tasks } from "../../domain/tasks.js";
 import { esc, uid } from "../../utils/helpers.js";
 import { q, toast } from "../../utils/dom.js";
 import { modal, confirm } from "../../utils/feedback.js";
-import { courseSelectOptions } from "../shared.js";
+import { courseSelectOptions, commit } from "../shared.js";
 
 export function eventModal(eventId, preset) {
   preset = preset || {};
@@ -244,10 +243,7 @@ export function eventModal(eventId, preset) {
 
         if (!e) Store.db.events.push(target);
         Tasks.recompute(target);
-        Store.saveNow();
-        closeFn();
-        Router.scheduleRender();
-        UI.toastSaved(e ? "To-do updated." : "To-do added.");
+        commit(closeFn, e ? "To-do updated." : "To-do added.");
       });
 
       const del = q("#evDelete", m);
@@ -265,10 +261,7 @@ export function eventModal(eventId, preset) {
             Store.db.plan = Store.db.plan.filter(function (p) {
               return p.eventId !== e.id;
             });
-            Store.saveNow();
-            closeFn();
-            Router.scheduleRender();
-            toast("To-do deleted.", "ok");
+            commit(closeFn, "To-do deleted.", "ok");
           });
         });
       }

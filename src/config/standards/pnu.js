@@ -3,6 +3,18 @@
  * Data-driven so the extraction pipeline stays standard-agnostic.
  */
 
+/**
+ * Vocabulary that marks a table row as a PNU course-requirement row.
+ *
+ * The PDF/Word table reader (`utils/extract.js`) and the two views that show
+ * the rows it kept (`views/import.js`, `views/roadmap.js`) all need the same
+ * judgement about which rows are requirements; keeping one definition here
+ * stops the three from drifting. Never add the `g` flag: the shared object is
+ * reused across calls and `.test()` is only stateless without `lastIndex`.
+ */
+export const PNU_REQUIREMENT_ROW =
+  /course requirements|formative assessment|summative assessment|accomplished worksheets|topic facilitation|discussion responses|final examinations?|presentation\s*\/\s*critique|learning environment management plan|e-?portfolio|total\s+100%/i;
+
 export const pnuStandard = {
   id: "pnu-cmi-teacher-education-2025",
   label: "PNU CMI Teacher Education Pathways",
@@ -108,70 +120,6 @@ export const pnuStandard = {
   ],
   gradingTarget: 100,
   minimumSessionCount: 5,
-  competencies: [
-    {
-      id: "institutional-outcomes",
-      label: "Institutional Outcomes",
-      types: [],
-      keywords: [],
-    },
-    {
-      id: "program-outcomes",
-      label: "Program Outcomes",
-      types: [],
-      keywords: [],
-    },
-    {
-      id: "cilos",
-      label: "Course Intended Learning Outcomes (CILOs)",
-      types: [
-        "exam",
-        "quiz",
-        "assignment",
-        "project",
-        "presentation",
-        "reading",
-        "other",
-      ],
-      keywords: ["teaching", "lesson", "demo"],
-    },
-    {
-      id: "performance-indicators",
-      label: "Performance Indicators",
-      types: ["exam", "quiz", "project", "lab"],
-      keywords: ["research", "investigation"],
-    },
-    {
-      id: "evidence",
-      label: "Evidence of Performance",
-      types: ["assignment", "project", "presentation", "lab"],
-      keywords: ["reflection", "portfolio", "research", "investigation"],
-    },
-    {
-      id: "standards",
-      label: "Performance Standards",
-      types: ["exam", "project"],
-      keywords: [],
-    },
-    {
-      id: "gedi",
-      label: "GEDI Themes",
-      types: [],
-      keywords: ["group", "collaborative"],
-    },
-    {
-      id: "gced",
-      label: "GCED Themes",
-      types: ["presentation"],
-      keywords: ["reflection", "portfolio", "group", "collaborative"],
-    },
-    {
-      id: "ppst",
-      label: "PPST Alignment",
-      types: [],
-      keywords: ["teaching", "lesson", "demo"],
-    },
-  ],
 };
 
 export default pnuStandard;

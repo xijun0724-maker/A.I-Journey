@@ -1,0 +1,523 @@
+​
+CMI ​
+PNU Philosophy PNU Vision PNU Mission PNU Quality Policy
+Institutional Outcomes
+College/Institute Goals
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 1 / 15 CC01062025-1888
+
+TEACHER EDUCATION PATHWAYS COURSE SYLLABUS
+Education for personal renewal and social transformation.
+A leading future-ready education university responsive to national and global development goals and directions
+Philippine Normal University is committed to lead innovative, responsive and sustainable teacher education programs that set the standards of future-ready teachers and education leaders. As the National Center for Teacher Education, the Philippine Normal University commits to provide inclusive, innovative, impactful, and sustainable teacher education programs that produce future-ready teachers and education leaders imbued with the values of truth, excellence, and service. Furthermore, PNU shall ensure the continual improvement of its Quality Management System through compliance with International Quality Standards and statutory and regulatory requirements. PNU shall achieve these commitments through its core functions of instruction, research, extension, and production. Digitally Literate and Data-Driven Decision Maker Design Thinker and Innovator Discerning and Compassionate Person Dynamic Lifelong Learner and Leader Deeply Rooted Global Citizen The College of Teacher Development (CTD) is committed to champion quality teacher education in the country. It is dedicated to:
+1.​ Provide future-ready teacher development through innovative, inclusive and quality-assured academic programs. 2.​ Lead in advancing teacher education research and translating scholarly work into relevant policies and practices that benefit
+education and communities. 3.​ Establish CTD as leader in producing impactful educational resources, and programs. 4.​ Establish a robust international presence through strategic collaborations, advancing the College’s leadership in teacher
+education. 5.​ Maintain a pool of faculty experts who lead as influential public intellectuals in education and related disciplines. 6.​ Established well-defined systems-based solutions and sustainability practices to ensure efficiency and effectiveness of
+implementation of CTD Programs and procedures.
+
+​
+CMI
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 2 / 15 CC01062025-1888
+
+Program Outcomes
+
+Course Number Course Title Course Pre-requisite Course Description
+
+GEDI Themes
+GCED Themes SDG Indicator/s Addressed
+
+Session No./
+Duratio n
+
+Course Intended Learning Outcomes
+
+PPST Strand 1.1 Content knowledge and its application within and across curriculum areas PPST Strand 1.5 Strategies for developing critical and creative thinking, as well as other higher-order thinking skills PPST Strand 4.1 Planning and management of teaching and learning process PPST Strand 4.3 Relevance and responsiveness of learning programs PPST Strand 4.5 Teaching and learning resources including ICT PPSH 2.6 Emerging Opportunities and Challenges
+
+TP-S-ICT03
+Troubleshooting Techniques
+None
+This practice-oriented course explores the purposes, principles, and foundations of troubleshooting. It includes normal system operations and operating parameters, which help students to apply troubleshooting processes. It also enhances students' skills in assembling and disassembling the system unit. Students are expected to solve process-based troubleshooting situations and provide/produce a troubleshooting flowchart.
+●​ Gender Literacy – this theme supports the learning of the practical layer of the academic concepts of gender. It looks into creating gender awareness and sensitivity through understanding how different signs, gestures, words, behavior and everyday activities affect the marginalized.
+●​ Local, National, Global Systems, Structures, and Processes ●​ Culture and Intercultural Relations SDG 4 – Quality Education 4.4: Technical and vocational skills for employment. SDG 8 – Industry, Innovation, and Infrastructure 9.4: Increased resource-use efficiency and retrofitting. SDG 12: Responsible Consumption and Production 12.5: Waste reduction through reuse and repair.
+
+Content (Preferably with Focusing or Essential
+Questions)
+
+Instructional Delivery Design
+
+Face-to-Face Activities
+
+Online Modality
+
+Synchronous
+
+Asynchronous
+
+Assessment
+
+​
+CMI
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 3 / 15 CC01062025-1888
+
+Session 1&2 Week 1
+Session 3&4 Week 2
+
+Internalize the course goals and university vision.
+Describe common troubleshooting techniques in hardware, software and network issues encountered in everyday life
+
+Course Orientation – Dissemination of the course syllabus, promotion of the PNU’s vision, mission and quality policy, and discussion of class norms and course policies.
+EQ1: How does quality education (SDG 4) empower us as future ICT professionals? EQ2: What role does gender equity play in creating inclusive tech workspaces?
+
+Apply safety procedures and systematically troubleshoot ICT issues using industry-standard
+
+Safety Standards & Systematic Troubleshooting EQ1: Why are safety standards non-negotiable in IT?
+
+The course mentor will facilitate the presentation and discussion of the Course Orientation or
+Introductory Activity: Sharing of encountered issues in computers, laptop and mobile devices
+• Interactive syllabus walkthrough • Class norms co-creation activity • Gender sensitivity workshop: discussing barriers women face in ICT (SDG 5) • Vision-mission alignment exercise
+
+Orient students to the course’s structure, requirements, policies, conventions and scheduling. Provide a space where students can ask questions and get answers.
+Live Q&A on course policies and assessment rubrics • Breakout rooms: Share personal tech repair experiences across diverse backgrounds
+
+I• Safety protocol demonstration (ESD, electrical safety) • Hands-on: Identify safety hazards in sample workspace • Role-play: 7-step troubleshooting simulation • Discussion: Right to safe working conditions globally
+
+Live demonstration of CompTIA/Cisco troubleshooting workflow • Collaborative case analysis using Miro/Padlet
+
+Assist students to become acquainted with the course design in ePNU. Conduct asynchronous needs assessment using ePNU.
+
+Pre-assessment survey; Reflection paper on how personal values align with course goals and SDG 4.4 (300 words)
+
+• Watch: "Women in Technology" documentary • Post introduction in discussion forum highlighting personal SDG commitments
+• Complete online safety quiz • Watch CompTIA troubleshooting videos • Research:
+
+Performance task: Create a safety checklist poster (digital or physical) incorporating
+
+​ Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines
+Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+
+CMI
+
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+methodologies while recognizing workplace safety as a human right.
+
+EQ2: How does systematic troubleshooting reduce electronic waste (SDG 12)?
+
+Session 5 & 6 Week 3
+
+Demonstrate proper use of servicing tools and execute safe disassembly/ass embly procedures while minimizing component damage and
+waste
+
+Computer Servicing Tools; Disassembly & Assembly
+EQ1: How does the choice of tool prevent hardware damage?
+EQ2: What is the logical sequence of disassembly?
+
+• Tool identification and proper handling workshop • ESD wristband demonstration • Guided PC disassembly (paired work) • Assembly challenge with timing • Gender discussion: Debunking "tech is for men" stereotype
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 4 / 15 CC01062025-1888
+
+Live tool safety demonstration • Collaborative Google Doc: Create disassembly flowchart as class
+
+E-waste statistics in the Philippines and global citizenship responsibility
+
+global safety standards
+
+• Watch professional disassembly videos • Complete tool safety module • Research: Gender gaps in vocational-tech nical education
+(SDG 4, SDG 5)
+
+Performance task: Successfully disassemble and reassemble a PC within 45 minutes without damage
+
+Session 7&8 Week 4
+
+Configure BIOS/CMOS settings and apply laptop-specific safety protocols to optimize
+
+BIOS/CMOS Configuration and Laptop Safety
+EQ1: How does the BIOS bridge hardware and software? EQ2: How
+
+• BIOS navigation hands-on lab • Boot order configuration practice • Laptop battery safety demonstration • Discussion: E-waste from laptop batteries and responsible disposal
+
+Live BIOS configuration walkthrough • Troubleshoot simulated boot failures via screen sharing
+
+• BIOS configuration simulation software • Research local e-waste recycling facilities •
+
+Skills test: Configure BIOS settings based on 5 different scenarios (rubric-based)
+
+​
+CMI system boot processes.
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+do proper battery disposal practices support environmental sustainability (SDG 12)?
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 5 / 15 CC01062025-1888
+
+Read: Battery technology and environmental impact
+
+Session 9-10 Week 5
+
+Evaluate OS functions, perform software maintenance, and manage drivers to ensure system stability and resource optimization.
+
+Operating System Functions; Software Maintenance; Driver Management
+EQ1: How does the OS manage hardware resources during a fault?
+
+.
+
+EQ2: Why is driver
+
+stability vital for
+
+system health?
+
+WELLNESS BREAK
+
+• OS troubleshooting workshop • Driver installation/rollback lab • Resource Monitor analysis activity • Case study: Software vs. hardware failure differentiation
+
+Live demonstration of Device Manager and Update tools • Collaborative troubleshooting scenarios
+
+• Install and test drivers in virtual environment • Complete driver management exercises • Forum: Share real-world driver conflict experiences
+
+Case analysis: Diagnose 3 system issues and propose solutions with justification (1000 words)
+
+​
+CMI
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 6 / 15 CC01062025-1888
+
+Session 11 & 12 Week 6
+
+Execute preventive and corrective hardware maintenance.
+
+Hardware Maintenance & Thermal Management
+EQ1: How does thermal throttling protect the CPU? EQ2: What is the impact of environmental dust on logic circuits?
+
+• Component cleaning workshop (hands-on) • Thermal paste application lab • Cooling system inspection • Sustainability discussion: Maintenance as waste prevention (SDG 12.5) • Calculate: Energy efficiency improvements
+
+Live thermal monitoring demonstration using software • Group analysis of temperature logs
+
+• Create preventive maintenance schedule template • Research: Climate change impact on hardware lifespan • Watch: Data center cooling innovations
+
+Practical exam: Clean and reassemble system with proper thermal paste application (performance rubric)
+
+Session 13&14 Week 7
+
+Diagnose system failures, differentiate hardware/softwar e issues, and validate repairs using systematic methodologies.
+
+Diagnosing and Resolving System Failures Identifying hardware vs software failures Error symptoms and root causes Repair validation EQ1. What is your priority during a system failure?
+
+• Troubleshooting simulation with intentional faults • Repair validation procedures practice • Documentation workshop using industry templates • Global citizenship: Sharing knowledge to bridge digital divide
+
+Live fault injection demonstration • Peer review of troubleshooting documentation via shared documents
+
+• Complete 5 diagnostic scenarios online • Develop personal troubleshooting checklist • Research: Knowledge-sha ring platforms for global tech community
+
+Performance task: Diagnose and repair 2 faulty systems + submit comprehensive technical documentation
+
+​ Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines
+Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+
+CMI
+
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Session 15 & 16 Week 8
+
+Analyze printer systems, perform basic/advanced troubleshooting, and apply industry best practices through EPSON case study.
+
+EQ2. How do you document a technical "fix"? Printer Systems and Maintenance (EPSON Tour)
+EQ1: How do different printer technologies impact resource consumption (SDG 12)?
+EQ2: What sustainable practices can reduce printer waste?
+
+• Field trip: EPSON facility tour or virtual tour • Printer disassembly demonstration • Hands-on: Basic printer maintenance • Troubleshooting lab: Paper jams, print quality issues • Discuss: Refilling vs. replacing cartridges (sustainability)
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 7 / 15 CC01062025-1888
+
+Live Q&A with EPSON technician (virtual guest speaker) • Collaborative printer troubleshooting scenarios
+
+• Research printer technologies and environmental impact • Compare total cost of ownership for different printer types • Forum: Debate planned
+obsolescence in printer industry
+
+Technical report: Printer troubleshooting guide with sustainability recommendations (1500 words)
+
+Session 17 & 18 Week 9
+
+Apply advanced troubleshooting techniques to resolve complex driver conflicts, malware issues, and system corruption using
+
+Advanced Troubleshooting Techniques
+EQ1: How do diagnostic logs serve as a repair roadmap? EQ2: Why is
+
+Advanced diagnostic utilities workshop • Malware removal simulation • Event Viewer and system log analysis • Driver conflict resolution lab • Gender lens: Women in cybersecurity careers
+
+Live demonstration of advanced troubleshooting tools • Collaborative incident response scenario
+
+• Complete malware analysis module • Practice with diagnostic software • Research:
+
+Skills assessment: Resolve 3 complex system issues using advanced tools (timed practical exam)
+
+​
+CMI diagnostic utilities.
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+cybersecurity knowledge essential for hardware technicians?
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 8 / 15 CC01062025-1888
+
+Cybersecurity workforce gender gap and initiatives (SDG 5)
+
+Session 19 & 20 Week
+10
+
+Design preventive maintenance plans, establish inspection protocols, and create professional documentation systems that extend
+equipment lifecycle.
+
+Preventive Maintenance Planning
+EQ1: How does preventive maintenance contribute to responsible consumption (SDG 12)? EQ2: What role does technical vocational training play in sustainable industries (SDG 4.4, SDG 9.4)?
+
+• Develop comprehensive PM schedule for lab • Inspection protocol creation workshop • Professional reporting templates practice • Calculate: Cost savings from prevention vs. repair • Discuss: Skills for green economy jobs
+
+Live demonstration of maintenance management software • Group PM plan presentations and peer feedback
+
+Research industry PM standards • Create digital PM checklist • Case study: Circular economy in electronics repair industry
+
+Project: Develop 6-month preventive maintenance plan for a small business (comprehensive report + presentation)
+
+Session 21 & 22 Week
+11
+
+Troubleshoot network connectivity issues, perform
+
+Network Troubleshooting
+
+• IP configuration and network troubleshooting lab • Ping/tracert practical exercises • System restore and backup workshop • Final presentations: Technical
+
+Live demonstration of network diagnostics • Final presentation Q&A session • Course
+
+Complete comprehensive troubleshooting scenarios •
+
+Summative assessment: (1) Network troubleshooting
+
+​
+CMI
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 9 / 15 CC01062025-1888
+
+system restoration, evaluate latest techniques, and present professional technical solutions.
+
+and System Restoration EQ1: How does network literacy empower global citizens? EQ2: How do we continuously improve as reflective practitioners?
+
+repair case studies • Reflection: Personal growth and future SDG commitments
+
+evaluation and feedback
+
+Session 23 & 24 Week
+12
+
+Latest Updates and Evaluate troubleshooting performance and present findings.
+
+Latest Troubleshooting Techniques, Troubleshooting Evaluation and Technical Reporting
+Latest Updates and Troubleshooting lifecycle review
+Technical documentation
+Presentation of repair solutions
+
+Final presentation of e-Portfolios and mapping the next decade of EdTech in their careers.
+
+Showcasing digital artifacts to the entire class and external mentors (invited via Zoom).
+
+Prepare final presentation • Submit reflection portfolio on learning journey and SDG alignment
+Self-reflection: Transformation from "Technology User" to "Learning Architect".
+
+practical exam (40%) (2) Final technical presentation on complex repair case (30%) (3) Reflective portfolio on skills development and SDG integration (30%)
+Final Submission: Comprehensive e-Portfolio.
+
+​
+CMI Independent Study/ Flexible Learning Activity
+Required Readings
+Course References and Learning Resources
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 10 / 15 CC01062025-1888
+
+Reflection and improvement planning
+●​ TESDA Online Programs Technical Education and Skills Development Authority. (n.d.). Computer Hardware Servicing NC II. TESDA Online Program. https://e-tesda.gov.ph/
+YouTube Resources ●​ CareyHolzman. (n.d.). Home [YouTube Channel]. YouTube. https://www.youtube.com/user/CareyHolzman ●​ Linus Media Group. (n.d.). Linus Tech Tips [YouTube Channel]. YouTube. https://www.youtube.com/c/LinusTechTips ●​ PowerCert Animated Videos. (n.d.). Home [YouTube Channel]. YouTube. https://www.youtube.com/c/PowerCertAnimatedVideos ●​ Professor Messer. (n.d.). CompTIA A+ training course [YouTube Playlist]. YouTube. https://www.youtube.com/c/professormesser
+MOOC Platforms ●​ Cisco Networking Academy. (n.d.). IT essentials. https://www.netacad.com/courses/os-it/it-essentials ●​ Google. (n.d.). Technical support fundamentals [Online course]. Coursera. https://www.coursera.org/learn/technical-support-fundamentals ●​ Cisco Systems. (n.d.). Troubleshooting methodology guide. Cisco Networking Academy. https://www.netacad.com/ ●​ CompTIA. (n.d.). CompTIA A+ certification exam objectives (220-1101 & 220-1102). https://www.comptia.org/certifications/a ●​ Electrostatic Discharge Association. (n.d.). ESD TR20.20: Standard for the development of an electrostatic discharge control program. https://www.esda.org/standards/ ●​ iFixit. (n.d.). Right to repair. https://www.ifixit.com/Right-to-Repair ●​ Intel Corporation. (n.d.). Processor thermal management documentation. Intel Developer Zone. https://www.intel.com/content/www/us/en/support/articles/000005525/processors.html ●​ International Telecommunication Union. (n.d.). E-waste toolkit. https://www.itu.int/en/ITU-D/Environment/Pages/Toolbox/E-waste.aspx ●​ Occupational Safety and Health Administration. (n.d.). Computer workstation eTool. U.S. Department of Labor. https://www.osha.gov/etools/computer-workstations
+. Textbooks
+
+​
+CMI
+Performance Indicator and Evidence of Performance
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 11 / 15 CC01062025-1888
+
+●​ Kishore, K. L. (2012). Computer hardware: Installation, interfacing, troubleshooting and maintenance. Pearson Education. ●​ Meyers, M. (2022). CompTIA A+ certification all-in-one exam guide (11th ed.). McGraw-Hill Education. ●​ Technical Education and Skills Development Authority. (2018). Computer Hardware Servicing NC II learning materials. TESDA.
+Online Resources
+●​ ASUS. (n.d.). Support. https://www.asus.com/support/ ●​ Gigabyte Technology. (n.d.). Support. https://www.gigabyte.com/Support ●​ iFixit. (n.d.). Repair guides. https://www.ifixit.com/Guide ●​ IEEE Computer Society. (n.d.). Publications. https://www.computer.org/publications ●​ MSI. (n.d.). Support. https://www.msi.com/support/ ●​ Tom's Hardware. (n.d.). Home. https://www.tomshardware.com/
+
+Course Intended Learning Outcomes (CILOs)
+
+Evidence of Performance
+
+Performance Standard
+
+Apply occupational health and safety procedures, industry standards, and professional ethics in ICT servicing environments while demonstrating awareness of sustainable practices and gender-inclusive workplace
+culture.
+
+• Safety checklist completion• Laboratory observation records• Safety poster/infographic project• Written safety assessment• Gender sensitivity reflection
+
+• 100% compliance with ESD and electrical safety protocols• Zero safety violations during labs• Correct use of PPE in all hardware handling• 85% or higher on safety knowledge assessment• Demonstrates inclusive language and practices
+
+Diagnose and resolve computer hardware and software issues using systematic troubleshooting methodologies (CompTIA/Cisco 7-step method) while maintaining accurate technical documentation.
+
+• Troubleshooting simulation results• Technical documentation portfolio• Case study analysis reports• Diagnostic accuracy logs• Root cause analysis papers
+
+• 90% successful diagnosis rate on simulated faults• Complete documentation for all repair cases• Follows 7-step methodology systematically• 85% accuracy in hardware vs. software differentiation• Proper use of diagnostic tools and validation procedures
+
+​
+CMI
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 12 / 15 CC01062025-1888
+
+Install, configure, and maintain computer hardware components and peripheral devices according to manufacturer specifications and industry best practices to optimize system performance and extend equipment lifecycle.
+
+• PC disassembly/assembly practical exam• Component identification test• BIOS configuration tasks• Thermal paste application demonstration• Preventive maintenance checklist
+
+• 95% accuracy on component identification• Zero component damage during assembly/disassembly• Completion within industry-standard timeframes• Proper thermal management techniques applied• Correct BIOS/UEFI configuration settings• Demonstrates lifecycle extension practices (SDG 9.4, 12.5)
+
+Install, configure, update, and troubleshoot operating systems and device drivers to ensure system stability, security, and optimal hardware-software integration.
+
+• OS installation project• Driver management scenarios• System utility usage demonstrations• Backup and restore procedures• Event log interpretation tasks
+
+• 85% or higher on OS installation and configuration tasks• Successful resolution of driver conflicts• Proper use of Device Manager and system utilities• Accurate interpretation of system logs and errors• Successful backup/restore implementation
+
+Install, configure, maintain, and troubleshoot various printer types and peripheral devices while applying sustainable practices to reduce waste and resource consumption.
+
+• Printer troubleshooting practical exam• Maintenance procedure demonstrations• Sustainability analysis report• Peripheral device diagnostics• EPSON facility tour reflection
+
+Troubleshoot network connectivity issues, perform advanced system diagnostics, and implement comprehensive technical solutions
+
+• Network diagnostic practical exam• Command-line tool usage assessment• Advanced troubleshooting scenarios• Final technical case presentation• Reflective
+
+• 80% or higher on printer troubleshooting exam• Correct identification of printer types and issues• Proper cleaning and maintenance without damage• Integration of sustainable practices (SDG 12)• Successful peripheral device configuration and repair
+• 85% or higher on network connectivity diagnostics• Correct use of ipconfig, ping, tracert commands• Resolution of complex system issues using advanced tools•
+
+​
+CMI
+Grading System
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+while demonstrating global digital citizenship and commitment to continuous professional development.
+
+professional portfolio• Preventive maintenance plan
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 13 / 15 CC01062025-1888
+
+Professional-quality technical presentation• Comprehensive reflective portfolio demonstrating growth• PM plan aligned with SDG principles (4.4, 9.4, 12.5)• Evidence of global citizenship awareness
+
+​
+CMI Course Requirements
+Course Policies
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 14 / 15 CC01062025-1888
+
+Requirements Assignment (Group facilitation of assigned troubleshooting topic• Discussion component: 20%• Hands-on demonstration: 80%• Duration: 45-60 minutes• Rubric includes: content mastery, engagement strategies, demo effectiveness, SDG integration, MOOC Completion, 1 Min Video Presentation, Reflection) Assessments (Quiz, Final Exam) Final Demonstration Class Engagement and Attendance TOTAL
+
+Percentage 30%
+20% 30% 20% 100%
+
+PNU is committed to fostering a diverse and inclusive academic environment for students from various backgrounds, including those with disabilities, exceptionalities, ethnic and linguistic differences, religious affiliations, gender identities, and other individual differences. The University ensures its commitment to equal access, participation, and engagement with educational opportunities that supports our academic culture and values as well as celebrate diversity and inclusivity.
+If you have any physical or psychological/ mental health conditions or challenges which can affect your performance in class, you are encouraged to inform me. This is to ensure that we are creating and fostering a responsive classroom environment. You are also encouraged to avail of the services of the following offices regarding your challenge/ condition: - Student Affairs and Services Office: counselingservices@pnu.edu.ph - University Health Services Unit: uhsu@pnu.edu.ph - Gender, Equity, Diversity, and Inclusivity Office: gedio@pnu.edu.ph
+Specific Guidelines
+
+​
+CMI
+Consultation Period Prepared by Reviewed by Approved by
+
+Taft Ave. Cor. Ayala Blvd., Ermita, Manila 1000 Philippines Trunkline: +63-2-5317-1768 Loc. 720 ▲ cmimo@pnu.edu.ph ▲ www.pnu.edu.ph
+TEACHER EDUCATION PATHWAYS SYLLABUS
+
+Reference No. Issue No. Rev. No. Date: Page DC No.
+
+PNU-MN-2025-CMI-FM-011 02 00 01-06-2025 15 / 15 CC01062025-1888
+
+1. There should be a maximum of two major assessment tasks or course requirements. 2. Avoid multiple assessment and redundant assessment tasks. 3. Give emphasis to asynchronous assessment activities/tasks. 4. Give students adequate time for completion and submission of tasks/requirements.
+
+Wednesday , 3:00 - 4:00 PM
+
+MARK ANTHONY F. JAMISAL Signature above Printed Name
+
+Date: Jan 26, 2026
+
+__MALVIN R. TABAJEN___
+
+Date:
+
+Signature above Printed Name
+
+NIÑO D. NALDOZA, PhD, CESE
+
+Date:
+
+Associate Dean
+
+Initialed by: PRINCESS ZARLA J. RAGUINDIN, PhD CMIMO Core Committee Representative
+
+

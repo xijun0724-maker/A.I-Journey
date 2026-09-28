@@ -17,7 +17,7 @@ import { Store } from "../../src/core/store.js";
 import {
   act,
   KNOWN_ACTIONS,
-  buildDispatch,
+  ACTIONS,
 } from "../../src/core/actions/index.js";
 import { planToCSV } from "../../src/core/actions/exports.js";
 import { toggleSubtask } from "../../src/core/actions/tasks.js";
@@ -48,7 +48,7 @@ import {
 } from "../../src/core/actions/planner.js";
 import { Planner } from "../../src/domain/planner.js";
 import { Router } from "../../src/core/router.js";
-import { UI, UIState } from "../../src/core/state.js";
+import { UI, UIState } from "../../src/core/scope.js";
 import { stripKey } from "../../src/utils/secure.js";
 import { RAG } from "../../src/domain/rag.js";
 import { CFG } from "../../src/config/constants.js";
@@ -111,27 +111,23 @@ describe("KNOWN_ACTIONS", () => {
    * and only the (strict) Rollup build failed. Assert the values are callable.
    */
   it("every dispatch handler is a callable function", () => {
-    const table = buildDispatch(null, null, null);
-    const broken = Object.entries(table)
+    const broken = Object.entries(ACTIONS)
       .filter(([, handler]) => typeof handler !== "function")
       .map(([name]) => name);
     expect(broken).toEqual([]);
   });
 
-  it("static handlers are a frozen shared map", () => {
-    const a = buildDispatch(null, null, null);
-    const b = buildDispatch(null, null, null);
-    /* static entries are the same function references across dispatches */
-    expect(a["settings-save"]).toBe(b["settings-save"]);
-    expect(a["data-export"]).toBe(b["data-export"]);
-    /* context entries are freshly bound closures */
-    expect(a["edit-course"]).not.toBe(b["edit-course"]);
-    expect(Object.isFrozen(a)).toBe(false);
+  it("is one frozen table of shared handler references", () => {
+    /* A click looks the handler up in this table — it is never rebuilt or
+       re-bound per dispatch. */
+    expect(Object.isFrozen(ACTIONS)).toBe(true);
+    expect(Object.keys(ACTIONS).length).toBe(KNOWN_ACTIONS.size);
+    expect(typeof ACTIONS["settings-save"]).toBe("function");
+    expect(typeof ACTIONS["edit-course"]).toBe("function");
   });
 
   it("KNOWN_ACTIONS covers both static and context tables", () => {
-    const table = buildDispatch(null, null, null);
-    for (const name of Object.keys(table)) {
+    for (const name of Object.keys(ACTIONS)) {
       expect(KNOWN_ACTIONS.has(name), name).toBe(true);
     }
     expect(KNOWN_ACTIONS.has("nav")).toBe(true);
@@ -416,7 +412,6 @@ describe("settings actions", () => {
       '<input id="setWeekday" value="2">' +
       '<input id="setWeekend" value="4">' +
       '<input id="setWeeks" value="6">' +
-      '<select id="setDefaultView"><option value="dashboard" selected>Dashboard</option></select>' +
       '<input id="setTermStart" value="2026-01-05">' +
       '<input id="setTermEnd" value="2026-05-20">' +
       '<span id="aiTestMsg"></span>';
@@ -990,7 +985,7 @@ describe("commitDraft validation", () => {
       let html = courses();
       expect(html).toContain("Remove from view");
       expect(html).toContain('data-removed="false"');
-      expect(html).toContain('value="removed-from-view"');
+      expect(html).toContain('data-filter-val="removed-from-view"');
 
       // Remove from view
       act("toggle-remove-view-course", { dataset: { id: "crs_kebab_2" } });

@@ -37,14 +37,14 @@ export function status() {
     return {
       on: false,
       label: "Offline mode",
-      why: "No API key configured - running on the built-in analyser.",
+      why: "No API key configured.",
     };
   }
   if (key.length <= 10)
     return {
       on: false,
       label: "Offline mode",
-      why: "API key looks invalid - check the key in Settings.",
+      why: "API key looks invalid.",
     };
   const model = s.model || CFG.openrouter.model;
   const label = "OpenRouter";
@@ -52,24 +52,15 @@ export function status() {
 }
 
 function messagesToOpenAI(messages) {
-  const systemMsgs = [];
-  const chatMsgs = [];
-  for (const m of messages) {
-    if (m.role === "system") {
-      systemMsgs.push({
-        role: "system",
-        content:
-          typeof m.content === "string" ? m.content : JSON.stringify(m.content),
-      });
-    } else {
-      chatMsgs.push({
-        role: m.role === "assistant" ? "assistant" : "user",
-        content:
-          typeof m.content === "string" ? m.content : JSON.stringify(m.content),
-      });
-    }
-  }
-  return [...systemMsgs, ...chatMsgs];
+  const mapped = messages.map((m) => ({
+    role: m.role === "system" || m.role === "assistant" ? m.role : "user",
+    content:
+      typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+  }));
+  return [
+    ...mapped.filter((m) => m.role === "system"),
+    ...mapped.filter((m) => m.role !== "system"),
+  ];
 }
 
 function formatError(e, providerLabel) {
@@ -123,10 +114,7 @@ export function messageChars(messages) {
   return total;
 }
 
-/**
- * Marker the agent uses to return tool output. Defined once so the truncation
- * pairing below and the agent loop cannot drift apart.
- */
+/** The agent's tool-output marker, shared with the truncation pairing below. */
 export const TOOL_RESULT_PREFIX = "TOOL_RESULT ";
 
 /** A tool result: the agent's answer to a request the model made. */
@@ -315,7 +303,7 @@ function buildRequest(messages, opts, s) {
  * end marker; it is not JSON and not an error.
  *
  * @param {Response} res - A response whose body is a ReadableStream
- * @param {object} req - The request descriptor from buildProviderRequest
+ * @param {object} req - The request descriptor from buildRequest
  * @param {Function} onToken - Called with (delta, accumulatedText)
  * @returns {Promise<string>} The full text, in arrival order
  */
@@ -560,8 +548,7 @@ function chatWithRetry(
  * asks OpenRouter for `stream: true` and each delta is reported as it lands.
  * The returned promise still resolves with the whole, trimmed text (and
  * `streamed: true`), so a caller that renders progressively is still handed
- * the authoritative value to settle on. Without `onToken` the request shape
- * is exactly what it was before Step 6.
+ * the authoritative value to settle on.
  *
  * @param {Array<{role: string, content: string}>} messages
  * @param {object} [opts] - `timeout`, `deadline`, `signal`, `maxTokens`,
@@ -589,13 +576,8 @@ export async function chat(messages, opts = {}) {
   });
   const safeMessages = budget.messages;
 
-  if (
-    messageChars(budget.messages) >
-      budget.maxChars + (CFG.maxChatChars || 20000) * 0.1 ||
-    messageChars(messages) >
-      (opts.maxChars != null ? opts.maxChars : CFG.maxChatChars) +
-        (CFG.maxChatChars || 20000) * 0.1
-  ) {
+  const charCeiling = budget.maxChars + (CFG.maxChatChars || 20000) * 0.1;
+  if (messageChars(messages) > charCeiling) {
     return {
       ok: false,
       off: true,
@@ -610,27 +592,10 @@ export async function chat(messages, opts = {}) {
       : Date.now() + (opts.timeout || CFG.timeouts.apiDefault);
 
   async function attempt(retryCount) {
+    const st = status();
+    if (!st.on) return { ok: false, error: st.why, off: true };
     const s = settings();
-    const key = getApiKey();
-    if (!s.aiEnabled)
-      return {
-        ok: false,
-        error: "AI is switched off in Settings.",
-        off: true,
-      };
-    if (!key)
-      return {
-        ok: false,
-        error: "No API key configured.",
-        off: true,
-      };
-    if (key.length <= 10)
-      return {
-        ok: false,
-        error: "API key looks invalid.",
-        off: true,
-      };
-    s.apiKey = key;
+    s.apiKey = getApiKey();
     return chatWithRetry(
       safeMessages,
       opts,

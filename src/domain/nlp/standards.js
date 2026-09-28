@@ -4,9 +4,27 @@
 
 import { Store } from "../../core/store.js";
 import { Standards } from "../../config/standards/index.js";
-import { iso } from "../../utils/date.js";
 import { clean, uniqueCleanLines } from "./text.js";
-import { parseDateSmart } from "./dates.js";
+
+/** Longest a course requirement's name can plausibly be. */
+const REQUIREMENT_MAX = 90;
+
+/**
+ * Prose and rubric text that merely happens to end in a percentage.
+ *
+ * Passing thresholds ("At least ... 75%"), rubric criteria ("Content --
+ * Unity, consistency of ...") and policy paragraphs ("Use of Generative
+ * Artificial Intelligence (AI) Policy Given ...") were all being listed as
+ * course requirements, because each one happens to end in "%".
+ */
+const NOT_A_REQUIREMENT =
+  /\b(?:at least|or higher|or more|or better|no more than|minimum|at most|passing|failing|below|above)\b|\.\s|\s--\s/i;
+
+function isRequirementLabel(label) {
+  if (!/[A-Za-z]/.test(label)) return false; // "10%", "20% 20%" - a leftover cell
+  if (label.length > REQUIREMENT_MAX) return false;
+  return !NOT_A_REQUIREMENT.test(label);
+}
 
 /**
  * Analyse text against a registered syllabus standard.
@@ -47,34 +65,17 @@ export function analyseAgainstStandard(text, result, standard) {
       warnings.push("Missing or unrecognized section: " + section.label + ".");
   });
 
-  const weights = [];
-  // Only collect percentages that appear in the course requirements / grading
-  // breakdown section, and skip the PNU grade-point-scale table rows.
-  let inGradingSection = false;
-  let pastGradeScale = false;
-  source.split(/\r?\n/).forEach(function (line) {
-    if (
-      /\b(?:grading\s+system|course\s+requirements|formative\s+assessment|summative\s+assessment)\b/i.test(
-        line,
-      )
-    )
-      inGradingSection = true;
-    if (
-      /\b(?:grade\s+in\s+percent|grade\s+point\s+scale|adjectival\s+description)\b/i.test(
-        line,
-      )
-    )
-      pastGradeScale = true;
-    if (!inGradingSection || pastGradeScale) return;
-    if (/\b(?:total|subtotal|highest\s+mark|passing\s+mark)\b/i.test(line)) return;
-    // Skip PNU grade-scale rows e.g. "98 - 100   1.00, Excellent"
-    if (/\b\d{2,3}\s*[-–]\s*\d{2,3}(?:\.\d+)?\s+\d+\.\d{2}\b/.test(line)) return;
-    const matches = line.match(/\b(\d{1,3}(?:\.\d+)?)\s*%/g) || [];
-    matches.forEach(function (value) {
-      const v = parseFloat(value);
-      if (v > 0 && v <= 100) weights.push(v);
-    });
-  });
+  /*
+   * The grading breakdown is read once, from the normalised lines, by
+   * `extractPnuSections`. This used to rescan the raw text with its own rules
+   * and its own section window, so the two panels could report different
+   * totals for one document - and it could print 200% for a table whose weights
+   * column is 30/20/20/10/20, because it had no letterless-values rule and no
+   * declared-total to check against. One document, one reading.
+   */
+  const gradingRead = (result.pnu && result.pnu.grading) || null;
+  const weights = gradingRead ? gradingRead.weights.slice() : [];
+  const gradingReadable = !!(gradingRead && gradingRead.valid);
   const weightTotal = weights.reduce(function (sum, value) {
     return sum + value;
   }, 0);
@@ -82,17 +83,22 @@ export function analyseAgainstStandard(text, result, standard) {
     /grading system|course requirements|formative assessment|summative assessment/i.test(
       source,
     );
-  if (
+  if (hasGradingBreakdown && !weights.length) {
+    warnings.push(
+      "A grading section was found, but no percentage weights were detected.",
+    );
+  } else if (hasGradingBreakdown && !gradingReadable) {
+    /* Never assert a total we could not read: saying "totals 200%, not 100%"
+       for a table we failed to parse is a wrong number dressed as a finding. */
+    warnings.push(
+      "The grading breakdown could not be read reliably, so it has not been totalled.",
+    );
+  } else if (
     hasGradingBreakdown &&
-    weights.length &&
     Math.abs(weightTotal - resolved.gradingTarget) > 0.01
   ) {
     findings.push("Grading percentages total " + weightTotal + "%, not 100%.");
   }
-  if (hasGradingBreakdown && !weights.length)
-    warnings.push(
-      "A grading section was found, but no percentage weights were detected.",
-    );
   const codeMentions =
     result.pnu && result.pnu.document
       ? result.pnu.document.courseCodeMentions || []
@@ -139,10 +145,10 @@ export function analyseAgainstStandard(text, result, standard) {
     grading: {
       detected: hasGradingBreakdown,
       weights: weights,
-      total: weightTotal || null,
+      total: gradingReadable ? weightTotal : null,
       target: resolved.gradingTarget,
       valid:
-        !weights.length ||
+        gradingReadable &&
         Math.abs(weightTotal - resolved.gradingTarget) <= 0.01,
     },
     checks: {
@@ -155,7 +161,6 @@ export function analyseAgainstStandard(text, result, standard) {
 
 export function extractPnuSections(source, lines, result) {
   const text = String(source || "");
-  const lower = text.toLowerCase();
   const section = function (heading, stops) {
     const start = lines.findIndex(function (line) {
       return heading.test(line);
@@ -199,11 +204,6 @@ export function extractPnuSections(source, lines, result) {
   };
 
   const institutional = {
-    philosophy: valuesAfter(/^pnu philosophy\s*/i),
-    vision: valuesAfter(/^pnu vision\s*/i),
-    mission: valuesAfter(/^pnu mission\s*/i),
-    qualityPolicy: valuesAfter(/^pnu quality policy\s*/i),
-    collegeGoals: listSection(/^college\/institute goals\s*/i),
     institutionalOutcomes: listSection(/^institutional outcomes\s*/i),
     programOutcomes: listSection(/^program outcomes\s*/i),
     ppst: valuesAfter(/^ppst\s*/i),
@@ -212,10 +212,6 @@ export function extractPnuSections(source, lines, result) {
     code: valuesAfter(/^course number\s*/i) || result.courseMeta.code || null,
     title: valuesAfter(/^course title\s*/i) || result.courseMeta.title || null,
     prerequisite: valuesAfter(/^course pre-?requisite\s*/i) || null,
-    description:
-      valuesAfter(/^course description\s*/i) ||
-      result.courseMeta.description ||
-      null,
   };
   const themes = {
     gedi: listSection(/^gedi themes\s*/i),
@@ -225,9 +221,6 @@ export function extractPnuSections(source, lines, result) {
   const outcomes = {
     courseIntended: listSection(
       /^(?:course intended learning outcomes|cilos?)\s*/i,
-    ),
-    performanceIndicators: listSection(
-      /^performance indicator(?:s)? and evidence/i,
     ),
     evidence: listSection(/^evidence of performance\s*/i),
     standards: listSection(/^performance standard\s*/i),
@@ -274,13 +267,45 @@ export function extractPnuSections(source, lines, result) {
     courseCodeMentions: headerCodeMatches,
   };
 
+  /*
+   * Grading weights.
+   *
+   * A PDF text extractor flattens a grading table into label rows followed by
+   * value rows, so "Weight 30% 20% 20% 10%" and "20% 100%" are one column of
+   * weights, not two items. Reading only the last number on a line treated the
+   * document's own TOTAL cell as an assessment and produced totals of 110% and
+   * 230% - numbers no grading column can sum to.
+   *
+   * So: take every percentage on the line, treat a trailing 100% as the
+   * document's declared total rather than another weight, and keep an item only
+   * when the line names it.
+   */
   const gradingItems = [];
+  const gradingWeights = [];
+  let declaredTotal = null;
   lines.forEach(function (line) {
-    const match = /^(.*?)(\d{1,3}(?:\.\d+)?)\s*%\s*$/i.exec(line);
-    if (!match || /total|highest mark|passing mark/i.test(line)) return;
-    const label = clean(match[1]);
-    if (label)
-      gradingItems.push({ label: label, weight: parseFloat(match[2]) });
+    if (/total|highest mark|passing mark/i.test(line)) return;
+    const matches = line.match(/\b\d{1,3}(?:\.\d+)?\s*%/g) || [];
+    if (!matches.length) return;
+    const values = matches.map(function (value) {
+      return parseFloat(value);
+    });
+    /* Only a letterless values row can carry the TOTAL cell. A named row that
+       happens to read "Final Exam 100%" is a real requirement, not the total. */
+    const valuesOnly = !/[A-Za-z]/.test(line);
+    if (valuesOnly && values[values.length - 1] === 100) {
+      declaredTotal = 100;
+      values.pop();
+    }
+    if (!values.length) return;
+    if (values.length === 1) {
+      const label = clean(line.replace(matches[0], ""));
+      if (isRequirementLabel(label))
+        gradingItems.push({ label: label, weight: values[0] });
+    }
+    values.forEach(function (value) {
+      gradingWeights.push(value);
+    });
   });
   const courseRequirements = gradingItems
     .filter(function (item) {
@@ -300,55 +325,34 @@ export function extractPnuSections(source, lines, result) {
       };
     });
 
-  const dates = [];
-  lines.forEach(function (line) {
-    const date = parseDateSmart(line);
-    if (date) dates.push({ label: clean(line), date: iso(date) });
-  });
-  const uniqueDates = [];
-  const dateKeys = {};
-  dates.forEach(function (item) {
-    const key = item.label + "|" + item.date;
-    if (dateKeys[key]) return;
-    dateKeys[key] = true;
-    uniqueDates.push(item);
-  });
+  const gradingWeightTotal = gradingWeights.reduce(function (sum, value) {
+    return sum + value;
+  }, 0);
+  /* Report a total only when the document's own TOTAL corroborates it, or when
+     it is at least arithmetically possible. A breakdown that cannot be read is
+     worth less than no breakdown, and costs the student a wrong plan. */
+  const gradingValid =
+    declaredTotal != null
+      ? Math.abs(gradingWeightTotal - declaredTotal) <= 0.5
+      : gradingWeightTotal > 0 && gradingWeightTotal <= 100;
+  const grading = {
+    items: gradingItems,
+    weights: gradingWeights,
+    total: gradingValid ? gradingWeightTotal : null,
+    declaredTotal: declaredTotal,
+    valid: gradingValid,
+  };
 
   return {
     institutional: institutional,
     course: course,
     themes: themes,
     outcomes: outcomes,
-    sessions: (result.lessons || [])
-      .filter(function (lesson) {
-        return lesson.week != null;
-      })
-      .map(function (lesson) {
-        return {
-          number: lesson.week,
-          topic: lesson.topic,
-          start: lesson.start,
-          source: lesson.raw || lesson.topic,
-        };
-      }),
-    assessments: (result.events || []).slice(),
-    grading: {
-      items: gradingItems,
-      total: gradingItems.reduce(function (sum, item) {
-        return sum + item.weight;
-      }, 0),
-    },
+    grading: grading,
     courseRequirements: courseRequirements,
     resources: resources,
     policies: policies,
-    dates: uniqueDates,
     approvals: approvals,
     document: document,
-    sourceStats: {
-      characters: text.length,
-      lines: lines.length,
-      tables: (result.tables || []).length,
-    },
-    detected: lower.length > 0,
   };
 }

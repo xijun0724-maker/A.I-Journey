@@ -3,14 +3,12 @@
  */
 
 import { Store } from "../../core/store.js";
-import { UI, UIState } from "../../core/state.js";
-import { Router } from "../../core/router.js";
 import { Coach } from "../../domain/coach.js";
 import { esc, uid } from "../../utils/helpers.js";
 import { dateOnly, fromIso, addDays } from "../../utils/date.js";
 import { q, toast } from "../../utils/dom.js";
 import { modal } from "../../utils/feedback.js";
-import { courseSelectOptions } from "../shared.js";
+import { courseSelectOptions, commit, defaultCourseId } from "../shared.js";
 
 export function lessonModal(lessonId) {
   const l = lessonId ? Store.lesson(lessonId) : null;
@@ -20,14 +18,7 @@ export function lessonModal(lessonId) {
     '" placeholder="Hash tables and collision resolution"></label>' +
     '<div class="grid g2">' +
     '<label class="fld"><span>Course</span><select id="lsCourse">' +
-    courseSelectOptions(
-      l
-        ? l.courseId
-        : UIState.courseId !== "all"
-          ? UIState.courseId
-          : Store.db.courses[0] && Store.db.courses[0].id,
-      false,
-    ) +
+    courseSelectOptions(defaultCourseId(l), false) +
     "</select></label>" +
     '<label class="fld"><span>Week</span><input id="lsWeek" type="number" min="1" max="30" value="' +
     (l && l.week ? l.week : Coach.currentWeek()) +
@@ -80,10 +71,7 @@ export function lessonModal(lessonId) {
               payload,
             ),
           );
-        Store.saveNow();
-        closeFn();
-        Router.scheduleRender();
-        UI.toastSaved();
+        commit(closeFn);
       });
       const del = q("#lsDel", m);
       if (del)
@@ -91,10 +79,7 @@ export function lessonModal(lessonId) {
           Store.db.lessons = Store.db.lessons.filter(function (x) {
             return x.id !== l.id;
           });
-          Store.saveNow();
-          closeFn();
-          Router.scheduleRender();
-          toast("Topic removed.", "ok");
+          commit(closeFn, "Topic removed.", "ok");
         });
     },
   });

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Store } from '../../src/core/store.js';
-import { UIState } from '../../src/core/state.js';
+import { UIState } from '../../src/core/scope.js';
 import { dashboardView } from '../../src/views/dashboard.js';
 import { calendarViewDef, stepCalendarMonth, getActiveCalendarMonthYear } from '../../src/views/calendar.js';
 import { loadMoodleSample } from '../../src/core/actions/courses.js';

@@ -6,53 +6,16 @@ import { CFG } from "../config/constants.js";
 import { Store } from "../core/store.js";
 import { RAG } from "../domain/rag.js";
 import { Hybrid } from "../domain/rag-embeddings.js";
-import { Tasks } from "../domain/tasks.js";
 import { Coach } from "../domain/coach.js";
-import { Dashboard } from "../domain/dashboard.js";
 import { NLP } from "../domain/nlp.js";
 import { Planner } from "../domain/planner.js";
-import {
-  chat,
-  usable,
-  status,
-  parseJson,
-  test,
-  messageChars,
-  checkTokenBudget,
-  recordUsage,
-} from "./client.js";
+import { chat, usable } from "./client.js";
 import { prompts } from "./prompts.js";
 import { offlineAnswer, offlineStudyPlan } from "./offline.js";
 import { snapshot } from "./snapshot.js";
-import {
-  StudyPlanAgent,
-  runTool,
-  parseAgentAction,
-  agentSystemPrompt,
-} from "./agent.js";
+import { StudyPlanAgent } from "./agent.js";
 
-export {
-  settings,
-  usable,
-  status,
-  chat,
-  parseJson,
-  test,
-  messageChars,
-  checkTokenBudget,
-  recordUsage,
-} from "./client.js";
-export { prompts } from "./prompts.js";
-export { offlineAnswer, offlineStudyPlan } from "./offline.js";
-export { snapshot } from "./snapshot.js";
-export { Hybrid } from "../domain/rag-embeddings.js";
-export {
-  StudyPlanAgent,
-  AGENT_TOOLS,
-  runTool,
-  parseAgentAction,
-  agentSystemPrompt,
-} from "./agent.js";
+export { status, test } from "./client.js";
 
 /**
  * Validate [n] citation markers in AI text against the numbered sources
@@ -165,20 +128,10 @@ function withProvenance(result) {
 }
 
 /**
- * Choose the guidance level for one answer.
- *
- * A scaffold should fade as competence grows; a crutch should not. The
- * verdicts the recall drill already records decide the level when the learner
- * has left the choice open ("Automatic" in Settings), and an explicit choice —
- * by the caller or in Settings — is never overridden.
- *
- * Ladder, one step at a time:
- *   - fewer than 8 attempts, or under 40% recall: full answers — the safe
- *     default, and where a learner who is still struggling should stay
- *   - 8+ attempts at 40% or better: guiding questions (Socratic) — they can
- *     produce something, so stop handing over the answer
- *   - 20+ attempts at 60% or better: a single nudge (Hint) — most struggle
- *   - between those bands: Socratic, until the evidence clears the next bar
+ * Choose the guidance level for one answer: an explicit choice wins outright,
+ * then under "auto" the recall drill's verdicts decide — full answers while
+ * the learner is still struggling, guiding questions once they can produce
+ * something, a single nudge past 20 attempts at 60% or better.
  *
  * @param {object} opts - `answer()` options; `guidanceLevel` wins outright
  * @returns {"explain"|"socratic"|"hint"}
@@ -221,7 +174,7 @@ export function answer(question, opts = {}) {
     }
     if (!usable()) {
       const offline = applyCitations(
-        offlineAnswer(question, ctx, { db: Store.db }, RAG),
+        offlineAnswer(question, ctx),
         ctx.sources,
       );
       return withProvenance({
@@ -258,7 +211,7 @@ export function answer(question, opts = {}) {
         });
       }
       const offline = applyCitations(
-        offlineAnswer(question, ctx, { db: Store.db }, RAG),
+        offlineAnswer(question, ctx),
         ctx.sources,
       );
       return withProvenance({
@@ -310,9 +263,9 @@ export async function studyPlanProposal(opts = {}) {
   return Object.assign({}, res, { draft: draft });
 }
 
-export function studyPlan(opts = {}) {
+function studyPlan(opts = {}) {
   opts = opts || {};
-  const snap = snapshot(Tasks, Coach, Dashboard);
+  const snap = snapshot();
 
   if (usable() && opts.agent !== false) {
     return StudyPlanAgent(
@@ -338,29 +291,3 @@ export function studyPlan(opts = {}) {
     return { text: offlineStudyPlan(snap), mode: "offline", aiError: r.error };
   });
 }
-
-export default {
-  settings: () => Store.db.settings,
-  usable,
-  status,
-  chat,
-  parseJson,
-  messageChars,
-  checkTokenBudget,
-  recordUsage,
-  test,
-  prompts,
-  validateCitations,
-  sanitizeCitations,
-  answerProvenance,
-  Hybrid,
-  StudyPlanAgent,
-  runTool,
-  parseAgentAction,
-  agentSystemPrompt,
-  offlineAnswer,
-  snapshot,
-  answer,
-  studyPlan,
-  studyPlanProposal,
-};

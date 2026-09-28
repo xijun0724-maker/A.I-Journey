@@ -39,7 +39,7 @@ index.html (SPA shell, CSP meta, inline load-failure fallback)
 
 - `courses[]`, `lessons[]`, `events[]` (subtasks), `readings[]`
 - `documents[]` (full text, max `CFG.maxDocChars`), `chunks[]` (BM25 ranges)
-- `chat[]` (tutor history, sliced to `CFG.maxChatMessages`)
+- `chat[]` (tutor history; each conversation is trimmed to `CFG.maxChatMessages` on its own — writing to one never evicts another's messages)
 - `activity[]`, `plan[]`, `planMeta`, `settings`
 
 ## Design constraints (keep these invariants)
@@ -60,8 +60,10 @@ full suite (889 passed, lint clean, build green):
   calendar and academic-calendar writers all go through `Store.settings.update`;
   no module assigns `db.settings.*` directly.
 - **One registry per direct action** — the old `DIRECT_ACTIONS` name list and its
-  parallel if-ladder in `act()` became `DIRECT_HANDLERS`, one `{ name: handler }`
-  table, so an action's name and behaviour cannot drift apart.
+  parallel if-ladder in `act()` became a single `ACTIONS` table, one
+  `{ name: handler }` entry per action, so an action's name and behaviour cannot
+  drift apart (subsequently collapsed from three parallel registries into the
+  one table, since `act()` resolved all three per click anyway).
 - **RAG owns its cache** — `RAG.observe()` subscribes to the Store change seam,
   so documents/courses writes invalidate the index without any call site
   remembering to (`deleteDocument` no longer calls `RAG.invalidate()`).

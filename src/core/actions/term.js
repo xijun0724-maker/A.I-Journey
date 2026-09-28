@@ -10,7 +10,7 @@
  */
 
 import { Store } from "../store.js";
-import { UIState } from "../state.js";
+import { UIState } from "../scope.js";
 import { Router } from "../router.js";
 import { toast } from "../../utils/dom.js";
 import { confirm } from "../../utils/feedback.js";

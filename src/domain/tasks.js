@@ -20,23 +20,6 @@ export function effort(type, weight, points) {
   return Math.max(15, Math.round((base * scale) / 5) * 5);
 }
 
-/** Estimate a single subtask's minutes from its wording. */
-export function estimateSubtask(type, title, weight, count) {
-  const total = effort(type, weight, null);
-  const n = Math.max(1, count || 6);
-  let per = total / n;
-  const t = String(title || "").toLowerCase();
-  if (/write|draft|build|implement|design|solve/.test(t)) per *= 1.45;
-  else if (/revise|edit|review|proofread|test/.test(t)) per *= 1.05;
-  else if (
-    /select|choose|read|skim|prepare|gather|collect|create outline|proposal/.test(
-      t,
-    )
-  )
-    per *= 0.8;
-  return Math.max(15, Math.round(per / 5) * 5);
-}
-
 /** Decompose a task into checkable subtasks with due dates spread backwards from the deadline. */
 export function subtasksFor(type, weight, points, dueDate) {
   const tpl = CFG.subtaskTemplates[type] || CFG.subtaskTemplates.other;
@@ -56,21 +39,6 @@ export function subtasksFor(type, weight, points, dueDate) {
       d = iso(addDays(due, -Math.max(0, (tpl.length - 1 - i) * spacing)));
     return { id: uid("st"), title, minutes: per, done: false, due: d };
   });
-}
-
-/** Re-spread outstanding checkpoints when a task's deadline moves. */
-export function retimeSubtasks(e, dueDate) {
-  if (!e || !dueDate) return e;
-  const open = (e.subtasks || []).filter((s) => !s.done);
-  if (!open.length) return e;
-  const due = startOfDay(dueDate);
-  const today = startOfDay(new Date());
-  const days = Math.max(1, Math.round((due - today) / DAY));
-  const spacing = Math.max(1, Math.floor(days / open.length));
-  open.forEach((s, i) => {
-    s.due = iso(addDays(due, -Math.max(0, (open.length - 1 - i) * spacing)));
-  });
-  return e;
 }
 
 /** Remaining minutes for a task. */
@@ -199,9 +167,7 @@ export function isDueSoon(e, days) {
 
 export const Tasks = {
   effort,
-  estimateSubtask,
   subtasksFor,
-  retimeSubtasks,
   remainingMinutes,
   progress,
   priority,

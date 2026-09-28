@@ -21,26 +21,17 @@ function initTheme() {
   }
   applyTheme(saved);
 
-  const btn = q("#btnThemeToggle");
-  const btnRail = q("#btnThemeToggleRail");
-  if (btn) {
-    btn.addEventListener("click", () => {
-      saved = saved === "dark" ? "light" : "dark";
-      applyTheme(saved);
-      try {
-        localStorage.setItem("journeyai.theme", saved);
-      } catch (_e) {}
+  [q("#btnThemeToggle"), q("#btnThemeToggleRail")]
+    .filter(Boolean)
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        saved = saved === "dark" ? "light" : "dark";
+        applyTheme(saved);
+        try {
+          localStorage.setItem("journeyai.theme", saved);
+        } catch (_e) {}
+      });
     });
-  }
-  if (btnRail) {
-    btnRail.addEventListener("click", () => {
-      saved = saved === "dark" ? "light" : "dark";
-      applyTheme(saved);
-      try {
-        localStorage.setItem("journeyai.theme", saved);
-      } catch (_e) {}
-    });
-  }
   return saved;
 }
 
@@ -61,8 +52,7 @@ function initSidebar() {
 
   let collapsed = false;
   try {
-    collapsed =
-      localStorage.getItem("journeyai.sidebarCollapsed") === "1";
+    collapsed = localStorage.getItem("journeyai.sidebarCollapsed") === "1";
   } catch (_e) {}
 
   const drawerOpen = () => sidebar.classList.contains("mobile-open");
@@ -100,10 +90,7 @@ function initSidebar() {
     collapsed = !collapsed;
     apply();
     try {
-      localStorage.setItem(
-        "journeyai.sidebarCollapsed",
-        collapsed ? "1" : "0",
-      );
+      localStorage.setItem("journeyai.sidebarCollapsed", collapsed ? "1" : "0");
     } catch (_e) {}
   });
 
@@ -251,4 +238,3 @@ export function toggleSidebarChatSearch() {
     });
   }
 }
-

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { Store } from "../../src/core/store.js";
-import { UIState } from "../../src/core/state.js";
+import { UIState } from "../../src/core/scope.js";
 import { clearApiKey, setApiKey } from "../../src/utils/secure.js";
 import { RAG } from "../../src/domain/rag.js";
 import {

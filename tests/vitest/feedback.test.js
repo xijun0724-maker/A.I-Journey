@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
 /**
- * Tests for src/utils/feedback.js — modal, confirm, helpModal
- * Covers: creation, ARIA, focus management, trapFocus, escape, scrim click
+ * Tests for src/utils/feedback.js — modal, confirm
+ * Covers: creation, ARIA, focus management, escape, scrim click
  */
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { initFocusTrap } from "../../src/app/focus-trap.js";
 
 /* Minimal DOM mock for Node environment */
 function setupDOM() {
@@ -108,35 +109,43 @@ describe("Feedback", () => {
     });
 
     it("traps Tab focus inside the modal", () => {
+      /* The trap moved out of feedback.js to app/focus-trap.js (document-level,
+         active only while #modalRoot is open). Install it here so the guarantee
+         is asserted instead of assumed. */
+      initFocusTrap();
+
       feedback.modal({
         title: "T",
-        body:
-          '<button id="first">First</button><button id="last">Last</button>',
+        body: '<button id="first">First</button><button id="last">Last</button>',
       });
+      const root = document.getElementById("modalRoot");
+      expect(root.classList.contains("open")).toBe(true);
 
-      const first = document.getElementById("first");
-      const last = document.getElementById("last");
-      expect(first).toBeTruthy();
-      expect(last).toBeTruthy();
+      /* Mirror the trap's own focusable query, so the assertions below run
+         against the same element set the handler acts on. */
+      const focusable = Array.from(
+        root.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.disabled && el.offsetParent !== null);
+      expect(focusable.length).toBeGreaterThan(1);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
 
-      /* Verify that a keydown Tab listener is attached to the modal */
-      const modal = document.querySelector(".modal");
-      expect(modal).toBeTruthy();
+      last.focus();
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Tab", bubbles: true }),
+      );
+      expect(document.activeElement).toBe(first);
 
-      /* Dispatch a Tab event — the handler should fire without error */
-      const tabEvent = new KeyboardEvent("keydown", {
-        key: "Tab",
-        bubbles: true,
-      });
-      expect(() => modal.dispatchEvent(tabEvent)).not.toThrow();
-
-      /* Dispatch Shift+Tab — should also not throw */
-      const shiftTabEvent = new KeyboardEvent("keydown", {
-        key: "Tab",
-        shiftKey: true,
-        bubbles: true,
-      });
-      expect(() => modal.dispatchEvent(shiftTabEvent)).not.toThrow();
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Tab",
+          shiftKey: true,
+          bubbles: true,
+        }),
+      );
+      expect(document.activeElement).toBe(last);
     });
 
     it("does not trap Tab when only one focusable element exists", () => {

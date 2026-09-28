@@ -76,7 +76,6 @@ const FIELDS = {
     default: "pnu-cmi-teacher-education-2025",
     form: "#setSyllabusStandard",
   },
-  defaultView: { type: "string", form: "#setDefaultView" },
   calendarStartOfWeek: { type: "int", default: 1 },
   calendarMaxEvents: { type: "int", default: 4 },
   calendarTimeFormat: { type: "enum", default: "12h" },
@@ -85,8 +84,6 @@ const FIELDS = {
   calendarShowAssignments: { type: "boolean", default: true },
   calendarShowOther: { type: "boolean", default: true },
 };
-
-export const SETTINGS_FIELDS = Object.freeze(FIELDS);
 
 /** The blank settings object: every descriptor's default, in declaration order. */
 export function defaultSettings() {

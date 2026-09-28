@@ -4,6 +4,7 @@
 
 import { Store } from "../store.js";
 import { toast } from "../../utils/dom.js";
+import { csv } from "../../utils/helpers.js";
 import { stripKey } from "../../utils/secure.js";
 
 export function exportData() {
@@ -32,18 +33,11 @@ export function exportData() {
  * @returns {string} CSV text, header included
  */
 export function planToCSV(plan, courseName) {
-  let csv = "Date,Task,Course,Minutes,Done\n";
+  const rows = [["Date", "Task", "Course", "Minutes", "Done"]];
   (plan || []).forEach((p) => {
-    csv +=
-      [
-        p.date,
-        '"' + (p.label || "").replace(/"/g, '""') + '"',
-        courseName(p.courseId),
-        p.minutes,
-        p.done,
-      ].join(",") + "\n";
+    rows.push([p.date, p.label, courseName(p.courseId), p.minutes, p.done]);
   });
-  return csv;
+  return csv(rows) + "\n";
 }
 
 export function exportRoadmap() {
